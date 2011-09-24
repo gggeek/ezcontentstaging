@@ -1,0 +1,8 @@
+@CHARSET "UTF-8";
+.my-custom-css-class
+{
+	font-weight: bolder;
+	color: green;
+	border: 3px solid green;
+	margin:5px; 
+}
