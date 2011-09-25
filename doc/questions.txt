@@ -1,0 +1,67 @@
+GG, 24.9.2011
+
+- shall we implement fetches for controlpanel and dashboard as custom attribute filters?
+  it seems there is a requirement here (in the alti templates) that was not clear in the spec: show items
+  to be synced in a single content subtree.
+  I would have instead used simple fetches on the sync table to get the list of
+  items to show - but in such case there is no subtree limit applied
+
+- take care about deleted objects to be synced, if doing node fetches: they have no node anymore,
+  hence a single (node) fetch on nodes cannot find them. Also if we want to show
+  their name, author, we must store this data in the sync_items table
+
+- take care about permissions in such fetches: if a node has been hidden or is not
+  available anymore to current user due to a permission pbl (eg section change),
+  the user should still be able to trigger sync for it or not? and what about a
+  node that never was visible to current user?
+
+- shall we implement "stop trying to sync an obj after 3 failures" now or in phase 2?
+
+- shall we implement a "status" col in the items table, so that it is set to "pending"
+  while attempting an update, and no 2 updates are tried at the same time?
+
+- syncing a single object from the ezwebin toolbar: use ezjscore, a plain module/view, rest, ... ?
+
+- "sync" icon in ezwt toolbar: what shall we show in different cases?
+  1. user has no rights to see sync state => show nothing
+  1. user has sync rights, obj might need sync or not => 2 icons
+  2. user has rights to see sync state but not to sync, obj needs sync or not => use same 2 icons but no link, or different ones?
+
+- management of target hosts: shall we put it in a db table with editing interface
+  or in an ini settings file?
+  A: start with ini, but wrap it up in a content class
+
+- shall we store in sync table (eg. in a data_text column) the list of things to
+  be synced, in detail? (eg. list of nodes to be added or removed, vs. every time
+  that there is a node change, resync complete list of nodes for object) ?
+  We definitely need to look at rest api for this
+
+JLemaitre, 13.9.2011
+
+	Dear all,
+
+	I have beginned to develop the staging UI and I have some questions.
+
+	Do we integrate the staging feature as a content module extension. In this case :
+		> the policyList should be something like "content/controlpanel or in a new module as "staging/controlpanel"
+
+		> we will use a fetch fonction like :
+			{def $all_sync_content = fetch( 'content', 'sync', hash( 'parent_node_id',   ezini( 'NodeSettings', 'RootNode', 'content.ini' ),
+															   'limit',            $block.number_of_items,
+															   'main_node_only',   true(),
+															   'attribute_filter', array( array( 'synchronization_state', '!=', 'synchronized' ) )
+																) )}
+			et aussi la méthode
+			{def $list_count = fetch('content', 'sync_count' , hash( 'parent_node_id',   ezini( 'NodeSettings', 'RootNode', 'content.ini' ),
+															   'limit',            $block.number_of_items,
+															   'main_node_only',   true(),
+															   'attribute_filter', array( array( 'synchronization_state', '!=', 'synchronized' ) )
+																) )}
+		> Node will need have new attributes like can_sync, synchronization_state and synchronization_date
+			The synchronisation_state could be : Added / modified / deleted / hidden / visible / archived / synchronized
+
+	To establish the synchronisation with my UI, I need REST services to add/update/delete/archive/hidden content
+
+	Do you share the same point of view as me or do you prefer something else ?
+
+	Where, should I depose my code ? on Git ?
