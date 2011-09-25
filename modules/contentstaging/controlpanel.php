@@ -27,28 +27,35 @@ if ( $http->hasPostVariable( 'syncrun' )  )
 {
     /// @todo: test if current user has access to contentstaging/sync
 
-	if ( $http->hasPostVariable( 'SyncIDArray' ) )
+    if ( $http->hasPostVariable( 'SyncArray' ) )
     {
-		$syncIDResultArray = array();
-        $syncIDArray = $http->postVariable( 'SyncIDArray' );
-
-        foreach ( $syncIDArray as $syncID )
+		$syncErrorArray = array();
+        // we use a single array-value in html form to make js usage non mandatory
+        /// @todo test that is an array ?
+        foreach ( $http->postVariable( 'SyncArray' ) as $syncVar )
         {
-            $oNode = eZContentObjectTreeNode::fetch( $syncID );
-            if ( $oNode instanceof eZContentObjectTreeNode )
+            $syncVar = explode( '_', $syncVar, 2 );
+            $syncObjID = $syncVar[0];
+            $syncHost = $syncVar[1];
+            $item = eZContentStagingItem::fetch( $syncHost, $syncObjID );
+            if ( $item instanceof eZContentStagingItem )
             {
-                //TODO CALL REST
-				$restUrl = $serviceIni->variable($StagingSettings,'RestRootUrl')."/<prefix>/<provider>/<version>/<call>/<params>/";
-				$syncIDResultArray = $http->sendHTTPRequest ( $restUrl, false, false, $ini->variable('SiteSettings','SiteName') );
+                if ( !$item->sync() )
+                {
+                    /// @todo decide format for this
+                    $syncErrorArray[] = "Object $syncObjID to be synced to srv $syncHost: failure...";
+                }
             }
             else
             {
-                eZDebug::writeError( "", __METHOD__ );
+                eZDebug::writeError( "Object $syncObjID to be synced to srv $syncHost gone amiss", __METHOD__ );
             }
         }
     }
-	$tpl->setVariable('syncIDResultArray', $syncIDResultArray );
+	$tpl->setVariable( 'syncErrorArray', $syncErrorArray );
 }
+
+/// @todo fetch list of items to be displayed here, not purely in template
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/controlpanel.tpl' );

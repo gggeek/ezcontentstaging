@@ -1,9 +1,10 @@
+{* gg: cache-block to be reviewed - as content-altering operations might not expire it... *}
 {def $user_hash = concat( $user.role_id_list|implode( ',' ), ',', $user.limited_assignment_value_list|implode( ',' ) )}
-
 {cache-block keys=array( $user_hash )}
 
 {* We only fetch items within last 60 days to make sure we don't generate to heavy sql queries *}
-{def $all_sync_content = fetch( 'contentstaging', 'sync', hash( 'parent_node_id',   ezini( 'NodeSettings', 'RootNode', 'content.ini' ),
+{* gg: not a good idea to hardcode such a limit here... *}
+{def $sync_items = fetch( 'contentstaging', 'sync', hash( 'parent_node_id',   ezini( 'NodeSettings', 'RootNode', 'content.ini' ),
                                                          'limit',            $block.number_of_items,
                                                          'main_node_only',   true(),
                                                          'attribute_filter', array( array( 'synchronization_state', '=', false ) )
@@ -11,7 +12,7 @@
 
 <h2>{'Contents synchronization'|i18n( 'design/admin/dashboard/sync' )}</h2>
 
-{if $all_sync_content}
+{if $sync_items}
 
 <table class="list" cellpadding="0" cellspacing="0" border="0">
     <tr>
@@ -21,7 +22,7 @@
         <th>{'Author'|i18n( 'design/admin/dashboard/all_sync_content' )}</th>
         <th class="tight"></th>
     </tr>
-    {foreach $all_sync_content as $sync_node sequence array( 'bglight', 'bgdark' ) as $style}
+    {foreach $sync_items as $sync_node sequence array( 'bglight', 'bgdark' ) as $style}
         <tr class="{$style}">
             <td>
                 <a href="{$sync_node.url_alias|ezurl('no')}" title="{$sync_node.name|wash()}">{$sync_node.name|shorten('30')|wash()}</a>
@@ -56,7 +57,7 @@
 
 {/if}
 
-{undef $all_sync_content}
+{undef $sync_items}
 
 {/cache-block}
 
