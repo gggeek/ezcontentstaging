@@ -17,6 +17,15 @@
 class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 {
 
+    function __construct( eZContentStagingTarget $target )
+    {
+
+    }
+
+    function sync( eZContentStagingItem $item )
+    {
+
+    }
 }
 
 ?>

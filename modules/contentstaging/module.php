@@ -13,6 +13,7 @@
 
 $Module = array( 'name' => 'Content Staging' );
 $ViewList = array(
+    /// @todo -c rename this?
     'controlpanel' => array( 'script' => 'controlpanel.php',
                              'functions' => 'view',
                              'default_navigation_part' => 'ezsetupnavigationpart',

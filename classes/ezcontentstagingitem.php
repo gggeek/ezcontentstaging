@@ -29,7 +29,7 @@ class eZContentStagingItem extends eZPersistentObject
 
     static function definition()
     {
-        return array( 'fields' => array( 'host_id' => array( 'name' => 'HostID',
+        return array( 'fields' => array( 'target_id' => array( 'name' => 'TargetID',
                                                         'datatype' => 'string',
                                                         'required' => true ),
                                          'object_id' => array( 'name' => 'ObjectID',
@@ -50,8 +50,9 @@ class eZContentStagingItem extends eZPersistentObject
                                                                    'datatype' => 'integer',
                                                                    'default' => 0,
                                                                    'required' => true )*/ ),
-                      'keys' => array( 'host_id', 'object_id' ),
-                      'function_attributes' => array( 'object' => 'getObject' ),
+                      'keys' => array( 'target_id', 'object_id' ),
+                      'function_attributes' => array( 'object' => 'getObject',
+                                                      'target' => 'getTarget' ),
                       //'increment_key' => 'id',
                       'class_name' => 'eZContentStagingItem',
                       'sort' => array( 'modified' => 'desc' ),
@@ -59,21 +60,21 @@ class eZContentStagingItem extends eZPersistentObject
     }
 
     /// fetch a specific sync item
-    static function fetch( $host_id, $object_id, $asObject = true )
+    static function fetch( $target_id, $object_id, $asObject = true )
     {
         return self::fetchObject( self::definition(),
                                   null,
-                                  array( 'host_id' => $host_id, 'object_id' => $object_id ),
+                                  array( 'target_id' => $target_id, 'object_id' => $object_id ),
                                   $asObject );
     }
 
     /// fetch all items that need to be synced to a given server
-    static function fetchByTarget( $host_id, $asObject = true )
+    static function fetchByTarget( $target_id, $asObject = true )
     {
         // @todo ...
         return self::fetchObject( self::definition(),
                                   null,
-                                  array( 'host_id' => $host_id, 'object_id' => $object_id ),
+                                  array( 'target_id' => $target_id ),
                                   $asObject );
     }
 
@@ -83,6 +84,11 @@ class eZContentStagingItem extends eZPersistentObject
         return eZContentObject::fetch( $this->ObjectID );
     }
 
+    function getTarget()
+    {
+        return eZContentStagingTarget::fetch( $this->TargetID );
+    }
+
     /**
     * q: shall we make this a static function?
     * @return bool false on error (shall we return an error code instead?
@@ -90,7 +96,14 @@ class eZContentStagingItem extends eZPersistentObject
     function sync()
     {
         // use transport class to sync the current changes
+        $target = eZContentStagingTarget::fetch( $this->TargetID );
+        $class = $target->attribute( 'TransportClass' );
+        $transport = new $class( $target );
 
+        /// @todo add logging (ezdebug.ini based)
+        $result = $trasport->sync( $this );
+
+        /// @todo ...
         // if ok: check if by chance someone else updated the node while we where
         // syncing (modified, to_sync)
         // - if no: remove line from table

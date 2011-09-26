@@ -13,7 +13,11 @@
 
 interface eZContentStagingTransport
 {
+    function __construct( eZContentStagingTarget $target );
 
+    /// @todo decide format for return value (class constants, strings, ... ? )
+    /// todo decide if shall use exceptions upon errors
+    function sync( eZContentStagingItem $item );
 }
 
 ?>
