@@ -1,0 +1,26 @@
+. reset all calls to ez18n to use a single namespace: contentstating/etc...
+
+. decide on naming: feed vs target
+
+. decide on format for results of sync calls: a string or structured data? who trsnalatwes this: view or tpl?
+
+. fix usage of can_sync: php code has != idea from tpl msg
+
+. tpl for sync action results
+
+. fix: it seems the target (almost persistent) object has problems in feeds tpl
+
+. disable access to contenstaging/synv via simple GET, as it's not idempotent?
+
+. in fetches for dashboard, wt, feed list, filter out items in syncing status
+
+. for ezp 4.6, add a new subtab in object view for admin design
+
+
+Phase 2:
+
+. in feed view, add an action to init a feed (eg set all objects to "to be synnced" status) or reset it
+. allow sync items that fail 3 consecutive sync attempts to be set to "suspended" state
+. allow finer grained permissions
+. cronjob that passes and removes sync items that have been in sync status for too long
+. allow user with 'manage' rights to manually remove sync items from feeds, one by one, if they want to (but trace it)

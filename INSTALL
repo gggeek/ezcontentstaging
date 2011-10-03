@@ -1,0 +1,25 @@
+eZ Content Staging Extension
+============================
+
+Requirements
+------------
+
+Source server:
+. eZ Publish 4.1 or later
+. ggSysInfo 0.10 or later
+
+Target server:
+. eZ Publish 4.6 or later
+
+Installation
+------------
+. unzip the extension, enable it (make sure to regenerate autoloads)
+. create the new db table: either go to setup/Upgrade check/DB Upgrade check in the admin interface, or use sql script in the sql/ folder
+. enable all the needed workflow events:
+  - create one workflow per trigger for all content-realted triggers
+  - add to each workflow one event of type "stage"
+  - add each workflow to one trigger
+  - if you have existing workflows (eg. content approval), put the "stage" event where you deem appropriate (eg. after approval and wait-until-date events)
+
+Troubleshooting
+---------------
