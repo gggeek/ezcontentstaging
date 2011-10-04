@@ -1,11 +1,16 @@
-<?php
+Technical specifications
+========================
 
-/**
- *
- *
- * @version $Id$
- * @copyright 2011
- */
+Information needed to replicate content actions via rest api
+------------------------------------------------------------
 
+REST API doc: https://github.com/ezsystems/ezpublish-ee/wiki/REST-API-V2
 
-?>
+. addlocation
+  - 
+
+. delete
+
+. hide
+
+. move

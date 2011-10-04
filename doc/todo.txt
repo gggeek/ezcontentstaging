@@ -1,16 +1,12 @@
 . reset all calls to ez18n to use a single namespace: contentstating/etc...
 
-. decide on naming: feed vs target
-
-. decide on format for results of sync calls: a string or structured data? who trsnalatwes this: view or tpl?
-
 . fix usage of can_sync: php code has != idea from tpl msg
 
 . tpl for sync action results
 
 . fix: it seems the target (almost persistent) object has problems in feeds tpl
 
-. disable access to contenstaging/synv via simple GET, as it's not idempotent?
+. disable access to contenstaging/sync via simple GET, as it's not idempotent?
 
 . in fetches for dashboard, wt, feed list, filter out items in syncing status
 

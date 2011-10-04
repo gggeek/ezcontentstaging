@@ -1,3 +1,9 @@
+GG, 4.10.2011
+
+. decide on naming: feed vs target
+
+. decide on format for results of sync calls: a string or structured data? who trsnalatwes this: view or tpl?
+
 GG, 24.9.2011
 
 - shall we implement fetches for controlpanel and dashboard as custom attribute filters?
