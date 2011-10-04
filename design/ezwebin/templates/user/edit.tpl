@@ -47,8 +47,8 @@
 {/if}
 
 {if fetch( 'user', 'has_access_to', hash( 'module', 'staging',
-                                          'function', 'sync' ) )}
-<p><a href={"/staging/controlpanel"|ezurl}>{"Content synchronisation control panel"|i18n("design/ezwebin/user/edit")}</a></p>
+                                          'function', 'view' ) )}
+<p><a href={"/staging/feeds"|ezurl}>{"Content synchronisation control panel"|i18n("design/ezwebin/user/edit")}</a></p>
 {/if}
 
 <div class="buttonblock">

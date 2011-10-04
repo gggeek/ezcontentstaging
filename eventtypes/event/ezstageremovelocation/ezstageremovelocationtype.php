@@ -6,63 +6,70 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezi18n( 'extension/ezcontentstaging/eventtypes', 'Stage Remove Location' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage Remove Location' ) );
         $this->setTriggerTypes( array( 'content' => array( 'removelocation' => array( 'before' ) ) ) );
     }
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
-        $nodeID = $parameters['node_id'];
+        $parameters = $process->attribute( 'parameter_list' );
         $removedNodeList = $parameters['node_list'];
 
-        $node = eZContentObjectTreeNode::fetch($nodeID);
+        // sanity checks
 
-       if ( !is_object( $node ) )
+        if( count( $removedNodeList ) == 0 )
         {
-            eZDebug::writeError( 'Unable to fetch node for nodeID ' . $nodeID, 'eZStageRemoveLocationType::execute' );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        if( count( $removedNodeList ) <= 0 )
-    	{
-    	    return eZWorkflowType::STATUS_ACCEPTED;
-    	}
+        // unluckily we miss current object id from operation, so we get it
+        // later on from 1st removed node
+        /*$node = eZContentObjectTreeNode::fetch( $nodeID );
+        if ( !is_object( $node ) )
+        {
+            eZDebug::writeError( 'Unable to fetch node for nodeID ' . $nodeID, __METHOD__ );
+            return eZWorkflowType::STATUS_ACCEPTED;
+        }
+        $object = $node->attribute( 'object' );*/
 
         $removedNodeRemoteIDList = array();
-        foreach( $removedNodeList as $removedNode )
+        foreach( $removedNodeList as $i => $removedNode )
         {
             if ( is_numeric( $removedNode ) )
             {
                 $removedNode = eZContentObjectTreeNode::fetch( $removedNode );
             }
 
-            if ( $removedNode instanceof eZContentObjectTreeNode
-              && eZSyndicationNodeActionLog::feedSourcesByNode( $removedNode, true, false ) )
+            if ( $removedNode instanceof eZContentObjectTreeNode )
             {
-               $removedNodeRemoteIDList[] = $removedNode->attribute( 'remote_id' );
+               if ( $i == 0 )
+               {
+                   $objectId = $removedNode->attribute( 'contentobject_id' );
+               }
+               $removedNodeRemoteIDList[$removedNode->attribute( 'path_string' )] = $removedNode->attribute( 'remote_id' );
             }
         }
 
-        if( count( $removedNodeRemoteIDList ) <= 0 )
+        if ( count( $removedNodeRemoteIDList ) == 0 )
         {
+            eZDebug::writeError( 'Unable to fetch removed nodes for nodeID ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
-
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_REMOVE_LOCATION,
-                'options' => serialize( $removedNodeRemoteIDList ) ) );
-            $log->store();
-        }*/
+            foreach( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeRemoteId )
+            {
+                if ( $target->includesNodeByPath( $removedNodePathString ) )
+                {
+                    eZContentStagingItem::addEvent(
+                        $target_id,
+                        $objectId,
+                        eZContentStagingItemEvent::ACTION_REMOVELOCATION,
+                        array( 'remoteId' => $removedNodeRemoteId )
+                    );
+                }
+            }
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

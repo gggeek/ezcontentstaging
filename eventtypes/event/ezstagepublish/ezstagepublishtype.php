@@ -6,7 +6,7 @@ class eZStagePublishType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezi18n( 'extension/ezcontentstaging/eventtypes', 'Stage content publish' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage content publish' ) );
         $this->setTriggerTypes( array( 'content' => array( 'publish' => array( 'after' ) ) ) );
     }
 

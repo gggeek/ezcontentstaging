@@ -24,3 +24,4 @@ Phase 2:
 . allow finer grained permissions
 . cronjob that passes and removes sync items that have been in sync status for too long
 . allow user with 'manage' rights to manually remove sync items from feeds, one by one, if they want to (but trace it)
+. merging of replication events

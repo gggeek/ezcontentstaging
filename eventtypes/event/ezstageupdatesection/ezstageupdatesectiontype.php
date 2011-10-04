@@ -1,13 +1,13 @@
 <?php
 
-class eZStageHideType extends eZWorkflowEventType
+class eZStageUpdateSectionType extends eZWorkflowEventType
 {
-    const WORKFLOW_TYPE_STRING = 'ezstagehide';
+    const WORKFLOW_TYPE_STRING = 'ezstageupdatesection';
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage (un)hide' ) );
-        $this->setTriggerTypes( array( 'content' => array( 'hide' => array( 'before' ) ) ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage section update' ) );
+        $this->setTriggerTypes( array( 'content' => array( 'updatesection' => array( 'before' ) ) ) );
     }
 
     function execute( $process, $event )
@@ -20,7 +20,7 @@ class eZStageHideType extends eZWorkflowEventType
 
         if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, 'eZStageHideType::execute' );
+            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, 'eZStageSectionType::execute' );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
@@ -29,15 +29,14 @@ class eZStageHideType extends eZWorkflowEventType
         $nodeRemoteID = $node->attribute( 'remote_id' );
         $time = time();
 
-        $action = $node->attribute( 'is_hidden' ) ? eZSyndicationNodeActionLog::ACTION_UNHIDE : eZSyndicationNodeActionLog::ACTION_HIDE;
-
         foreach ( $feedSourceIDList as $feedSourceID )
         {
             $log = new eZSyndicationNodeActionLog( array(
                 'source_id' => $feedSourceID,
                 'node_remote_id' => $nodeRemoteID,
                 'timestamp' => $time,
-                'action' => $action ) );
+                'action' => eZSyndicationNodeActionLog::ACTION_UPDATE_SECTION,
+                'options' => serialize( array( 'selected_section_id' => $parameters['selected_section_id'] ) ) ) );
 
             $log->store();
         }*/
@@ -46,6 +45,6 @@ class eZStageHideType extends eZWorkflowEventType
     }
 }
 
-eZWorkflowEventType::registerEventType( eZStageHideType::WORKFLOW_TYPE_STRING, 'eZStageHideType' );
+eZWorkflowEventType::registerEventType( eZStageUpdateSectionType::WORKFLOW_TYPE_STRING, 'eZStageUpdateSectionType' );
 
 ?>

@@ -3,7 +3,7 @@
 [RegionalSettings]
 TranslationExtensions[]=ezcontentstaging
 
-[TemplateSettings]
-ExtensionAutoloadPath[]=ezcontentstaging
+#[TemplateSettings]
+#ExtensionAutoloadPath[]=ezcontentstaging
 
 */ ?>

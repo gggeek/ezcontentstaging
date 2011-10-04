@@ -6,7 +6,7 @@ class eZStageSortType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezi18n( 'extension/ezcontentstaging/eventtypes', 'Stage sort' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage sort' ) );
         $this->setTriggerTypes( array( 'content' => array( 'sort' => array( 'before' ) ) ) );
     }
 
