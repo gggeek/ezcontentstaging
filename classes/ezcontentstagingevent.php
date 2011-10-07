@@ -1,11 +1,13 @@
 <?php
 /**
-* The persistent class used to store information about which objects need to be
-* synced to target servers - every content object that is modified gets a line in
+* The persistent class used to store information about which objects/nodes need to be
+* synced to target servers - every content-modifying action gets a line in
 * the eZContentStagingItem table for every existing target host.
-* When the object is synced, the line is removed.
-* If the object is modified again before its sync, the modified and to_sync values
-* are aupdated, but no new line is created.
+* For actions affecting a single node, one row is created in the ezcontentstaging_item_nodes table
+* (eg: hide/show)
+* For actions affecting the whole object (eg: edit), many rows are added in the
+* ezcontentstaging_item_nodes table.
+* When the object is synced, the lines are removed.
 *
 * @package ezcontentstaging
 *
@@ -18,9 +20,18 @@
 * @todo review list of SYNC_* constants: should they match more closely event actions?
 */
 
-class eZContentStagingItem extends eZPersistentObject
+class eZContentStagingEvent extends eZPersistentObject
 {
+    const ACTION_ADDLOCATION = 1;
+    const ACTION_REMOVELOCATION = 2;
+    const ACTION_UPDATESECTION = 4;
+    const ACTION_HIDEUNHIDE = 8;
 
+    const STATUS_TOSYNC = 0;
+    const STATUS_SYNCING = 1;
+    const STATUS_SUSPENDED = 2;
+
+    /// @deprecated
     const SYNC_PUBLICATION = 1;
     const SYNC_DELETION = 2;
     const SYNC_VISIBILITY = 4;
@@ -28,10 +39,6 @@ class eZContentStagingItem extends eZPersistentObject
     const SYNC_SECTION = 16;
     const SYNC_STATES = 32;
     const SYNC_SORTORDER = 64;
-
-    const STATUS_TOSYNC = 0;
-    const STATUS_SYNCING = 1;
-    const STATUS_SUSPENDED = 2;
 
     static function definition()
     {
@@ -48,10 +55,11 @@ class eZContentStagingItem extends eZPersistentObject
                                                                'foreign_attribute' => 'id',
                                                                'multiplicity' => '1..*' ),
                                          // we store a custom modification date of object, as it includes metadata modifications
+                                         /// @todo rename to 'created' ?
                                          'modified' => array( 'name' => 'Modified',
                                                               'datatype' => 'integer',
                                                               'required' => true ),
-                                         // bitmap of things to sync
+                                         // type of event (what to sync)
                                          'to_sync' => array( 'name' => 'ToSync',
                                                              'datatype' => 'integer',
                                                              'required' => true ),
@@ -61,9 +69,8 @@ class eZContentStagingItem extends eZPersistentObject
                                                             'default' => 0,
                                                             'required' => true ),
                                          // we store extra data here, eg. description of deleted objects
-                                         /// @tood check proper datatype for longtext cols
-                                         'data' => array( 'name' => 'data',
-                                                          'datatype' => 'text' ),
+                                         'data_text' => array( 'name' => 'data_text',
+                                                               'datatype' => 'text' ),
                                          'sync_begin_date' => array( 'name' => 'SyncBeginDate',
                                                                      'datatype' => 'integer',
                                                                      'required' => false,
@@ -76,27 +83,82 @@ class eZContentStagingItem extends eZPersistentObject
                                                                    'datatype' => 'integer',
                                                                    'default' => 0,
                                                                    'required' => true )*/ ),
-                      'keys' => array( 'target_id', 'object_id' ),
+                      'keys' => array( 'id' ),
                       'increment_key' => 'id',
                       'function_attributes' => array( 'object' => 'getObject',
                                                       'target' => 'getTarget',
-                                                      'can_sync' => 'canSync',
-                                                      'events' => 'getEvents' ),
-                      //'increment_key' => 'id',
-                      'class_name' => 'eZContentStagingItem',
+                                                      //'can_sync' => 'canSync',
+                                                      'nodes' => 'getNodes',
+                                                      'data' => 'getData' ),
+                      'class_name' => 'eZContentStagingEvent',
                       'sort' => array( 'id' => 'asc' ),
-                      'name' => 'ezcontentstaging_item' );
+                      'grouping' => array(), // only there to prevent a php warning by ezpo
+                      'name' => 'ezcontentstaging_event' );
     }
+
+    // ***  function attributes ***
+
+    /**
+     * Returns content object that this sync event refers to.
+     * In case obj has been deleted, returns data that was stored at time of its
+     * deletion (which is not a complete obj, but has some of its data: name, etc...)
+     * @return eZContentObject
+     */
+    function getObject()
+    {
+        $return = eZContentObject::fetch( $this->ObjectID );
+        if ( !$return )
+        {
+            // obj has been deleted, and we should have some obj data stored within the event
+            $data = json_decode( $this->data );
+            if ( isset( $data['object'] ) )
+            {
+                $return = $data['object'];
+            }
+            else
+            {
+                eZDebug::writeError( "Object " . $this->ObjectID . " gone amiss for sync event. Target" . $this->TargetID, __METHOD__ );
+            }
+        }
+        return $return;
+    }
+
+    /// @return eZContentStagingTarget
+    function getTarget()
+    {
+        /// @todo log error if target gone amiss
+        return eZContentStagingTarget::fetch( $this->TargetID );
+    }
+
+    /// @return array
+    function getData()
+    {
+        return json_decode( $this->Data, true );
+    }
+
+    function getNodes()
+    {
+        $db = eZDB::instance();
+        $nodeids = $db->arrayquery( 'select node_id from ezcontentstaging_item_nodes where ezcontentstaging_item_nodes.item_id = ' . $this->ID, array( 'column' => 'node_id' ) );
+        /// @todo log error if count oif nodes found is lesser than stored node ids ?
+        return self::fetchObjectList( eZContentObjectTreeNode::definition(),
+                                      null,
+                                      array( 'node_id' => $nodeids ),
+                                      null,
+                                      null );
+    }
+
+    // *** fetches ***
 
     /**
     * fetch a specific sync item
-    * @return eZContentStagingItem or null
+    * @return eZContentStagingEvent or null
     */
-    static function fetch( $target_id, $object_id, $asObject = true )
+    static function fetch( $id, $asObject = true )
     {
         return self::fetchObject( self::definition(),
                                   null,
-                                  array( 'target_id' => $target_id, 'object_id' => $object_id ),
+                                  array( 'id' => $id ),
                                   $asObject );
     }
 
@@ -106,13 +168,48 @@ class eZContentStagingItem extends eZPersistentObject
                                       null,
                                       array( 'object_id' => $object_id ),
                                       null,
-                                      array(),
+                                      null,
                                       $asObject );
     }
 
+    static function fetchByNode( $nodeId, $objectId=null, $asObject = true )
+    {
+        if ( $objectId == null )
+        {
+            $node = eZContentObjectTreeNode::fetch( $nodeId );
+            if ( !$node )
+            {
+                eZDebug::writeWarning( "Node " . $node_id . " does not exist", __METHOD__ );
+                return null;
+            }
+            $objectId = $node->attribute( 'contentobject_id' );
+        }
+        return self::fetchObjectList( self::definition(),
+                                      null,
+                                      array( 'object_id' => $objectId ),
+                                      null,
+                                      null,
+                                      $asObject,
+                                      /// @todo oracle support: all fields in select list should be in group by
+                                      array( 'id' ),
+                                      null,
+                                      array( 'ezcontentstaging_event_node' ),
+                                      ' AND ezcontentstaging_event_node.node_id = ' . (int)$node_id . ' AND ezcontentstaging_event_node.item_id = id' );
+    }
+
+    static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null )
+    {
+        $targets = array();
+        $events = self::fetchByNode( $nodeId, $objectId=null );
+        foreach( $events as $event )
+        {
+            $targets[$event->TargetID][] = $event;
+        }
+        return $targets;
+    }
     /**
-    * fetch all items that need to be synced to a given server (or all of them)
-    * @return array
+    * Fetch all items that need to be synced to a given server (or all of them)
+    * @return array of
     */
     static function fetchList( $target_id=false, $asObject = true, $offset = false, $limit = false )
     {
@@ -135,7 +232,7 @@ class eZContentStagingItem extends eZPersistentObject
     }
 
     /**
-    * Returns count of items to sync
+    * Returns count of items to sync to a given server
     * If no feed given, groups by object id
     */
     static function fetchListCount( $target_id=false )
@@ -152,120 +249,46 @@ class eZContentStagingItem extends eZPersistentObject
         }
     }
 
-    /**
-    * Returns content object that this sync item refers to.
-    * In case obj has been deleted, returns data that was stored at time of its
-    * deletion (which is not a complete obj, but has some of its data: name, etc...)
-    */
-    function getObject()
-    {
-        $return = eZContentObject::fetch( $this->ObjectID );
-        if ( !$return )
-        {
-            // obj has been deleted, and we should have soem obj data stored within the item
-            $data = json_decode( $this->data );
-            if ( isset( $data['object'] ) )
-            {
-                $return = $data['object'];
-            }
-            else
-            {
-                 eZDebug::writeError( "Object " . $this->ObjectID . " gone amiss for sync item. Target" . $this->TargetID, __METHOD__ );
-            }
-        }
-        return $return;
-    }
-
-    function getTarget()
-    {
-        return eZContentStagingTarget::fetch( $this->TargetID );
-    }
-
-    function getEvents()
-    {
-        return eZContentStagingItemEvent::fetchByItem( $this->TargetID, $this->ObjectID );
-        /*if ( $this->_events !== null )
-        {
-            return $this->_events;
-        }
-        $data = json_decode( $this->data );
-        if ( !is_array( @$data['events'] ) )
-        {
-            eZDebug::writeError( "Events gone amiss for sync item " . $this->ID, __METHOD__ );
-            $this->_events = array();
-            return null;
-        }
-        $this->_events = $data['events'];
-        return $data['events'];*/
-    }
+    // *** other actions ***
 
     /**
-    * Adds an event to an item. If item is not exsisting, creates it
-    * @todo should we lock item row for update before checking max event id?
+    * Adds an event to the queue.
+    *
+    * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
+    *       do not add show but remove hide, etc...
     */
-    static function addEvent( $target_id, $object_id, $action, $data )
+    static function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array() )
     {
-        $time = time();
-        $db = eZDB::instance();
-
-        // look up: does item exist? if not, create it, else update it
-        $item = self::fetch( $target_id, $object_id );
-        if ( is_object( $item ) )
+        if ( count( $nodeIds ) )
         {
-            $item->Modified = $time;
-            $item->ToSync = self::tosyncBitmask( $action, $item->ToSync );
-            /// @todo use ezpo syntax here
-            /// @todo test index usage for this select
-            $evtId = $db->arrayquery( "select max( id )+1 as id from ezcontentstaging_item_event where target_id = '" . $db->escapeString( $target_id ) ."' and object_id = " . $db->escapeString( $object_id ) );
-            $evtId = $evtId[0]['id'];
+            $db = eZDB::instance();
+            $db->begin();
         }
-        else
-        {
-            $item = new eZContentStagingItem( array(
-                'target_id' => $target_id,
-                'object_id' => $object_id,
-                'modified' => $time,
-                'to_sync' => self::tosyncBitmask( $action )
-            ) );
-            $evtId = 1;
-        }
-
-        // begin transaction as late as possible
-        $db->begin();
-
-        $item->store();
-
-        // add events
-        $event = new eZContentStagingItemEvent( array(
-            'target_id' => $target_id,
-            'object_id' => $object_id,
-            'id' => $evtId,
-            'created' => $time,
-            'type' => $action,
-            'data' => json_encode( $data )
+        $event = new eZContentStagingEvent( array(
+            'target_id' => $targetId,
+            'object_id' => $objectId,
+            'modified' => time(),
+            'to_sync' => $action,
+            'data_text' => json_encode( $data )
             ) );
         $event->store();
-
-        $db->commit();
+        $id = $event->ID;
+        if ( count( $nodeIds ) )
+        {
+            foreach( $nodeIds as $nodeId )
+            {
+                $db->query( "insert into ezcontentstaging_event_node( item_id, node_id ) values ( $id, $nodeId )" );
+            }
+            $db->commit();
+        }
     }
-
-    /**
-    * @param array $events
-    */
-    /*function setEvents( array $events )
-    {
-        /// @todo
-
-        /*$this->_events = $event;
-        $this->setHasDirtyData( true );* /
-    }*/
 
     /**
     *
     * @return integer 0 on sucess
     * @todo after 3 consecutive errors, suspend sync?
     */
-    function syncItem()
+    static function syncEvent()
     {
 
         // use transport class to sync the current changes
@@ -300,32 +323,22 @@ class eZContentStagingItem extends eZPersistentObject
             return $result;
         }
 
-        /// @todo : check if by chance someone else updated the node while we where
-        // syncing (modified, to_sync), if so: sync again
-
-        $db = eZDB::instance();
-        $db->begin();
-        eZContentStagingItemEvent::removeByItem( $this->TargetID, $this->ObjectID );
-        $this->remove();
-        $db->commit();
         return 0;
     }
 
     /// @todo to be augmented (or replaced) with current user perms checking
-    function canSync( )
+    /*function canSync( )
     {
         return $this->Status == self::STATUS_TOSYNC;
-    }
+    }*/
 
-    /// @todo finish function...
-    static function tosyncBitmask( $action, $currentbitmask=0 )
+    /**
+    * Helper function. Funny this is not implemented in eZContentObject...
+    */
+    static function assignedNodeIds( $objectId )
     {
-        switch( $action )
-        {
-            case eZContentStagingItemEvent::ACTION_ADDLOCATION:
-            case eZContentStagingItemEvent::ACTION_REMOVELOCATION:
-                return $currentbitmask | self::SYNC_NODES;
-        }
+        $db = eZDB::instance();
+        return $db->arrayQuery( "SELECT node_id from ezcontentobject_tree where contentobject_id = $objectId", array( 'column' => 'node_id' ) );
     }
 
 }
