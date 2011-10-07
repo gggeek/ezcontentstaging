@@ -29,12 +29,12 @@ $ViewList = array(
                      'params' => array( 'target_id' )
                      /// @todo add definition of post actions
                    ),
-    /// view used to sync a single item
+    /// view used to sync a set of events
     'sync' => array( 'script' => 'sync.php',
                      'functions' => 'sync',
                      'default_navigation_part' => 'ezsetupnavigationpart',
                      'ui_context' => 'default',
-                     'params' => array( 'object_id', 'target_id' ) ),
+                     'params' => array( 'event_ids' ) ),
 
     /// @todo Implement a view to manage target hosts: adds new target hosts, remove them, clear (or init) sync table for a target
 );

@@ -9,8 +9,15 @@
  * So far hides access to ini file, as later we might want to convert this to
  * a db-based structure
  *
- * @version $Id$
- * @copyright 2011
+ * @todo add dynamic attributes, eg. to get nr. of events per feed
+ *
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
 
 // Extremely quick and dirty "template object" from an ini settings group
@@ -47,11 +54,12 @@ class eZContentStagingTarget
     static function fetchList()
     {
         $ini = eZINI::instance( 'contentstaging.ini' );
-        foreach(  $ini->variable( 'GeneralSettings', 'TargetList' ) as $id )
+        foreach( $ini->variable( 'GeneralSettings', 'TargetList' ) as $id )
         {
             $out[$id] = new eZContentStagingTarget( $ini->group( 'Target_' . $id ) );
         }
         return $out;
+
     }
 
     static function fetch( $id )
@@ -62,18 +70,19 @@ class eZContentStagingTarget
 
     /**
     * Returns list of targets that should be notified of a given node
+    * (assuming that there are events for that node)
     */
     static function fetchByNode( eZContentObjectTreeNode $node )
     {
         $out = array();
-        foreach( self::fetchList() as $id => $target );
+        foreach( self::fetchList() as $id => $target )
         {
             if ( $target->includesNode( $node ) )
             {
                 $out[$id] = $target;
             }
         }
-        return $target;
+        return $out;
     }
 
     /**
@@ -92,6 +101,9 @@ class eZContentStagingTarget
         return false;
     }
 
+    /**
+     * @return boolean
+     */
     function includesNodeByPath( $nodepath )
     {
         foreach( $this->_attrs['subtrees'] as $subtreeRoot )
@@ -115,6 +127,26 @@ class eZContentStagingTarget
         return $out;
     }
 
+    /**
+    * Initializes a target by creating the necessary items/events:
+    * - for all top level nodes, we need to sync in remote server the object-id
+    *   (and node-id ???)
+    */
+    function initializeRootItems()
+    {
+        foreach( $this->_attrs['subtrees'] as $subtreeRoot )
+        {
+            $node = eZContentObjecTreeNode::fetch( $subtreeRoot );
+            if ( $node )
+            {
+                /// @todo ...
+            }
+            else
+            {
+                eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['Name'] . " does not exist", __METHOD__ );
+            }
+        }
+    }
 }
 
 ?>

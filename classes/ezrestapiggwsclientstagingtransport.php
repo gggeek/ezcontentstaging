@@ -65,8 +65,11 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case 'removetranslation':
                     ;
                     break;
-                case 'section':
-                    ;
+                case eZContentStagingItemEvent::ACTION_UPDATESECTION:
+                    $data = $event->getData();
+                    $method = 'PUT';
+                    $url = "/content/objects/remote/$RemObjID/section?sectionId={$data['sectionId']}";
+                    $out = $this->restCall( $method, $url );
                     break;
                 case 'sort':
                     ;

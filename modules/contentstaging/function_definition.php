@@ -12,17 +12,30 @@
 $FunctionList = array(
 
     // returns the list of servers to which an object needs to sync, as an array( srv_id => target obj )
-    'objectsynctargets' => array(
-        'name' => 'objectsynctargets',
+    /*'object_sync_targets' => array(
+        'name' => 'object_sync_targets',
         'call_method' => array(
            'class'  => 'eZContentStagingFunctionCollection',
            'method' => 'fetchObjectSyncTargets'  ),
            'parameters' => array( array( 'name'     => 'object_id',
                                          'type'     => 'string',
-                                         'required' => true ) ) ),
+                                         'required' => true ) ) ),*/
 
-    'synctarget' => array(
-        'name' => 'synctarget',
+    // returns the list of servers to which an object needs to sync, as an array( srv_id => array of event ids )
+    'node_sync_events_by_target' => array(
+        'name' => 'node_sync_targets',
+        'call_method' => array(
+           'class'  => 'eZContentStagingFunctionCollection',
+           'method' => 'fetchSyncEventsByNodeGroupedByTarget'  ),
+           'parameters' => array( array( 'name'     => 'node_id',
+                                         'type'     => 'integer',
+                                         'required' => true ),
+                                  array( 'name'     => 'object_id',
+                                         'type'     => 'integer',
+                                         'required' => false ) ) ),
+
+    'sync_target' => array(
+        'name' => 'sync_target',
         'call_method' => array(
                'class'  => 'eZContentStagingFunctionCollection',
                'method' => 'fetchSyncTarget'  ),
@@ -30,11 +43,11 @@ $FunctionList = array(
                                       'type'     => 'string',
                                       'required' => true ) ) ),
 
-    'syncitems'  => array(
-        'name' => 'syncitems',
+    'sync_events'  => array(
+        'name' => 'sync_events',
         'call_method' => array(
             'class'  => 'eZContentStagingFunctionCollection',
-            'method' => 'fetchSyncItems' ),
+            'method' => 'fetchSyncEvents' ),
         'parameters' => array( array( 'name'     => 'target_id',
                                       'type'     => 'string',
                                       'required' => false,
@@ -48,11 +61,11 @@ $FunctionList = array(
                                       'required' => false,
                                       'default'  => 0 ) ) ),
 
-    'syncitems_count'  => array(
-        'name' => 'syncitems_count',
+    'sync_events_count'  => array(
+        'name' => 'sync_events_count',
         'call_method' => array(
             'class'  => 'eZContentStagingFunctionCollection',
-            'method' => 'fetchSyncItemsCount' ),
+            'method' => 'fetchSyncEventsCount' ),
         'parameters' => array( array( 'name'     => 'target_id',
                                       'type'     => 'string',
                                       'required' => false,

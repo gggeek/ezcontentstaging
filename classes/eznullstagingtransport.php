@@ -21,7 +21,7 @@ class eZNullStagingTransport implements eZContentStagingTransport
 
     }
 
-    function sync( eZContentStagingItem $item )
+    function sync( array $events )
     {
         return 0;
     }

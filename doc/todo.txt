@@ -1,10 +1,12 @@
-. verify sync between ezpo classes definitions and actual .sql file
+. settle on naming conventions, rewrite all text labels in templates
 
-. produce .dba file
+. settle on set of sync icons: needs to sync, is syncing, no need to sync
+
+. settle on list of cols available in feed view and in dashboard block; test that it works ok for items relating to deleted nodes
 
 . reset all calls to ez18n to use a single namespace: contentstating/etc...
 
-. fix usage of can_sync: php code has != idea from tpl msg
+. produce .dba file
 
 . tpl for sync action results
 
@@ -12,12 +14,24 @@
 
 . disable access to contenstaging/sync via simple GET, as it's not idempotent?
 
-. in fetches for dashboard, wt, feed list, filter out items in syncing status
+. in fetches for dashboard, wt, feed list, filter out items in syncing status (or show a different icon)
 
 . for ezp 4.6, add a new subtab in object view for admin design
 
-. cleanup script that removes orphaned item_events
+. cleanup script that resets and initializes feeds
 
+. dependency tracking:
+  - all events should not have a pending create event for any of their parents
+  - obj relations?
+
+. always store a lot of object data in events, in case obj is deleted later and we want to show meaningful data in contorl panels?
+
+. tpl operator for sync type icon (or text) by its code
+
+. rework dashboard block so that it lists ndoes instead of sync events?
+  note that we will have problems with deleted objects not being shown there
+
+. add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and
 
 Phase 2:
 

@@ -3,7 +3,7 @@
 * View used to display one feed (or all of them together), and sync it
 * Supports pagination
 *
-* @todo add functionality to sync complete feed (all items), not just X items
+* @todo add functionality to sync complete feed (all events), not just X events
 *
 * @package ezcontentstaging
 *
@@ -18,7 +18,7 @@
 //$Module = $Params['Module'];
 $http = eZHTTPTool::instance();
 $tpl = eZTemplate::factory();
-$target_id = $Params['target_id'];
+$targetId = $Params['target_id'];
 
 //$ini = eZINI::instance();
 //$serviceIni = eZINI::instance( 'contentstaging.ini' );
@@ -38,65 +38,61 @@ if ( $http->hasPostVariable( 'syncAction' ) )
     $syncResults = array();
     if ( $http->hasPostVariable( 'SyncArray' ) && is_array( $http->postVariable( 'SyncArray' ) ) )
     {
-        // we sync by sorting based on item IDs to keep proper history
         $tosync = array();
-        // we use a single array-value in html form to make js usage non mandatory
-        foreach ( $http->postVariable( 'SyncArray' ) as $syncVar )
+        foreach ( $http->postVariable( 'SyncArray' ) as $eventId )
         {
-            $syncVar = explode( '_', $syncVar, 2 );
-            $syncObjID = $syncVar[0];
-            $syncTarget = $syncVar[1];
-            $item = eZContentStagingItem::fetch( $syncTarget, $syncObjID );
+            $event = eZContentStagingItem::fetch( $eventId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
-            if ( $item instanceof eZContentStagingItem )
+            if ( $event instanceof eZContentStagingItem )
             {
-                $tosync[$item->attribute( 'id' )] = $item;
+                $tosync[$event->attribute( 'id' )] = $event;
             }
             else
             {
-                eZDebug::writeError( "Object $syncObjID to be syncronised to srv $syncHost gone amiss", __METHOD__ );
+                eZDebug::writeError( "Invalid event id received for syncing: $eventId", 'contentstaging/feed' );
             }
         }
+        // we sync by sorting based on event IDs to keep proper history
         ksort( $tosync );
-        foreach( $tosync as $item )
+        foreach( $tosync as $id => $event )
         {
-            if ( $item->syncItem() !== 0 )
+            if ( ( $result = $event->syncEvent() ) !== 0 )
             {
-                $syncErrors[] = "Object " . $item->attribute( 'object_id' ) . "to be synchronised to feed " . $item->attribute( 'target_id' ) . ": failure...";
+                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . "to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($result) [Event $id]";
             }
             else
             {
-                $syncResults[] = "Object " . $item->attribute( 'object_id' ) . "succesfully synchronised to feed " . $item->attribute( 'target_id' );
+                $syncResults[] = "Object " . $event->attribute( 'object_id' ) . "succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
             }
         }
 
     }
     else
     {
-        eZDebug::writeError( "No list of objects to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
+        eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
         $syncErrors[] = "No object to sync...";
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
-	$tpl->setVariable( 'syncErrors', $syncErrors );
-    $tpl->setVariable( 'syncResults', $syncResults );
+	$tpl->setVariable( 'sync_errors', $syncErrors );
+    $tpl->setVariable( 'sync_results', $syncResults );
 
 } // end of 'doing sync' action
 
-if ( $target_id !== null )
+if ( $targetId !== null )
 {
-    /// @todo check that target exists (either here or in tpl code
+    /// @todo check that target exists (either here or in tpl code)
 }
 
 /// @todo !important fetch list of items to be displayed here, not purely in template
 
-$tpl->setVariable( 'target_id', $target_id );
+$tpl->setVariable( 'target_id', $targetId );
 $tpl->setVariable( 'view_parameters', array( 'offset', (int)$Params['Offset'] ) );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/feed.tpl' );
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
 								'url' => 'contentstaging/feeds' ) );
-if ( $target_id == null )
+if ( $targetId == null )
 {
     $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', 'All feeds' ),
                                'url' => false );
@@ -104,7 +100,7 @@ if ( $target_id == null )
 else
 {
     /// @todo use the name of the feed, not its id
-    $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', "Feed: $target_id" ),
+    $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', "Feed: $targetId" ),
                                'url' => false );
 }
 

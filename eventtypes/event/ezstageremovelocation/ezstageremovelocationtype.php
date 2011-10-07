@@ -55,17 +55,21 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
             eZDebug::writeError( 'Unable to fetch removed nodes for nodeID ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
+        // set this event to be shown on all remaining nodes
+        $objectNodes = eZContentStagingItem::assignedNodeIds( $objectId );
+        $objectNodes = array_diff( $objectNodes, $removedNodeList );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
             foreach( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeRemoteId )
             {
                 if ( $target->includesNodeByPath( $removedNodePathString ) )
                 {
-                    eZContentStagingItem::addEvent(
+                    eZContentStagingEvent::addEvent(
                         $target_id,
                         $objectId,
-                        eZContentStagingItemEvent::ACTION_REMOVELOCATION,
-                        array( 'remoteId' => $removedNodeRemoteId )
+                        eZContentStagingEvent::ACTION_REMOVELOCATION,
+                        array( 'remoteId' => $removedNodeRemoteId ),
+                        $objectNodes
                     );
                 }
             }

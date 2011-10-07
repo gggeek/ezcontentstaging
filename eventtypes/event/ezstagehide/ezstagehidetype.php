@@ -12,36 +12,31 @@ class eZStageHideType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+
+        $parameters = $process->attribute( 'parameter_list' );
 
         $nodeID = $parameters['node_id'];
 
         $node = eZContentObjectTreeNode::fetch( $nodeID );
-
         if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, 'eZStageHideType::execute' );
+            eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
-
+        $objectId = $node->attribute( 'contentobject_id' );
         $nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-
-        $action = $node->attribute( 'is_hidden' ) ? eZSyndicationNodeActionLog::ACTION_UNHIDE : eZSyndicationNodeActionLog::ACTION_HIDE;
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        $hidden = $node->attribute( 'is_hidden' );
+        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => $action ) );
-
-            $log->store();
-        }*/
-
+            eZContentStagingEvent::addEvent(
+                $target_id,
+                $objectId,
+                eZContentStagingEvent::ACTION_HIDEUNHIDE,
+                array( 'remoteId' => $nodeRemoteID, 'hide' => $hidden ),
+                array( $nodeID )
+                );
+        }
         return eZWorkflowType::STATUS_ACCEPTED;
     }
 }

@@ -20,7 +20,7 @@ interface eZContentStagingTransport
     * @todo decide format for return value (class constants, strings, ... ? )
     * @todo decide if shall use exceptions upon errors
     */
-    function sync( eZContentStagingItem $item );
+    function sync( array $items );
 }
 
 ?>

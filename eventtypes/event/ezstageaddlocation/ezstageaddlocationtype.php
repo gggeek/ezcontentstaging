@@ -66,17 +66,19 @@ class eZStageAddLocationType extends eZWorkflowEventType
     	}
 
         // finally add, for every target feed, all new nodes that fall within it
+        $objectNodes = eZContentStagingItem::assignedNodeIds( $objectID );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
             foreach( $newNodesData as $newNodePathString => $newNodeData )
             {
                 if ( $target->includesNodeByPath( $newNodePathString ) )
                 {
-                    eZContentStagingItem::addEvent(
+                    eZContentStagingEvent::addEvent(
                         $target_id,
                         $object->attribute( 'id' ),
-                        eZContentStagingItemEvent::ACTION_ADDLOCATION,
-                        $newNodeData
+                        eZContentStagingEvent::ACTION_ADDLOCATION,
+                        $newNodeData,
+                        $objectNodes
                     );
                 }
             }

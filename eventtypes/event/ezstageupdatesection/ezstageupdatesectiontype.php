@@ -12,7 +12,7 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
 
         $nodeID = $parameters['node_id'];
 
@@ -20,13 +20,25 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
 
         if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, 'eZStageSectionType::execute' );
+            eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
+        $object = $node->attribute( 'object' );
+        $objectID = $object->attribute( 'id' );
+        $objectNodes = eZContentStagingItem::assignedNodeIds( $objectID );
+        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+        {
+            eZContentStagingItem::addEvent(
+                        $target_id,
+                        $objectID,
+                        eZContentStagingItemEvent::ACTION_UPDATESECTION,
+                        $newNodeData,
+                        $objectNodes
+                    );
+        }
 
-        $nodeRemoteID = $node->attribute( 'remote_id' );
+        /*$nodeRemoteID = $node->attribute( 'remote_id' );
         $time = time();
 
         foreach ( $feedSourceIDList as $feedSourceID )

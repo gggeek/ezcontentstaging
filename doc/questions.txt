@@ -1,6 +1,25 @@
+GG, 7.10.2011
+
+. when synchronizing many items, is it ok to sort by item creation, or should we sort
+  by event creation? We have to think about nodes being moved, deleted, etc...
+
+  Following the same vein: what if the editor tries to cync creation of a node
+  without having synced creation of its parent? How to handle dependencies?
+
+. how to bootstrap the process? The top level nodes in the feed have to exist
+  on both sides, or the feed needs to have the remote-server ID known for them
+
+. some editing actions are in fact applied to nodes, some other to objects.
+  eg: hiding a node applies to a node, while adding a location or setting state applies to
+  an object.
+  - when using the ezwt toolbar, and an object state needs to be synchronized, shall the 'sync'
+    action be shown on every node of that object or only on the main node?
+  - when browsing the list of items to sync in the backoffice, which nodes shall be listed in
+    such case?
+
 GG, 4.10.2011
 
-. decide on naming: feed vs target
+. decide on naming: feed vs target, item vs. event
 
 . decide on format for results of sync calls: a string or structured data? who trsnalatwes this: view or tpl?
 

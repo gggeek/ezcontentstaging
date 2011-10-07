@@ -2,13 +2,13 @@
   View use to display results of "single item" content sync
   (nb: single item might be synced to many targets in one go)
 
-  @param array of eZContentStagingItem $syncItems
-  @param array of string syncErrors
-  @param array of string syncResults
+  @param array of eZContentStagingEvent $sync_events
+  @param array of string sync_errors
+  @param array of string sync_results
 *}
 
 Errors:
-{$syncErrors|attribute(show)}
+{$sync_errors|attribute(show)}
 
 Results:
-{$syncResults|attribute(show)}
+{$sync_results|attribute(show)}

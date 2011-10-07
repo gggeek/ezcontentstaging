@@ -1,7 +1,7 @@
 <?php
 /**
 *
-* View used to sync one item
+* View used to sync one node
 *
 * @package ezcontentstaging
 *
@@ -15,35 +15,35 @@
 $syncErrors = array();
 $syncResults = array();
 
-/// @todo sanitize $target_id against html injection
-$target_id = $Params['target_id'];
-$object_id = $Params['object_id'];
-
-$items = array();
-if ( $target_id == null )
+$events = array();
+if ( $Params['event_ids'] != null )
 {
-    $items = eZContentStagingItem::fetchByObject( $object_id );
-}
-else
-{
-    // check that sync item exists
-    $item = eZContentStagingItem::fetch( $target_id, $object_id );
-    if ( $item instanceof eZContentStagingItem )
+    foreach( explode( ',', $Params['event_ids'] ) as $eventId )
     {
-        $items = array( $item );
+        // check that sync item exists
+        $event = eZContentStagingEvent::fetch( $eventId );
+        if ( $event instanceof eZContentStagingEvent )
+        {
+            $events[$event->attribute( 'id' )] = $event;
+        }
+        else
+        {
+            eZDebug::writeWarning( "Invalid event id received for syncing: $eventId", 'contentstaging/sync' );
+        }
     }
 }
 
-if ( count( $items ) )
+if ( count( $events ) )
 {
-    foreach( $items as $item )
+    ksort( $events );
+    foreach( $events as $id => $event )
     {
-        /// @todo check that current user can sync - with limitations - this item
+        /// @todo check that current user can sync - with limitations - this event
 
         /// go
-        if ( ( $result = $item->syncItem() ) !== 0 )
+        if ( ( $result = $event->syncEvent() ) !== 0 )
         {
-            $syncErrors[] = "Error $result while synchronizing to target " . $item->target_id . "\n";
+            $syncErrors[] = "Error $result while synchronizing object " .   $event->attribute( 'object_id' ) . " to target " . $event->attribute( 'target_id' ) . " [Event $id]\n";
         }
         else
         {
@@ -53,20 +53,19 @@ if ( count( $items ) )
 }
 else
 {
-    // sanitize error msg, just in case
-    $syncErrors[] = sprintf( "No item(s) %s/%d to be synchronized", $target_id, $object_id );
+    $syncErrors[] = "No object(s) to be synchronized";
 }
 
 $tpl = eZTemplate::factory();
-$tpl->setVariable( 'syncItems', $items );
-$tpl->setVariable( 'syncErrors', $syncErrors );
-$tpl->setVariable( 'syncResults', $syncResults );
+$tpl->setVariable( 'sync_events', $events );
+$tpl->setVariable( 'sync_errors', $syncErrors );
+$tpl->setVariable( 'sync_results', $syncResults );
 
 $Result['content'] = $tpl->fetch( 'design:contentstaging/sync.tpl' );
 
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
 								'url' => 'contentstaging/feeds' ) );
-if ( $target_id == null )
+/*if ( $target_id == null )
 {
     $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', 'All feeds' ),
                                'url' => 'contentstaging/feed' );
@@ -76,7 +75,7 @@ else
     /// @todo use the name of the feed, not its id
     $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', "Feed: $target_id" ),
                                'url' => "contentstaging/feed/$target_id" );
-}
+}*/
 $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', 'Synchronise object' ),
                            'url' => false );
 
