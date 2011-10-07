@@ -38,6 +38,8 @@ if ( $http->hasPostVariable( 'syncAction' ) )
     $syncResults = array();
     if ( $http->hasPostVariable( 'SyncArray' ) && is_array( $http->postVariable( 'SyncArray' ) ) )
     {
+        // we sync by sorting based on item IDs to keep proper history
+        $tosync = array();
         // we use a single array-value in html form to make js usage non mandatory
         foreach ( $http->postVariable( 'SyncArray' ) as $syncVar )
         {
@@ -48,18 +50,23 @@ if ( $http->hasPostVariable( 'syncAction' ) )
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $item instanceof eZContentStagingItem )
             {
-                if ( $item->syncItem() !== 0 )
-                {
-                    $syncErrors[] = "Object $syncObjID to be synchronised to feed $syncHost: failure...";
-                }
-                else
-                {
-                    $syncResults[] = "Object $syncObjID successfully synchronised to feed $syncHost";
-                }
+                $tosync[$item->attribute( 'id' )] = $item;
             }
             else
             {
                 eZDebug::writeError( "Object $syncObjID to be syncronised to srv $syncHost gone amiss", __METHOD__ );
+            }
+        }
+        ksort( $tosync );
+        foreach( $tosync as $item )
+        {
+            if ( $item->syncItem() !== 0 )
+            {
+                $syncErrors[] = "Object " . $item->attribute( 'object_id' ) . "to be synchronised to feed " . $item->attribute( 'target_id' ) . ": failure...";
+            }
+            else
+            {
+                $syncResults[] = "Object " . $item->attribute( 'object_id' ) . "succesfully synchronised to feed " . $item->attribute( 'target_id' );
             }
         }
 
