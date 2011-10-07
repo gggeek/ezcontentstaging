@@ -24,25 +24,25 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
     function sync( eZContentStagingItem $item )
     {
-        return -100;
-
-        foreach( $item->attribute( 'events' ) as $event )
+        $events = $item->attribute( 'events' );
+        foreach( self::coalesceEvents( $events ) as $event )
         {
-            switch( $event->type )
+            switch( $event->attribute( 'type' ) )
             {
                 case eZContentStagingItemEvent::ACTION_ADDLOCATION:
                     $data = $event->getData();
-                    $RemObjID = $this->getRemObjID( $data['objectRemoteId'] );
+                    //$RemObjID = $this->getRemObjID( $data['objectRemoteId'] );
+                    /// @todo test that $RemObjID is not null
                     $method = 'PUT';
-                    $url = "/content/objects/$RemObjID/locations?parentRemoteId={$data['parentRemoteId']}";
-                    $body = array(
+                    $url = "/content/objects/remote/$RemObjID/locations?parentRemoteId={$data['parentRemoteId']}";
+                    $payload = array(
                         /// @todo transcode values
                         'priority' => $data['priority'],
                         'remoteId' => $data['remoteId'],
                         'sortField' => $data['sortField'],
                         'sortOrder' => $data['sortOrder']
                         );
-                    $out = $this->restCall( $url, $body, $method );
+                    $out = $this->restCall( $method, $url, $payload );
                     break;
                 case 'delete':
                     ;
@@ -57,9 +57,10 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     ;
                     break;
                 case eZContentStagingItemEvent::ACTION_REMOVELOCATION:
+                    $data = $event->getData();
                     $method = 'DELETE';
                     $url = "/content/locations?remoteId={$data['remoteId']}";
-                    $out = $this->restCall( $url, null, $method );
+                    $out = $this->restCall( $method, $url );
                     break;
                 case 'removetranslation':
                     ;
@@ -87,16 +88,36 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     break;
             }
         }
+
+        return 0;
     }
 
-    protected function getRemObjID( $RemObjRemoteID )
+    /*protected function getRemObjID( $RemObjRemoteID )
     {
-        $out = $this->restCall( "/content/objects?remoteId=$RemObjRemoteID" );
+        $out = $this->restCall( 'GET', "/content/objects?remoteId=$RemObjRemoteID" );
+    }*/
+
+    /// @todo ...
+    protected function restCall( $method, $url, $payload=array() )
+    {
+        $options = array( 'method' => $method );
+
+        /// @todo test that ggws is enabled and that there is a server defined
+        $results = ggeZWebservicesClient::call( $this->target->attribute( 'server' ), $url, $payload, $options );
+        if ( !isset( $results['result'] ) )
+        {
+            /// @todo settle on an error code
+            return -666;
+        }
+        return $results['result'];
     }
 
-    protected function restCall( $url, $payload = null, $method='GET' )
+    /**
+     * @todo support coalescing of events before sendiong them, eg: a location added then removed
+     */
+    protected function coalesceEvents( array $events )
     {
-        $payload = json_encode( $payload );
+        return $events;
     }
 }
 
