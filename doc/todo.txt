@@ -1,3 +1,7 @@
+. verify sync between ezpo classes definitions and actual .sql file
+
+. produce .dba file
+
 . reset all calls to ez18n to use a single namespace: contentstating/etc...
 
 . fix usage of can_sync: php code has != idea from tpl msg
@@ -11,6 +15,8 @@
 . in fetches for dashboard, wt, feed list, filter out items in syncing status
 
 . for ezp 4.6, add a new subtab in object view for admin design
+
+. cleanup script that removes orphaned item_events
 
 
 Phase 2:
