@@ -1,4 +1,5 @@
 CREATE TABLE ezcontentstaging_item (
+  id int(11) NOT NULL auto_increment,
   target_id varchar(255) NOT NULL, -- target server
   object_id int(11) NOT NULL, -- source object
   modified int(11) NOT NULL, -- modification date of this item
@@ -6,7 +7,8 @@ CREATE TABLE ezcontentstaging_item (
   status int(11) NOT NULL DEFAULT 0, -- 0: to sync, 1: syncing, 2: suspended,
   sync_begin_date int(11),
   data longtext,
-  PRIMARY KEY( target_id, object_id ) );
+  KEY ( target_id, object_id )
+  PRIMARY KEY( id ) );
 
 CREATE TABLE ezcontentstaging_item_event (
   target_id varchar(255) NOT NULL, -- target server

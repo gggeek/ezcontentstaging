@@ -35,12 +35,18 @@ class eZContentStagingItem extends eZPersistentObject
 
     static function definition()
     {
-        return array( 'fields' => array( 'target_id' => array( 'name' => 'TargetID',
+        return array( 'fields' => array( 'id' => array( 'name' => 'ID',
+                                                        'datatype' => 'integer',
+                                                        'required' => true ),
+                                         'target_id' => array( 'name' => 'TargetID',
                                                         'datatype' => 'string',
                                                         'required' => true ),
                                          'object_id' => array( 'name' => 'ObjectID',
                                                                'datatype' => 'integer',
-                                                               'required' => true ),
+                                                               'required' => true,
+                                                               'foreign_class' => 'eZContentObject',
+                                                               'foreign_attribute' => 'id',
+                                                               'multiplicity' => '1..*' ),
                                          // we store a custom modification date of object, as it includes metadata modifications
                                          'modified' => array( 'name' => 'Modified',
                                                               'datatype' => 'integer',
@@ -57,7 +63,7 @@ class eZContentStagingItem extends eZPersistentObject
                                          // we store extra data here, eg. description of deleted objects
                                          /// @tood check proper datatype for longtext cols
                                          'data' => array( 'name' => 'data',
-                                                          'datatype' => 'string' ),
+                                                          'datatype' => 'text' ),
                                          'sync_begin_date' => array( 'name' => 'SyncBeginDate',
                                                                      'datatype' => 'integer',
                                                                      'required' => false,
@@ -71,13 +77,14 @@ class eZContentStagingItem extends eZPersistentObject
                                                                    'default' => 0,
                                                                    'required' => true )*/ ),
                       'keys' => array( 'target_id', 'object_id' ),
+                      'increment_key' => 'id',
                       'function_attributes' => array( 'object' => 'getObject',
                                                       'target' => 'getTarget',
                                                       'can_sync' => 'canSync',
                                                       'events' => 'getEvents' ),
                       //'increment_key' => 'id',
                       'class_name' => 'eZContentStagingItem',
-                      'sort' => array( 'modified' => 'desc' ),
+                      'sort' => array( 'id' => 'asc' ),
                       'name' => 'ezcontentstaging_item' );
     }
 
@@ -245,13 +252,13 @@ class eZContentStagingItem extends eZPersistentObject
     /**
     * @param array $events
     */
-    function setEvents( array $events )
+    /*function setEvents( array $events )
     {
         /// @todo
 
         /*$this->_events = $event;
-        $this->setHasDirtyData( true );*/
-    }
+        $this->setHasDirtyData( true );* /
+    }*/
 
     /**
     *
@@ -298,7 +305,7 @@ class eZContentStagingItem extends eZPersistentObject
 
         $db = eZDB::instance();
         $db->begin();
-        eZContentStagingItemEvent::removeByItem( $this->targetID, $this->ObjectID );
+        eZContentStagingItemEvent::removeByItem( $this->TargetID, $this->ObjectID );
         $this->remove();
         $db->commit();
         return 0;
