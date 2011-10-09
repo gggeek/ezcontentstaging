@@ -1,4 +1,15 @@
 <?php
+/**
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ * @todo check: can we move this to after action instead of before?
+ */
 
 class eZStageUpdateSectionType extends eZWorkflowEventType
 {
@@ -13,11 +24,12 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-
         $nodeID = $parameters['node_id'];
+        $sectionID = $parameters['selected_section_id'];
+
+        // sanity checks
 
         $node = eZContentObjectTreeNode::fetch( $nodeID );
-
         if ( !is_object( $node ) )
         {
             eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
@@ -27,6 +39,7 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
         $object = $node->attribute( 'object' );
         $objectID = $object->attribute( 'id' );
         $objectNodes = eZContentStagingItem::assignedNodeIds( $objectID );
+        $newNodeData = array( "sectionID" => $sectionID, "remoteObjectID" => $object->attribute( 'remote_id' ) );
         foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
             eZContentStagingItem::addEvent(
@@ -37,21 +50,6 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
                         $objectNodes
                     );
         }
-
-        /*$nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
-        {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_UPDATE_SECTION,
-                'options' => serialize( array( 'selected_section_id' => $parameters['selected_section_id'] ) ) ) );
-
-            $log->store();
-        }*/
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

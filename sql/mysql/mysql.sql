@@ -12,7 +12,7 @@ CREATE TABLE ezcontentstaging_event (
 );
 
 CREATE TABLE ezcontentstaging_event_node (
-  item_id int(11) NOT NULL,
+  event_id int(11) NOT NULL,
   node_id int(11) NOT NULL,
-  PRIMARY KEY( item_id, node_id )
+  PRIMARY KEY( event_id, node_id )
 );

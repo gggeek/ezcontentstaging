@@ -31,14 +31,17 @@ class eZContentStagingEvent extends eZPersistentObject
     const STATUS_SYNCING = 1;
     const STATUS_SUSPENDED = 2;
 
-    /// @deprecated
-    const SYNC_PUBLICATION = 1;
-    const SYNC_DELETION = 2;
-    const SYNC_VISIBILITY = 4;
-    const SYNC_NODES = 8;
-    const SYNC_SECTION = 16;
-    const SYNC_STATES = 32;
-    const SYNC_SORTORDER = 64;
+    // error ranges:
+    // event status ko: -1 to -9
+    // event class errors: -10 to -99
+    // transport class errors: -100 to -1000
+
+    /// config error: php class for transport not found
+    const ERROR_NOTRANSPORTCLASS = -10;
+    /// transport class threw an exception
+    const ERROR_TRANSPORTEXCEPTION = -11;
+    // an error that should never be returned
+    const ERROR_BADPHPCODING = -99;
 
     static function definition()
     {
@@ -139,7 +142,7 @@ class eZContentStagingEvent extends eZPersistentObject
     function getNodes()
     {
         $db = eZDB::instance();
-        $nodeids = $db->arrayquery( 'select node_id from ezcontentstaging_item_nodes where ezcontentstaging_item_nodes.item_id = ' . $this->ID, array( 'column' => 'node_id' ) );
+        $nodeids = $db->arrayquery( 'select node_id from ezcontentstaging_item_nodes where ezcontentstaging_event_node.event_id = ' . $this->ID, array( 'column' => 'node_id' ) );
         /// @todo log error if count oif nodes found is lesser than stored node ids ?
         return self::fetchObjectList( eZContentObjectTreeNode::definition(),
                                       null,
@@ -162,17 +165,30 @@ class eZContentStagingEvent extends eZPersistentObject
                                   $asObject );
     }
 
-    static function fetchByObject( $object_id, $asObject = true )
+    /**
+     * Fetch all pending ecents for a given object, optionally filtered by feed.
+     * 2nd param is there for optimal resource usage
+     */
+    static function fetchByObject( $object_id, $target_id = null, $asObject = true )
     {
+        $conds = array( 'object_id' => $objectId );
+        if ( $target_id != null )
+        {
+            $conds['target_id'] = $target_id;
+        }
         return self::fetchObjectList( self::definition(),
                                       null,
-                                      array( 'object_id' => $object_id ),
+                                      $conds,
                                       null,
                                       null,
                                       $asObject );
     }
 
-    static function fetchByNode( $nodeId, $objectId=null, $asObject = true )
+    /**
+    * Fetch all pending ecents for a given node, optionally filtered by feed.
+    * 2nd param is there for optimal resource usage
+    */
+    static function fetchByNode( $nodeId, $objectId=null, $target_id = null, $asObject = true )
     {
         if ( $objectId == null )
         {
@@ -184,9 +200,14 @@ class eZContentStagingEvent extends eZPersistentObject
             }
             $objectId = $node->attribute( 'contentobject_id' );
         }
+        $conds = array( 'object_id' => $objectId );
+        if ( $target_id != null )
+        {
+            $conds['target_id'] = $target_id;
+        }
         return self::fetchObjectList( self::definition(),
                                       null,
-                                      array( 'object_id' => $objectId ),
+                                      $conds,
                                       null,
                                       null,
                                       $asObject,
@@ -194,7 +215,7 @@ class eZContentStagingEvent extends eZPersistentObject
                                       array( 'id' ),
                                       null,
                                       array( 'ezcontentstaging_event_node' ),
-                                      ' AND ezcontentstaging_event_node.node_id = ' . (int)$node_id . ' AND ezcontentstaging_event_node.item_id = id' );
+                                      ' AND ezcontentstaging_event_node.node_id = ' . (int)$node_id . ' AND ezcontentstaging_event_node.event_id = id' );
     }
 
     static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null )
@@ -277,53 +298,111 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             foreach( $nodeIds as $nodeId )
             {
-                $db->query( "insert into ezcontentstaging_event_node( item_id, node_id ) values ( $id, $nodeId )" );
+                $db->query( "insert into ezcontentstaging_event_node( event_id, node_id ) values ( $id, $nodeId )" );
             }
             $db->commit();
         }
     }
 
     /**
-    *
-    * @return integer 0 on sucess
+    * Syncs events to their respsective targets, then deletes them.
+    * If events are already in syncing status, they are skipped.
+    * If syncing succeeds, they are deleted, otherwise not
+    * @return array of integer associative array, with event id as key. Values: 0 on sucess
     * @todo after 3 consecutive errors, suspend sync?
+    * @todo figure out if we can be faster by batching events in calls to $transport::syncEvents
+    *       while still maintaining correct ordering
     */
-    static function syncEvent()
+    static function syncEvents( array $events )
+    {
+        $results = array();
+
+        // optimize usage of transport objects: build only one per target
+        $transports = array();
+        foreach( $events as $id => $event )
+        {
+            $target = eZContentStagingTarget::fetch( $event->TargetID );
+            $class = $target->attribute( 'transport_class' );
+            if ( !isset( $transports[$target] ) )
+            {
+                if ( !class_exists( $class ) )
+                {
+                    eZDebug::writeError( "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", class $class not found", __METHOD__ );
+                    $results[$event->ID] = self::ERROR_NOTRANSPORTCLASS;
+                    unset( $events[$id] );
+                    continue;
+                }
+                $transports[$target] = new $class( $target );
+            }
+            $results[$event->ID] = self::ERROR_BADPHPCODING; // this has to updated before we return
+        }
+
+        // coalescing events allows to send fewer of them
+        self::coalesceEvents( $events, $results );
+
+        foreach( $events as $id => $event )
+        {
+            if ( $event->Status != self::STATUS_TOSYNC )
+            {
+                /// @todo !important check that status is an int beteen 1 and 9...
+                $results[$event->ID] = $event->Status * -1;
+            }
+            else
+            {
+                eZDebug::writeDebug( "Syncing item " . $event->ID . ": object " . $event->TargetID . ", feed " . $event->TargetID, __METHOD__ );
+
+                // set status to 'pending'
+                $event->Status = self::STATUS_SYNCING;
+                $event->SyncBeginDate = time();
+                $event->store();
+
+                $transport = $transports[$event->targetID];
+                try
+                {
+                    $result = $transport->syncEvents( array( $event ) );
+                    $result = $results[0];
+                }
+                catch( exception $e)
+                {
+                    /// @todo !important use exception error code ?
+                    $result = self::ERROR_TRANSPORTEXCEPTION;
+                }
+
+                if ( $result != 0 )
+                {
+                    eZDebug::writeError( "Failed syncing item " . $event->ID . ", transport error code: $result", __METHOD__ );
+                    $event->Status = self::STATUS_TOSYNC;
+                    $event->SyncBeginDate = null;
+                    $event->store();
+                    /// @todo !important check that result is an int beteen -100 and -inf
+                    $results[$event->ID] = $result;
+                }
+                else
+                {
+                    // delete event from db with all its nodes
+                    $db = eZDB::instance();
+                    $db->begin();
+                    $db->query( 'DELETE FROM ezcontentestaging_event_node WHERE event_id = ' . $event->ID );
+                    self::removeObject( self::definition(), array( 'id' => $event->ID ) );
+                    $db->commit();
+
+                    eZDebug::writeDebug( "Synced item " . $event->ID, __METHOD__ );
+                    $results[$event->ID] = 0;
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+    * Removes useless events from array if any atre found
+    * eg: a hide+unhide chain, excess setsection etc
+    * @todo ...
+    */
+    static protected function coalesceEvents( array &$events, array &$results )
     {
 
-        // use transport class to sync the current changes
-        $target = eZContentStagingTarget::fetch( $this->TargetID );
-        $class = $target->attribute( 'transport_class' );
-        if ( !class_exists( $class ) )
-        {
-            eZDebug::writeError( "Failed syncing item to target " . $this->TargetID . ", class $class not found", __METHOD__ );
-            return -10;
-        }
-
-        if ( $this->Status != self::STATUS_TOSYNC )
-        {
-            return $this->Status * -1;
-        }
-
-        // set status to 'pending'
-        $this->Status = self::STATUS_SYNCING;
-        $this->SyncBeginDate = time();
-        $this->store();
-
-        $transport = new $class( $target );
-
-        /// @todo add logging (ezdebug.ini based)
-        $result = $transport->sync( $this );
-        if ( $result != 0 )
-        {
-            eZDebug::writeError( "Failed syncing item " . $this->TargetID . "/". $this->ObjectID . ", transport error code: $result", __METHOD__ );
-            $this->Status = self::STATUS_TOSYNC;
-            $this->SyncBeginDate = null;
-            $this->store();
-            return $result;
-        }
-
-        return 0;
     }
 
     /// @todo to be augmented (or replaced) with current user perms checking

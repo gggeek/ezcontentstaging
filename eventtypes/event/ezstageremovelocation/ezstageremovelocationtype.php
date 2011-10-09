@@ -1,4 +1,15 @@
 <?php
+/**
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ * @todo check of ot can be moved to after action
+ */
 
 class eZStageRemoveLocationType extends eZWorkflowEventType
 {
@@ -46,7 +57,9 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                {
                    $objectId = $removedNode->attribute( 'contentobject_id' );
                }
-               $removedNodeRemoteIDList[$removedNode->attribute( 'path_string' )] = $removedNode->attribute( 'remote_id' );
+               $removedNodeRemoteIDList[$removedNode->attribute( 'path_string' )] = array(
+                   "nodeID" => $removedNode->attribute( 'node_id' ),
+                   "remoteNodeID" => $removedNode->attribute( 'remote_id' ) );
             }
         }
 
@@ -60,7 +73,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
         $objectNodes = array_diff( $objectNodes, $removedNodeList );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            foreach( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeRemoteId )
+            foreach( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeData )
             {
                 if ( $target->includesNodeByPath( $removedNodePathString ) )
                 {
@@ -68,7 +81,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                         $target_id,
                         $objectId,
                         eZContentStagingEvent::ACTION_REMOVELOCATION,
-                        array( 'remoteId' => $removedNodeRemoteId ),
+                        $removedNodeData,
                         $objectNodes
                     );
                 }

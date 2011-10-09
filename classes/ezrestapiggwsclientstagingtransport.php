@@ -11,7 +11,6 @@
 * @author
 * @copyright
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
-
 */
 
 class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
@@ -22,23 +21,25 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         $this->target = $target;
     }
 
-    function sync( eZContentStagingItem $item )
+    function syncEvents( array $events )
     {
-        $events = $item->attribute( 'events' );
-        foreach( self::coalesceEvents( $events ) as $event )
+        $results = array();
+        foreach( $events as $event )
         {
+            $data = $event->getData();
             switch( $event->attribute( 'type' ) )
             {
                 case eZContentStagingItemEvent::ACTION_ADDLOCATION:
-                    $data = $event->getData();
-                    //$RemObjID = $this->getRemObjID( $data['objectRemoteId'] );
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] );
                     /// @todo test that $RemObjID is not null
                     $method = 'PUT';
-                    $url = "/content/objects/remote/$RemObjID/locations?parentRemoteId={$data['parentRemoteId']}";
+                    $url = "/content/objects/remote/$RemoteObjRemoteID/locations?parentRemoteId=$RemoteParentNodeRemoteID";
                     $payload = array(
+                        'remoteId' => $RemoteNodeRemoteID,
                         /// @todo transcode values
                         'priority' => $data['priority'],
-                        'remoteId' => $data['remoteId'],
                         'sortField' => $data['sortField'],
                         'sortOrder' => $data['sortOrder']
                         );
@@ -48,7 +49,13 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     ;
                     break;
                 case 'hide':
-                ;
+                    $method = 'PUT';
+                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
+                    $payload = array(
+                        'hide' => $data['hide'],
+                        );
+                    $out = $this->restCall( $method, $url, $payload );
                     break;
                 case 'move':
                     ;
@@ -57,18 +64,18 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     ;
                     break;
                 case eZContentStagingItemEvent::ACTION_REMOVELOCATION:
-                    $data = $event->getData();
                     $method = 'DELETE';
-                    $url = "/content/locations?remoteId={$data['remoteId']}";
+                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
                     $out = $this->restCall( $method, $url );
                     break;
                 case 'removetranslation':
                     ;
                     break;
                 case eZContentStagingItemEvent::ACTION_UPDATESECTION:
-                    $data = $event->getData();
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $method = 'PUT';
-                    $url = "/content/objects/remote/$RemObjID/section?sectionId={$data['sectionId']}";
+                    $url = "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}";
                     $out = $this->restCall( $method, $url );
                     break;
                 case 'sort':
@@ -90,15 +97,11 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     ;
                     break;
             }
+            $results[] = $out;
         }
 
-        return 0;
+        return $results;
     }
-
-    /*protected function getRemObjID( $RemObjRemoteID )
-    {
-        $out = $this->restCall( 'GET', "/content/objects?remoteId=$RemObjRemoteID" );
-    }*/
 
     /// @todo ...
     protected function restCall( $method, $url, $payload=array() )
@@ -116,11 +119,11 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
     }
 
     /**
-     * @todo support coalescing of events before sendiong them, eg: a location added then removed
-     */
-    protected function coalesceEvents( array $events )
+    * @todo this function should possibly be calling a handler for greater flexibility
+    */
+    static protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
     {
-        return $events;
+        return $sourceRemoteId;
     }
 }
 

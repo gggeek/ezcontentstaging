@@ -1,4 +1,15 @@
 <?php
+/**
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ * @todo check of ot can be moved to after action instead of before
+ */
 
 class eZStageHideType extends eZWorkflowEventType
 {
@@ -12,10 +23,10 @@ class eZStageHideType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-
         $parameters = $process->attribute( 'parameter_list' );
-
         $nodeID = $parameters['node_id'];
+
+        // sanity checks
 
         $node = eZContentObjectTreeNode::fetch( $nodeID );
         if ( !is_object( $node ) )
@@ -33,7 +44,7 @@ class eZStageHideType extends eZWorkflowEventType
                 $target_id,
                 $objectId,
                 eZContentStagingEvent::ACTION_HIDEUNHIDE,
-                array( 'remoteId' => $nodeRemoteID, 'hide' => $hidden ),
+                array( 'nodeID' => $nodeID, 'nodeRemoteID' => $nodeRemoteID, 'hide' => $hidden ),
                 array( $nodeID )
                 );
         }

@@ -16,11 +16,12 @@ interface eZContentStagingTransport
     function __construct( eZContentStagingTarget $target );
 
     /**
+    * @param array of eZContentStagingEvent $events
     * @return integer 0 on sucess
     * @todo decide format for return value (class constants, strings, ... ? )
     * @todo decide if shall use exceptions upon errors
     */
-    function sync( array $items );
+    function syncEvents( array $events );
 }
 
 ?>

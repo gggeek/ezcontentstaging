@@ -1,4 +1,13 @@
 <?php
+/**
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ */
 
 class eZStageAddLocationType extends eZWorkflowEventType
 {
@@ -13,7 +22,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-        //$nodeID = $parameters['node_id'];
+        $nodeID = $parameters['node_id'];
         $objectID = $parameters['object_id'];
         $selectNodeIDArray = $parameters['select_node_id_array'];
 
@@ -56,9 +65,11 @@ class eZStageAddLocationType extends eZWorkflowEventType
             /// @todo test for errors
             $data = $data[0];
             $newNodesData[$data['path_string']] = array(
-                'objectRemoteId' => $object->attribute( 'remote_id' ),
-                'parentRemoteId' => $newParentNode->attribute( 'remote_id' ),
-                'remoteId' => $data['remote_id'],
+                'nodeID' => $nodeID,
+                'nodeRemoteID' => $data['remote_id'],
+                'objectRemoteID' => $object->attribute( 'remote_id' ),
+                'parentNodeID' => $newParentNode->attribute( 'node_id' ),
+                'parentNodeRemoteID' => $newParentNode->attribute( 'remote_id' ),
                 'priority' => $data['priority'],
                 'sortField' => $data['sort_field'],
                 'sortOrder' => $data['sort_order']
