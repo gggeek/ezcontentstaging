@@ -3,7 +3,7 @@
 * View used to display one feed (or all of them together), and sync it
 * Supports pagination
 *
-* @todo add functionality to sync complete feed (all events), not just X events
+* @todo add functionality to sync complete feed (all events), not just X events (either here or in feeds view)
 *
 * @package ezcontentstaging
 *
