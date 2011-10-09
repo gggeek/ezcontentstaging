@@ -3,7 +3,7 @@ GG, 7.10.2011
 . when synchronizing many items, is it ok to sort by item creation, or should we sort
   by event creation? We have to think about nodes being moved, deleted, etc...
 
-  Following the same vein: what if the editor tries to cync creation of a node
+  Following the same vein: what if the editor tries to sync creation of a node
   without having synced creation of its parent? How to handle dependencies?
 
 . how to bootstrap the process? The top level nodes in the feed have to exist
@@ -17,11 +17,13 @@ GG, 7.10.2011
   - when browsing the list of items to sync in the backoffice, which nodes shall be listed in
     such case?
 
+. q: always store a lot of object data in events, in case obj is deleted later and we want to show meaningful data in control panels?
+
 GG, 4.10.2011
 
-. decide on naming: feed vs target, item vs. event
+. decide on naming: feed vs target
 
-. decide on format for results of sync calls: a string or structured data? who trsnalatwes this: view or tpl?
+. decide on format for results of sync calls: a string or structured data? who translates this: view or tpl?
 
 GG, 24.9.2011
 

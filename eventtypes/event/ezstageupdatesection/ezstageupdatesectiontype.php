@@ -38,14 +38,16 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
 
         $object = $node->attribute( 'object' );
         $objectID = $object->attribute( 'id' );
-        $objectNodes = eZContentStagingItem::assignedNodeIds( $objectID );
-        $newNodeData = array( "sectionID" => $sectionID, "remoteObjectID" => $object->attribute( 'remote_id' ) );
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+        $newNodeData = array( "sectionID" => $sectionID, "objectRemoteID" => $object->attribute( 'remote_id' ) );
+        //var_export( eZContentStagingTarget::fetchByNode( $node ) );
+        //die();
         foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
-            eZContentStagingItem::addEvent(
+            eZContentStagingEvent::addEvent(
                         $target_id,
                         $objectID,
-                        eZContentStagingItemEvent::ACTION_UPDATESECTION,
+                        eZContentStagingEvent::ACTION_UPDATESECTION,
                         $newNodeData,
                         $objectNodes
                     );

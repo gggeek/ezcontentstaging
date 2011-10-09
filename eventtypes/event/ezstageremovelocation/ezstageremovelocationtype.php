@@ -69,7 +69,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
             return eZWorkflowType::STATUS_ACCEPTED;
         }
         // set this event to be shown on all remaining nodes
-        $objectNodes = eZContentStagingItem::assignedNodeIds( $objectId );
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectId );
         $objectNodes = array_diff( $objectNodes, $removedNodeList );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {

@@ -15,7 +15,7 @@
 *
 */
 
-//$Module = $Params['Module'];
+$module = $Params['Module'];
 $http = eZHTTPTool::instance();
 $tpl = eZTemplate::factory();
 $targetId = $Params['target_id'];
@@ -28,8 +28,7 @@ if ( !$user->isLoggedIn() )
     return $Module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
 $userID = $user->id();*/
 
-///
-if ( $http->hasPostVariable( 'syncAction' ) )
+if ( $module->isCurrentAction( 'SyncEvents' ) )
 {
     /// @todo: test if current user has access to contentstaging/sync, as access
     ///        to the view is only limited by 'view'
@@ -41,7 +40,7 @@ if ( $http->hasPostVariable( 'syncAction' ) )
         $tosync = array();
         foreach ( $http->postVariable( 'syncArray' ) as $eventId )
         {
-            $event = eZContentStagingItem::fetch( $eventId );
+            $event = eZContentStagingEvent::fetch( $eventId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $event instanceof eZContentStagingEvent )
             {
@@ -61,11 +60,11 @@ if ( $http->hasPostVariable( 'syncAction' ) )
             $event = $tosync[$id];
             if ( $resultCode !== 0 )
             {
-                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . "to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
+                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
             }
             else
             {
-                $syncResults[] = "Object " . $event->attribute( 'object_id' ) . "succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
+                $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
             }
         }
 

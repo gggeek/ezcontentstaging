@@ -2,11 +2,11 @@
 /**
 * The persistent class used to store information about which objects/nodes need to be
 * synced to target servers - every content-modifying action gets a line in
-* the eZContentStagingItem table for every existing target host.
-* For actions affecting a single node, one row is created in the ezcontentstaging_item_nodes table
+* the eZContentStagingEvent table for every existing target host.
+* For actions affecting a single node, one row is created in the ezcontentstaging_event_node table
 * (eg: hide/show)
 * For actions affecting the whole object (eg: edit), many rows are added in the
-* ezcontentstaging_item_nodes table.
+* ezcontentstaging_event_node table.
 * When the object is synced, the lines are removed.
 *
 * @package ezcontentstaging
@@ -43,6 +43,8 @@ class eZContentStagingEvent extends eZPersistentObject
     // an error that should never be returned
     const ERROR_BADPHPCODING = -99;
 
+    const ERROR_EVENTTYPEUNKNOWNTOTRANSPORT = -101;
+
     static function definition()
     {
         return array( 'fields' => array( 'id' => array( 'name' => 'ID',
@@ -72,7 +74,7 @@ class eZContentStagingEvent extends eZPersistentObject
                                                             'default' => 0,
                                                             'required' => true ),
                                          // we store extra data here, eg. description of deleted objects
-                                         'data_text' => array( 'name' => 'data_text',
+                                         'data_text' => array( 'name' => 'DataText',
                                                                'datatype' => 'text' ),
                                          'sync_begin_date' => array( 'name' => 'SyncBeginDate',
                                                                      'datatype' => 'integer',
@@ -136,17 +138,17 @@ class eZContentStagingEvent extends eZPersistentObject
     /// @return array
     function getData()
     {
-        return json_decode( $this->Data, true );
+        return json_decode( $this->DataText, true );
     }
 
     function getNodes()
     {
         $db = eZDB::instance();
-        $nodeids = $db->arrayquery( 'select node_id from ezcontentstaging_item_nodes where ezcontentstaging_event_node.event_id = ' . $this->ID, array( 'column' => 'node_id' ) );
+        $nodeids = $db->arrayquery( 'SELECT node_id FROM ezcontentstaging_event_node WHERE ezcontentstaging_event_node.event_id = ' . $this->ID, array( 'column' => 'node_id' ) );
         /// @todo log error if count oif nodes found is lesser than stored node ids ?
         return self::fetchObjectList( eZContentObjectTreeNode::definition(),
                                       null,
-                                      array( 'node_id' => $nodeids ),
+                                      array( 'node_id' => array( $nodeids ) ),
                                       null,
                                       null );
     }
@@ -215,7 +217,7 @@ class eZContentStagingEvent extends eZPersistentObject
                                       array( 'id' ),
                                       null,
                                       array( 'ezcontentstaging_event_node' ),
-                                      ' AND ezcontentstaging_event_node.node_id = ' . (int)$node_id . ' AND ezcontentstaging_event_node.event_id = id' );
+                                      ' AND ezcontentstaging_event_node.node_id = ' . (int)$nodeId . ' AND ezcontentstaging_event_node.event_id = id' );
     }
 
     static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null )
@@ -323,7 +325,7 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $target = eZContentStagingTarget::fetch( $event->TargetID );
             $class = $target->attribute( 'transport_class' );
-            if ( !isset( $transports[$target] ) )
+            if ( !isset( $transports[$event->TargetID] ) )
             {
                 if ( !class_exists( $class ) )
                 {
@@ -332,7 +334,7 @@ class eZContentStagingEvent extends eZPersistentObject
                     unset( $events[$id] );
                     continue;
                 }
-                $transports[$target] = new $class( $target );
+                $transports[$event->TargetID] = new $class( $target );
             }
             $results[$event->ID] = self::ERROR_BADPHPCODING; // this has to updated before we return
         }
@@ -349,18 +351,18 @@ class eZContentStagingEvent extends eZPersistentObject
             }
             else
             {
-                eZDebug::writeDebug( "Syncing item " . $event->ID . ": object " . $event->TargetID . ", feed " . $event->TargetID, __METHOD__ );
+                eZDebug::writeDebug( "Syncing event " . $event->ID . ": object " . $event->ObjectID . ", feed " . $event->TargetID, __METHOD__ );
 
                 // set status to 'pending'
                 $event->Status = self::STATUS_SYNCING;
                 $event->SyncBeginDate = time();
-                $event->store();
+                $event->store( array( 'status', 'sync_begin_date' ) );
 
-                $transport = $transports[$event->targetID];
+                $transport = $transports[$event->TargetID];
                 try
                 {
                     $result = $transport->syncEvents( array( $event ) );
-                    $result = $results[0];
+                    $result = $result[0];
                 }
                 catch( exception $e)
                 {
@@ -382,7 +384,7 @@ class eZContentStagingEvent extends eZPersistentObject
                     // delete event from db with all its nodes
                     $db = eZDB::instance();
                     $db->begin();
-                    $db->query( 'DELETE FROM ezcontentestaging_event_node WHERE event_id = ' . $event->ID );
+                    $db->query( 'DELETE FROM ezcontentstaging_event_node WHERE event_id = ' . $event->ID );
                     self::removeObject( self::definition(), array( 'id' => $event->ID ) );
                     $db->commit();
 
@@ -397,7 +399,9 @@ class eZContentStagingEvent extends eZPersistentObject
 
     /**
     * Removes useless events from array if any atre found
-    * eg: a hide+unhide chain, excess setsection etc
+    * cases:
+    * . a hide+unhide chain (event with other events in the middle)
+    * . a setsection chain with no node add/remove/delete/swap in the middle
     * @todo ...
     */
     static protected function coalesceEvents( array &$events, array &$results )

@@ -26,8 +26,9 @@ $ViewList = array(
                      'default_navigation_part' => 'ezsetupnavigationpart',
                      'ui_context' => 'default',
                      'unordered_params' => array( 'offset' => 'Offset' ),
-                     'params' => array( 'target_id' )
-                     /// @todo add definition of post actions
+                     'params' => array( 'target_id' ),
+                     /// @todo add definition of more post actions
+                     'single_post_actions' => array( 'SyncEventsButton' => 'SyncEvents' )
                    ),
     /* moved to ezjscore functions
     /// view used to sync a set of events

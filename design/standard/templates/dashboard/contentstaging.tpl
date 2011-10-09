@@ -31,10 +31,10 @@
                 {* for deleted objects we have no link to node anymore *}
                 {set $sync_nodes = $sync_item.nodes}
                 {if $sync_nodes|count()}
-                                    {foreach $sync_nodes as $sync_node}
-                    <a href={$sync_node.url_alias}>{$sync_node.name|shorten(30)|wash}</a>
-                    {delimiter}<br/>{/delimiter}
-                {/foreach}
+                    {foreach $sync_nodes as $sync_node}
+                        <a href={$sync_node.url_alias}>{$sync_node.name|shorten(30)|wash}</a>
+                        {delimiter}<br/>{/delimiter}
+                    {/foreach}
                 {else}
                     {$sync_item.data.name|shorten('30')|wash()}
                 {/if}
@@ -55,11 +55,12 @@
             </td>
             <td>
             {if $sync_access}
+                {* @todo use a different icon for in-sync items *}
                 {if eq($sync_item.status, 0)}<a href="{concat( 'contentstaging/sync/', $sync_item.id )|ezurl('no')}">{/if}
-                    <img src={'sync.gif'|ezimage} width="16" height="16" alt="{'Edit'|i18n( 'design/admin/dashboard/all_sync_content' )}" title="{'Sync <%child_name>.'|i18n( 'design/admin/dashboard/all_sync_content',, hash( '%child_name', $sync_node.object.name) )|wash}" />
+                    <img src={'sync.gif'|ezimage} width="16px" height="16px" alt="{'Edit...'|i18n( 'design/admin/dashboard/all_sync_content' )}" title="{'Sync <%child_name>.'|i18n( 'design/admin/dashboard/all_sync_content',, hash( '%child_name', '...') )|wash}" />
                 {if eq($sync_item.status, 0)}</a>{/if}
             {else}
-                <img src="{'sync-disabled.gif'|ezimage('no')}" alt="{'Sync'|i18n( 'design/admin/dashboard/all_sync_content' )}" title="{'You do not have permission to sync <%child_name>.'|i18n( 'design/admin/dashboard/all_sync_content',, hash( '%child_name', $sync_node.object.name ) )|wash}" />
+                <img src={'sync-disabled.gif'|ezimage} width="16px" height="16px" alt="{'Sync...'|i18n( 'design/admin/dashboard/all_sync_content' )}" title="{'You do not have permission to sync <%child_name>.'|i18n( 'design/admin/dashboard/all_sync_content',, hash( '%child_name', '...' ) )|wash}" />
             {/if}
             </td>
         </tr>

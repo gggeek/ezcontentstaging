@@ -27,9 +27,9 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         foreach( $events as $event )
         {
             $data = $event->getData();
-            switch( $event->attribute( 'type' ) )
+            switch( $event->attribute( 'to_sync' ) )
             {
-                case eZContentStagingItemEvent::ACTION_ADDLOCATION:
+                case eZContentStagingEvent::ACTION_ADDLOCATION:
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] );
@@ -48,14 +48,14 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case 'delete':
                     ;
                     break;
-                case 'hide':
-                    $method = 'PUT';
+                case eZContentStagingEvent::ACTION_HIDEUNHIDE:
+                    $method = 'POST';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
-                    $payload = array(
-                        'hide' => $data['hide'],
-                        );
-                    $out = $this->restCall( $method, $url, $payload );
+                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID&hide=" . $data['hide'];
+                    //$payload = array(
+                    //    'hide' => $data['hide'],
+                    //    );
+                    $out = $this->restCall( $method, $url );
                     break;
                 case 'move':
                     ;
@@ -63,7 +63,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case 'publish':
                     ;
                     break;
-                case eZContentStagingItemEvent::ACTION_REMOVELOCATION:
+                case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
@@ -72,7 +72,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case 'removetranslation':
                     ;
                     break;
-                case eZContentStagingItemEvent::ACTION_UPDATESECTION:
+                case eZContentStagingEvent::ACTION_UPDATESECTION:
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $method = 'PUT';
                     $url = "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}";
@@ -96,6 +96,8 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case 'updatepriority':
                     ;
                     break;
+                default:
+                    $out = eZContentStagingEvent::ERROR_EVENTTYPEUNKNOWNTOTRANSPORT; // should we store this code in this class?
             }
             $results[] = $out;
         }
@@ -106,14 +108,14 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
     /// @todo ...
     protected function restCall( $method, $url, $payload=array() )
     {
-        $options = array( 'method' => $method );
+        $options = array( 'method' => $method, 'requestType' => 'application/json' );
 
         /// @todo test that ggws is enabled and that there is a server defined
         $results = ggeZWebservicesClient::call( $this->target->attribute( 'server' ), $url, $payload, $options );
         if ( !isset( $results['result'] ) )
         {
-            /// @todo settle on an error code
-            return -666;
+            /// @todo settle on an error code. Best would be to decode $results['error'], which we get as a string
+            return -999;
         }
         return $results['result'];
     }

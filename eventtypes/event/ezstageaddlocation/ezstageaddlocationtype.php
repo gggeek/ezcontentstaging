@@ -77,7 +77,8 @@ class eZStageAddLocationType extends eZWorkflowEventType
     	}
 
         // finally add, for every target feed, all new nodes that fall within it
-        $objectNodes = eZContentStagingItem::assignedNodeIds( $objectID );
+        // Question: shall we show this event on every node, or only on new nodes ???
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
             foreach( $newNodesData as $newNodePathString => $newNodeData )

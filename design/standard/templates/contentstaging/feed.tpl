@@ -4,7 +4,7 @@
   @param string target_id
   @param array view_parameters
 
-  @todo show more clearly items in "syncing" status; also they should not be selectable for sync
+  @todo items in "syncing" status should not be selectable for sync via js
 *}
 <div class="border-box">
 <div class="border-tl"><div class="border-tr"><div class="border-tc"></div></div></div>
@@ -109,7 +109,7 @@ function checkAll()
         <th>{"Name"|i18n("design/standard/staging/sync")}</th>
         <th>{"Language..."|i18n("design/standard/staging/sync")}</th>
         <th>{"Date"|i18n("design/standard/staging/sync")}</th>
-        <th>{"Event..."|i18n("design/standard/staging/sync")}</th>
+        <th>{"Changed..."|i18n("design/standard/staging/sync")}</th>
     </tr>
     {foreach $item_list as $sync_item sequence array( 'bglight', 'bgdark' ) as $style}
     <tr class="{$style}">
@@ -119,8 +119,11 @@ function checkAll()
         </td>
         {/if}
         <td>
-            {* @todo pick icon based on item status*}
-            <img src={"websitetoolbar/sync.gif"|ezimage} width="16px" height="16px" alt="{'Sync'|i18n('design/standard/staging/sync')}" />
+            {if eq($sync_item.status, 1)}
+                <img src={"sync-executing.gif"|ezimage} width="16px" height="16px" alt="{'Sync ongoing...'|i18n('design/standard/staging/sync')}" />
+            {else}
+                <img src={"sync.gif"|ezimage} width="16px" height="16px" alt="{'Sync...'|i18n('design/standard/staging/sync')}" />
+            {/if}
         </td>
         <td>
             {* nb: for deleted objects we have no link to node anymore *}
@@ -149,7 +152,7 @@ function checkAll()
 
     {if $sync_access}
         <input class="button" name="selectall" onclick="checkAll()" type="button" value="{'Select all'|i18n('design/standard/staging/sync')}" />
-        <input class="button" name="syncAction" type="button" onclick=submit() value="{'Sync'|i18n('design/standard/staging/sync')}" />
+        <input class="button" name="SyncEventsButton" type="submit" value="{'Sync'|i18n('design/standard/staging/sync')}" />
     {/if}
 
     </form>
