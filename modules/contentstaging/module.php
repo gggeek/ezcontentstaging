@@ -18,9 +18,9 @@ $ViewList = array(
                       'default_navigation_part' => 'ezsetupnavigationpart',
                       'ui_context' => 'default',
                       'unordered_params' => array( 'offset' => 'Offset' )
-                      /// @todo add definition of post actions to manage feeds: add/remove/reset/initialize
+                      /// @todo add definition of post actions to manage feeds: add/remove/reset/initialize/full sync
                     ),
-    /// view of a single feed, also used to sync it
+    /// view of a single feed, also used to sync its events
     'feed' => array( 'script' => 'feed.php',
                      'functions' => 'view',
                      'default_navigation_part' => 'ezsetupnavigationpart',
@@ -29,14 +29,20 @@ $ViewList = array(
                      'params' => array( 'target_id' )
                      /// @todo add definition of post actions
                    ),
+    /* moved to ezjscore functions
     /// view used to sync a set of events
-    'sync' => array( 'script' => 'sync.php',
-                     'functions' => 'sync',
-                     'default_navigation_part' => 'ezsetupnavigationpart',
-                     'ui_context' => 'default',
-                     'params' => array( 'event_ids' ) ),
+    'syncevents' => array( 'script' => 'syncevents.php',
+                           'functions' => 'sync',
+                           'default_navigation_part' => 'ezsetupnavigationpart',
+                           'ui_context' => 'default',
+                           'params' => array( 'event_ids' ) ),
 
-    /// @todo Implement a view to manage target hosts: adds new target hosts, remove them, clear (or init) sync table for a target
+    /// view used to sync a node
+    'syncnode' => array( 'script' => 'sync.php',
+                         'functions' => 'sync',
+                         'default_navigation_part' => 'ezsetupnavigationpart',
+                         'ui_context' => 'default',
+                         'params' => array( 'node_id', 'target_it' ) ) */
 );
 
 $FunctionList = array(
