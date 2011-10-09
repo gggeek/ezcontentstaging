@@ -1,4 +1,4 @@
-. settle on naming conventions, rewrite all text labels in templates
+. settle on naming conventions (user-side), rewrite all text labels in templates
 
 . settle on set of sync icons: needs to sync, is syncing, no need to sync
 
@@ -13,6 +13,7 @@
 . fix: it seems the target (almost persistent) object has problems in feeds tpl
 
 . disable access to contenstaging/sync via simple GET, as it's not idempotent?
+  also make it work using either a node id or an object id
 
 . in fetches for dashboard, wt, feed list, filter out items in syncing status (or show a different icon)
 
@@ -23,6 +24,8 @@
 . dependency tracking:
   - all events should not have a pending create event for any of their parents
   - obj relations?
+  - set section: should not have a pending set section for one of its parents (nb: even for 2ndary locations? test it)
+  - hide: should not have a pending set section for one of its parents
 
 . always store a lot of object data in events, in case obj is deleted later and we want to show meaningful data in contorl panels?
 
@@ -33,6 +36,14 @@
 
 . add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and
 
+. verify events that need to happen before action: are we sure that after trigger action can not be skipped (eg: because of some perms checking?).
+  Try to move them to "after" (eventually, patch operations: content/hide, )
+
+. add a configurable class to generate remote_id field for target server: could be either same as local remote_id, or something like staging::<local_id>
+
+. use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expeted more evident
+
+
 Phase 2:
 
 . in feed view, add an action to init a feed (eg set all objects to "to be synnced" status) or reset it
@@ -41,3 +52,4 @@ Phase 2:
 . cronjob that passes and removes sync items that have been in sync status for too long
 . allow user with 'manage' rights to manually remove sync items from feeds, one by one, if they want to (but trace it)
 . merging of replication events
+. add a sync-to-localhost transport class, that copies data to separate content trees

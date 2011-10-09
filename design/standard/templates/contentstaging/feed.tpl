@@ -24,7 +24,7 @@ function checkAll()
         {
             for (var i=0; i < elements.length; i++)
             {
-                if (elements[i].type == 'checkbox' && elements[i].name == 'SyncArray[]')
+                if (elements[i].type == 'checkbox' && elements[i].name == 'syncArray[]')
                      elements[i].checked = true;
             }
         }
@@ -36,7 +36,7 @@ function checkAll()
         {
             for (var i=0; i < elements.length; i++)
             {
-                if (elements[i].type == 'checkbox' && elements[i].name == 'SyncArray[]')
+                if (elements[i].type == 'checkbox' && elements[i].name == 'syncArray[]')
                     elements[i].checked = false;
             }
         }
@@ -46,13 +46,20 @@ function checkAll()
 //-->
 </script>
 
-{* @todo... *}
-{if is_set( $syncResults )}
+{if is_set( $sync_results )}
 	<div class="message-warning">
 		<h2>{"Content synchronisation action results "|i18n("design/admin/class/edit")}:</h2>
+		{* @todo mark in  red *}
+		{if $sync_errors|count()}
+		    <ul>
+			{foreach $sync_errors as $msg}
+				<li>{$msg|wash()}</li>
+			{/foreach}
+		    </ul>
+		{/if}
 		<ul>
-			{foreach $syncResults as $evtMsg}
-				<li>{$evtMsg}</li>
+			{foreach $sync_results as $msg}
+				<li>{$msg|wash()}</li>
 			{/foreach}
 		</ul>
 	</div>
@@ -108,7 +115,7 @@ function checkAll()
     <tr class="{$style}">
         {if $sync_access}
         <td align="left" width="1">
-            <input type="checkbox" name="SyncArray[]" value="{$sync_item.id}" {if ne($sync_item.status, 0)}disabled="disabled"{/if}/>
+            <input type="checkbox" name="syncArray[]" value="{$sync_item.id}" {if ne($sync_item.status, 0)}disabled="disabled"{/if}/>
         </td>
         {/if}
         <td>

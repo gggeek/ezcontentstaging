@@ -1,6 +1,8 @@
 <?php
 /**
 *
+* @deprecated
+*
 * View used to sync one node
 *
 * @package ezcontentstaging

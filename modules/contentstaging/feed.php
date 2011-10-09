@@ -36,14 +36,14 @@ if ( $http->hasPostVariable( 'syncAction' ) )
 
     $syncErrors = array();
     $syncResults = array();
-    if ( $http->hasPostVariable( 'SyncArray' ) && is_array( $http->postVariable( 'SyncArray' ) ) )
+    if ( $http->hasPostVariable( 'syncArray' ) && is_array( $http->postVariable( 'syncArray' ) ) )
     {
         $tosync = array();
-        foreach ( $http->postVariable( 'SyncArray' ) as $eventId )
+        foreach ( $http->postVariable( 'syncArray' ) as $eventId )
         {
             $event = eZContentStagingItem::fetch( $eventId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
-            if ( $event instanceof eZContentStagingItem )
+            if ( $event instanceof eZContentStagingEvent )
             {
                 $tosync[$event->attribute( 'id' )] = $event;
             }
@@ -54,11 +54,14 @@ if ( $http->hasPostVariable( 'syncAction' ) )
         }
         // we sync by sorting based on event IDs to keep proper history
         ksort( $tosync );
-        foreach( $tosync as $id => $event )
+        $out = eZContentStagingEvent::syncEvents( $tosync );
+        /// @todo apply i18n to messages
+        foreach( $out as $id => $resultCode )
         {
-            if ( ( $result = $event->syncEvent() ) !== 0 )
+            $event = $tosync[$id];
+            if ( $resultCode !== 0 )
             {
-                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . "to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($result) [Event $id]";
+                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . "to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
             }
             else
             {
@@ -70,6 +73,7 @@ if ( $http->hasPostVariable( 'syncAction' ) )
     else
     {
         eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
+        /// @todo apply i18n to message
         $syncErrors[] = "No object to sync...";
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
