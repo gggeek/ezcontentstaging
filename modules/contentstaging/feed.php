@@ -76,7 +76,7 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
         $syncErrors[] = "No object to sync...";
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
-	$tpl->setVariable( 'sync_errors', $syncErrors );
+    $tpl->setVariable( 'sync_errors', $syncErrors );
     $tpl->setVariable( 'sync_results', $syncResults );
 
 } // end of 'doing sync' action
@@ -94,7 +94,7 @@ $tpl->setVariable( 'view_parameters', array( 'offset', (int)$Params['Offset'] ) 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/feed.tpl' );
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
-								'url' => 'contentstaging/feeds' ) );
+                                'url' => 'contentstaging/feeds' ) );
 if ( $targetId == null )
 {
     $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', 'All feeds' ),

@@ -59,7 +59,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
         ///       maybe these are already in node cache anyway?
         $db = eZDB::instance();
         foreach( $newParentNodes as $newParentNode )
-    	{
+        {
             $sql = "SELECT node_id, remote_id, priority, sort_field, sort_order, path_string FROM ezcontentobject_tree where contentobject_id = '$objectID' AND parent_node_id  = " . $newParentNode->attribute( 'node_id' );
             $data = $db->arrayQuery( $sql );
             /// @todo test for errors
@@ -74,7 +74,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
                 'sortField' => $data['sort_field'],
                 'sortOrder' => $data['sort_order']
             );
-    	}
+        }
 
         // finally add, for every target feed, all new nodes that fall within it
         // Question: shall we show this event on every node, or only on new nodes ???

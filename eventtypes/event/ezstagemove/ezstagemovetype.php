@@ -14,9 +14,9 @@ class eZStageMoveType extends eZWorkflowEventType
     {
         /*$parameters = $process->attribute( 'parameter_list' );
 
-	    $node_id = $parameters['node_id'];
-	    $object_id = $parameters['object_id'];
-	    $new_parent_node_id = $parameters['new_parent_node_id'];
+        $node_id = $parameters['node_id'];
+        $object_id = $parameters['object_id'];
+        $new_parent_node_id = $parameters['new_parent_node_id'];
 
         $nodeObject = eZContentObjectTreeNode::fetch($node_id);
         $parentNodeObject = eZContentObjectTreeNode::fetch( $new_parent_node_id );
@@ -40,7 +40,7 @@ class eZStageMoveType extends eZWorkflowEventType
                 'node_remote_id' => $nodeRemoteID,
                 'timestamp' => $time,
                 'action' => eZSyndicationNodeActionLog::ACTION_MOVE,
-		        'options' => serialize( $optionList ) ) );
+                'options' => serialize( $optionList ) ) );
             $log->store();
         }*/
 

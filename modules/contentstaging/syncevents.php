@@ -66,7 +66,7 @@ $tpl->setVariable( 'sync_results', $syncResults );
 $Result['content'] = $tpl->fetch( 'design:contentstaging/sync.tpl' );
 
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
-								'url' => 'contentstaging/feeds' ) );
+                                'url' => 'contentstaging/feeds' ) );
 /*if ( $target_id == null )
 {
     $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', 'All feeds' ),

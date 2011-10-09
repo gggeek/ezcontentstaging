@@ -47,22 +47,22 @@ function checkAll()
 </script>
 
 {if is_set( $sync_results )}
-	<div class="message-warning">
-		<h2>{"Content synchronisation action results "|i18n("design/admin/class/edit")}:</h2>
-		{* @todo mark in  red *}
-		{if $sync_errors|count()}
-		    <ul>
-			{foreach $sync_errors as $msg}
-				<li>{$msg|wash()}</li>
-			{/foreach}
-		    </ul>
-		{/if}
-		<ul>
-			{foreach $sync_results as $msg}
-				<li>{$msg|wash()}</li>
-			{/foreach}
-		</ul>
-	</div>
+    <div class="message-warning">
+        <h2>{"Content synchronisation action results "|i18n("design/admin/class/edit")}:</h2>
+        {* @todo mark in  red *}
+        {if $sync_errors|count()}
+            <ul>
+            {foreach $sync_errors as $msg}
+                <li>{$msg|wash()}</li>
+            {/foreach}
+            </ul>
+        {/if}
+        <ul>
+            {foreach $sync_results as $msg}
+                <li>{$msg|wash()}</li>
+            {/foreach}
+        </ul>
+    </div>
 {/if}
 
 <div class="attribute-header">
@@ -143,7 +143,7 @@ function checkAll()
         <td>
             {$sync_item.modified}...
         </td>
-    	<td>
+        <td>
             {$sync_item.to_sync|wash}
         </td>
     </tr>

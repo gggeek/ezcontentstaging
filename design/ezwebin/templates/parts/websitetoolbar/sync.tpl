@@ -1,7 +1,7 @@
 {**
   Website toolbar button dedicated to syncing an object via contentstaging extension
 
-  @todo: there can be many sinc targets for a given node, here we only allow user
+  @todo: there can be many sync targets for a given node, here we only allow user
          to sync all of them at once. Should become a drop-down list in the future
 *}
 {* gg: what is this rss thing doing here? *}
@@ -28,14 +28,14 @@
                     {set $ids = $ids|merge( $event.id )}
                 {/foreach}
             {/foreach}
-            {* @todo add ajax support via ezjscore and/or REST *}
-		    {if $create_sync_access}<a class="ezcs-sync-node" id="syncnodelink_{$current_node.node_id}" href={concat( "/contentstaging/syncnode/",  $current_node.node_id )|ezurl} title="{'Sync content'|i18n( 'design/ezwebin/parts/website_toolbar' )}">{/if}
+            {* @todo try to figure out if there are syncing events... *}
+            {if $create_sync_access}<a class="ezcs-sync-node" id="syncnodelink_{$current_node.node_id}" href={concat( "/contentstaging/syncnode/",  $current_node.node_id )|ezurl} title="{'Sync content'|i18n( 'design/ezwebin/parts/website_toolbar' )}">{/if}
                 <img class="ezwt-input-image" width="16px" height="16px" src={"websitetoolbar/sync.gif"|ezimage} alt="{'Synchronize node'|i18n( 'design/ezwebin/parts/website_toolbar' )}" />
-			{if $create_sync_access}</a>{/if}
+            {if $create_sync_access}</a>{/if}
 
-			{undef $ids $preferred_lib}
-		{else}
-		    {* @todo show an icon: no need to sync ? *}
+            {undef $ids $preferred_lib}
+        {else}
+            {* @todo show an icon: no need to sync ? *}
         {/if}
         {undef $create_sync_access $needs_sync}
     {/if}

@@ -32,8 +32,8 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
         {
             $priority = (int) $priorityArray[$i];
             $node_id = (int) $priorityIDArray[$i];
-	    $nodeObject = eZContentObjectTreeNode::fetch( $node_id );
-	    $remote_id = $nodeObject->attribute( 'remote_id' );
+        $nodeObject = eZContentObjectTreeNode::fetch( $node_id );
+        $remote_id = $nodeObject->attribute( 'remote_id' );
             $priorityArrayList[] = array( 'remote_id' => $remote_id,
                                           'priority' => $priority );
         }
