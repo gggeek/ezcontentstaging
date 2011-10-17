@@ -1,13 +1,11 @@
-. finish missing events
+. finish missing events: swap, move, publish
 
-. in ezrestapiggwsclient, add transcoding of values from event-style to rest-api style (eg ids of languages, booleans etc)
+. in ezrestapiggwsclient
+  - add transcoding of values from event-style to rest-api style (eg ids of languages, booleans etc)
+  - add better error checking on returned http call results
 
-. implement REST api thing
-
-. create some documentation: a table of all events, and for each one:
-  - the nodes affected (in terms of feeds that will have to be notified)
-  - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
-  - details of complex cases (where this logic is not straight)
+. implement REST api (target-server side)
+  - verify if railroute supports optional/mandatory params in query string, how it implements support for PUT/POST/DELETE
 
 . test delete event: how is it triggered?
 
@@ -26,7 +24,7 @@
 
 . test setsection workflow event: it creates one staging event too much?
 
-. finish js code used by ajax calls for ezwt
+. finish js code used by ajax calls for ezwt (it misses checking oif return value, alert, changing icon state)
 
 . proper policy checking before allowing sync calls (eg. in "feed" view)
 
@@ -44,23 +42,31 @@
 
 . in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
-. for ezp 4.6, add a new subtab in object view for admin design
-
 . cleanup script that resets and initializes feeds. Also via gui (in "feeds" view)
   Feed initailization is done:
   - storing in ini file node_id on remmote server for all sourcenodes
   - adding to stream of feed events one setobjremoteid and one setobjremoteid events
+
+. tpl operator for sync type icon (or text) by its code
+
+. rework dashboard block so that it lists nodes instead of sync events?
+  note that we will have problems with deleted objects not being shown there
+
+. create some documentation: a table of all events, and for each one:
+  - the nodes affected (in terms of feeds that will have to be notified)
+  - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
+  - details of complex cases (where this logic is not straight)
+
+
+Phase 2 (?)
+
+. for ezp 4.6, add a new subtab in object view for admin design
 
 . dependency tracking:
   - all events should not have a pending create event for any of their parents
   - obj relations?
   - set section: should not have a pending set section for one of its parents (nb: even for 2ndary locations? test it)
   - hide: should not have a pending set section for one of its parents
-
-. tpl operator for sync type icon (or text) by its code
-
-. rework dashboard block so that it lists nodes instead of sync events?
-  note that we will have problems with deleted objects not being shown there
 
 . verify events that need to happen before action: are we sure that after trigger action can not be skipped (eg: because of some perms checking?).
   Try to move them to "after" (eventually, patch operations: content/hide, )
