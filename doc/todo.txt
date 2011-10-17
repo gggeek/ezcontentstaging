@@ -1,6 +1,17 @@
+. finish missing events
+
+. in ezrestapiggwsclient, add transcoding of values from event-style to rest-api style (eg ids of languages, booleans etc)
+
+. implement REST api thing
+
+. create some documentation: a table of all events, and for each one:
+  - the nodes affected (in terms of feeds that will have to be notified)
+  - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
+  - details of complex cases (where this logic is not straight)
+
 . test delete event: how is it triggered?
 
-. check changes in events definitions o(either operation definition or invocation) from ezp 4.1 to 4.5
+. check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
   - removelocation: checked
   - addlocation: ok
   - hide: ok
@@ -11,8 +22,9 @@
   - removetranslation: ok
   - updatealwaysavailable
   - updatemainassignment
+  - updateinitiallanguage
 
-. fix setsection workflow event: it creates one staging event too much
+. test setsection workflow event: it creates one staging event too much?
 
 . finish js code used by ajax calls for ezwt
 

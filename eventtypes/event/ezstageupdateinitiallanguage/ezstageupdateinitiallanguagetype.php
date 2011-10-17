@@ -10,27 +10,45 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
         $this->setTriggerTypes( array( 'content' => array( 'updateinitiallanguage' => array( 'before' ) ) ) );
     }
 
+    /**
+    * An event that is set purely to the object, ie. it affects all its nodes
+    */
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
 
-        if ( isset( $parameters['node_id'] ) )
-        {
-            $errorText = ' node ID ' . $parameters['node_id'];
-            $node = eZContentObjectTreeNode::fetch( $parameters['node_id'] );
-        }
-        else
-        {
-            // In case node id is not supplied, use object id (this depends on patch level)
-            $errorText = ' content object ID ' . $parameters['object_id'];
-            $nodeList = eZContentObjectTreeNode::fetchByContentObjectID( $parameters['object_id'] );
-            $node = $nodeList[0];
-        }
+        $objectID = $parameters['object_id'];
 
-        if ( !is_object( $node ) )
+        // sanity checks
+
+        $object = eZContentObject::fetch( $ObjectID );
+        if ( !is_object( $object ) )
         {
-            eZDebug::writeError( 'Unable to fetch node for' . $errorText, 'eZStageUpdateInitialLanguageType::execute' );
+            eZDebug::writeError( 'Unable to fetch object ' . $objectID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
+        }
+
+        $objectID = $object->attribute( 'id' );
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+        $affectedObjectData = array( "initialLanguage" => $parameters['initial_language_id'], "objectRemoteID" => $object->attribute( 'remote_id' ) );
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        {
+            $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
+            if ( count( $affectedFeedNodes ) )
+            {
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE,
+                    $affectedObjectData,
+                    // We always mark every node as affected, even though
+                    // in practice a given node might not be part of any feed.
+                    // This way we insure that when looking at the node via ezwt
+                    // it is marked as for-sync even though to be synced are in
+                    // reality the other nodes of the same object
+                    array_keys( $objectNodes )
+                );
+            }
         }
 
         $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );

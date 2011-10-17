@@ -59,6 +59,7 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
                 );
             }
         }
+
         return eZWorkflowType::STATUS_ACCEPTED;
     }
 }

@@ -45,12 +45,14 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
+
                 case eZContentStagingEvent::ACTION_DELETE:
                     $method = 'DELETE';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID?trash={$data['trash']}";
                     $out = $this->restCall( $method, $url );
                     break;
+
                 case eZContentStagingEvent::ACTION_HIDEUNHIDE:
                     $method = 'POST';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
@@ -60,12 +62,15 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     //    );
                     $out = $this->restCall( $method, $url );
                     break;
+
                 case 'move':
                     ;
                     break;
+
                 case 'publish':
                     ;
                     break;
+
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
@@ -73,6 +78,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $url = "/content/locations?remoteId=$RemoteNodeRemoteID&trash={$data['trash']}";
                     $out = $this->restCall( $method, $url );
                     break;
+
                 case eZContentStagingEvent::ACTION_REMOVETRANSLATION:
                     $method = 'DELETE';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
@@ -89,12 +95,14 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         }
                     }
                     break;
+
                 case eZContentStagingEvent::ACTION_UPDATESECTION:
                     $method = 'PUT';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}";
                     $out = $this->restCall( $method, $url );
                     break;
+
                 case eZContentStagingEvent::ACTION_SORT:
                     $method = 'PUT';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
@@ -108,22 +116,34 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
+
                 case 'swap':
                     ;
                     break;
+
                 case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
-                    $method = 'DELETE';
+                    $method = 'PUT';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
-                    $payload = array( "alwaysAvailable" => $ata['alwaysAvailable'] );
+                    /// @todo transcode values
+                    $payload = array( 'alwaysAvailable' => $data['alwaysAvailable'] );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
-                case 'updateinitiallanguage':
-                    ;
+
+                case eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE:
+                    $method = 'PUT';
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
+                    /// @todo transcode values
+                    $payload = array( 'initialLanguage' => $data['initialLanguage'] );
+                    $out = $this->restCall( $method, $url, $payload );
                     break;
-                case 'updatemainassignment':
-                    ;
+
+                case eZContentStagingEvent::ACTION_UPDATEMAINASSIGNMENT:
+                    // not supported yet, as we have to figure out how to translate this into a set of REST API calls
+                    $out = -666;
                     break;
+
                 case eZContentStagingEvent::ACTION_UPDATEPRIORITY:
                     $method = 'PUT';
                     foreach ( $data['priorities'] as $priority )
