@@ -1,3 +1,8 @@
+GG, 17.10.2011
+
+. shall we define some error codes from REST api calls that do not leave the initial event in pending state but remove it altogether from the list?
+  We have to think hard if this is actually a good thing, as we prefer all sync to go trough than actually discarding sync events in a transparent way...
+
 GG, 15.10.2011
 
 . [side note] does webdav code trigger all content related operations? it seems it eg. skips calls to delete...
@@ -18,20 +23,25 @@ GG, 15.10.2011
   This might create more versions on target than on source. Is it acceptable?
 
 - main node: what if a target server includes the copy of the secondary node of an object but not the copy of its main node?
+  there needs to be some workaround logic implemented...
 
 GG, 7.10.2011
 
 . when synchronizing many items, is it ok to sort by item creation, or should we sort
   by event creation? We have to think about nodes being moved, deleted, etc...
 
+  a: we go by event creation as first choice, as this is what makes more sense
+
   Following the same vein: what if the editor tries to sync creation of a node
   without having synced creation of its parent? How to handle dependencies?
+
+  a: ... we'll need some smart handling of dependencies bweteen events at some point. Can we leave it out for phase 2?
 
 . how to bootstrap the process? The top level nodes in the feed have to exist
   on both sides, or the feed needs to have the remote-server ID known for them
 
   a: set remote id of remote top-level nodes (has to be saved in ini)
-     but then what about updating them? we need to sync remote_id of remote root parent too
+     but then what about updating them? we need to sync remote_id of remote root parent too!
   
 . some editing actions are in fact applied to nodes, some other to objects.
   eg: hiding a node applies to a node, while adding a location or setting state applies to
@@ -73,21 +83,29 @@ GG, 24.9.2011
 - shall we implement a "status" col in the items table, so that it is set to "pending"
   while attempting an update, and no 2 updates are tried at the same time?
 
+  a: yes
+
 - syncing a single object from the ezwebin toolbar: use ezjscore, a plain module/view, rest, ... ?
+
+  a: ezjscore. add fallback to view for graceful degradation (phase 2)
 
 - "sync" icon in ezwt toolbar: what shall we show in different cases?
   1. user has no rights to see sync state => show nothing
-  1. user has sync rights, obj might need sync or not => 2 icons
-  2. user has rights to see sync state but not to sync, obj needs sync or not => use same 2 icons but no link, or different ones?
+  2. user has sync rights, obj might need sync or not => 3 icons: to sync, not to sync, in sync
+  3. user has rights to see sync state but not to sync, obj needs sync or not => use same 3 icons but no link, or different ones?
+
+  a: for point 3: use same set of icons but no link
 
 - management of target hosts: shall we put it in a db table with editing interface
   or in an ini settings file?
-  A: start with ini, but wrap it up in a content class
+
+  a: start with ini, but wrap it up in a content class
 
 - shall we store in sync table (eg. in a data_text column) the list of things to
   be synced, in detail? (eg. list of nodes to be added or removed, vs. every time
   that there is a node change, resync complete list of nodes for object) ?
   We definitely need to look at rest api for this
+
 
 JLemaitre, 13.9.2011
 
