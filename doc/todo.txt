@@ -1,3 +1,17 @@
+. test delete event: how is it triggered?
+
+. check changes in events definitions o(either operation definition or invocation) from ezp 4.1 to 4.5
+  - removelocation: checked
+  - addlocation: ok
+  - hide: ok
+  - sort: ok
+  - set section:  ok
+  - update priority: ok
+  - delete: ok
+  - removetranslation: ok
+  - updatealwaysavailable
+  - updatemainassignment
+
 . fix setsection workflow event: it creates one staging event too much
 
 . finish js code used by ajax calls for ezwt

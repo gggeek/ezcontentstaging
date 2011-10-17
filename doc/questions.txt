@@ -1,3 +1,24 @@
+GG, 15.10.2011
+
+. [side note] does webdav code trigger all content related operations? it seems it eg. skips calls to delete...
+
+. update-priority event: shall we show it as needing sync on the parent node or on the children nodes?
+  after all, it is the children nodes that change their property, even though the action is carried out in the parent...
+
+. is the delete trigger related to deleting nodes or objects ??? for our purposes, relating it to an obj is simpler,
+  but we need to check exactly when it is triggered by eZ
+  we'll have to test:
+  - when deleting a 2ndary node without children, the node is dleted via removelocation
+  - when deleting a 2ndary node with children, ...
+  - when deleting a 1ary node with children, ...
+  - when deleting a 1ary node without children, ...
+  - is it possible at all to remove in a single php call one object that has many locations? what events will this triger?
+
+- the updatealwaysavailable event is transformed into a content editing action on target server.
+  This might create more versions on target than on source. Is it acceptable?
+
+- main node: what if a target server includes the copy of the secondary node of an object but not the copy of its main node?
+
 GG, 7.10.2011
 
 . when synchronizing many items, is it ok to sort by item creation, or should we sort
@@ -9,6 +30,9 @@ GG, 7.10.2011
 . how to bootstrap the process? The top level nodes in the feed have to exist
   on both sides, or the feed needs to have the remote-server ID known for them
 
+  a: set remote id of remote top-level nodes (has to be saved in ini)
+     but then what about updating them? we need to sync remote_id of remote root parent too
+  
 . some editing actions are in fact applied to nodes, some other to objects.
   eg: hiding a node applies to a node, while adding a location or setting state applies to
   an object.
@@ -19,11 +43,13 @@ GG, 7.10.2011
 
 . q: always store a lot of object data in events, in case obj is deleted later and we want to show meaningful data in control panels?
 
+
 GG, 4.10.2011
 
 . decide on naming: feed vs target
 
 . decide on format for results of sync calls: a string or structured data? who translates this: view or tpl?
+
 
 GG, 24.9.2011
 
