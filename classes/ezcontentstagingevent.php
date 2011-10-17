@@ -22,10 +22,17 @@
 
 class eZContentStagingEvent extends eZPersistentObject
 {
+    /// @todo !important reorder in same order as on fs / ezwstransport
     const ACTION_ADDLOCATION = 1;
     const ACTION_REMOVELOCATION = 2;
     const ACTION_UPDATESECTION = 4;
     const ACTION_HIDEUNHIDE = 8;
+    const ACTION_SORT = 16;
+    const ACTION_UPDATEPRIORITY = 32;
+    const ACTION_DELETE = 64;
+    const ACTION_REMOVETRANSLATION = 128;
+    const ACTION_UPDATEALWAYSAVAILABLE = 256;
+    const ACTION_UPDATEMAINASSIGNMENT = 512;
 
     const STATUS_TOSYNC = 0;
     const STATUS_SYNCING = 1;
@@ -416,12 +423,19 @@ class eZContentStagingEvent extends eZPersistentObject
     }*/
 
     /**
-    * Helper function. Funny this is not implemented in eZContentObject...
+    * Helper function - returns the list of ndoes an obj related to, saving on resources
+    * Funny that something similar not implemented in eZContentObject...
+    * @return array node id => path_string
     */
     static function assignedNodeIds( $objectId )
     {
         $db = eZDB::instance();
-        return $db->arrayQuery( "SELECT node_id from ezcontentobject_tree where contentobject_id = $objectId", array( 'column' => 'node_id' ) );
+        $out = array();
+        foreach( $db->arrayQuery( "SELECT node_id, path_string from ezcontentobject_tree where contentobject_id = $objectId" ) as $row )
+        {
+            $out[$row['node_id']] = $row['path_string'];
+        }
+        return $out;
     }
 
 }

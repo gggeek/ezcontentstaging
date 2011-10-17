@@ -116,6 +116,27 @@ class eZContentStagingTarget
         return false;
     }
 
+    /**
+    * Given an array on nodes, returns the list of those which are part of the feed
+    * @param array $nodepathsarray node_id => node_path
+    * @return array fileterd, in same format: node_id => node_path
+    */
+    function includedNodesByPath( $nodepathsarray )
+    {
+        $out = array();
+        foreach( $this->_attrs['subtrees'] as $subtreeRoot )
+        {
+            foreach ( $nodepathsarray as $nodeid => $nodepath )
+            {
+                if ( strpos( $nodepath, '/' . $subtreeRoot . '/' ) !== false )
+                {
+                    $out[$nodeid] = $nodepath;
+                }
+            }
+        }
+        return $out;
+    }
+
     /// CamelCase to camel_case conversion
     function CamelCase2camel_case( $array )
     {
