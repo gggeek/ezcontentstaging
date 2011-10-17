@@ -21,10 +21,15 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
         $this->setTriggerTypes( array( 'content' => array( 'removelocation' => array( 'before' ) ) ) );
     }
 
+    /**
+    * NB: definition of this trigger has changed slightly from 4.1.4 to 4.5:
+    *     parameters node_id, object_id and move_to_trash have been removed from call in content/action
+    */
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $removedNodeList = $parameters['node_list'];
+        $trash = isset( $parameters['move_to_trash'] ) ? : true;
 
         // sanity checks
 
@@ -59,7 +64,8 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                }
                $removedNodeRemoteIDList[$removedNode->attribute( 'path_string' )] = array(
                    "nodeID" => $removedNode->attribute( 'node_id' ),
-                   "remoteNodeID" => $removedNode->attribute( 'remote_id' ) );
+                   "remoteNodeID" => $removedNode->attribute( 'remote_id' ),
+                   "trash" => $trash );
             }
         }
 
@@ -69,8 +75,8 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
             return eZWorkflowType::STATUS_ACCEPTED;
         }
         // set this event to be shown on all remaining nodes
-        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectId );
-        $objectNodes = array_diff( $objectNodes, $removedNodeList );
+        $objectNodes = array_keys( eZContentStagingEvent::assignedNodeIds( $objectId ) );
+        $affectedNodes = array_diff( $objectNodes, $removedNodeList );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
             foreach( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeData )
@@ -82,7 +88,8 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                         $objectId,
                         eZContentStagingEvent::ACTION_REMOVELOCATION,
                         $removedNodeData,
-                        $objectNodes
+                        /// @todo verify: shall we always mark all nodes as affected? maybe we should limit this more
+                        $affectedNodes
                     );
                 }
             }

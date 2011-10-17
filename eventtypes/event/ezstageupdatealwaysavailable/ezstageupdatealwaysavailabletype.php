@@ -12,43 +12,39 @@ class eZStageUpdateAlwaysavailableType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
+        $objectID = $parameters['object_id'];
 
-        if ( isset( $parameters['node_id'] ) )
+        // sanity checks
+        $object = eZContentObject::fetch( $objectID );
+        if ( !is_object( $object ) )
         {
-            $errorText = ' node ID ' . $parameters['node_id'];
-            $node = eZContentObjectTreeNode::fetch( $parameters['node_id'] );
-        }
-        else
-        {
-            // In case node id is not supplied, use object id (this depends on patch level)
-            $errorText = ' content object ID ' . $parameters['object_id'];
-            $nodeList = eZContentObjectTreeNode::fetchByContentObjectID( $parameters['object_id'] );
-            $node = $nodeList[0];
-        }
-
-        if ( !is_object( $node ) )
-        {
-            eZDebug::writeError( 'Unable to fetch node for' . $errorText, 'eZStageTranslationAvailableType::execute' );
+            eZDebug::writeError( 'Unable to fetch object ' . $objectID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+        $affectedObjectData = array( "objectRemoteID" => $object->attribute( 'remote_id' ), "alwaysAvailable" => $parameters['new_always_available'] );
 
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_TRANSLATION_AVAILABLE,
-                'options' => serialize( array( 'new_always_available' => $parameters['new_always_available'] ) ) ) );
-
-            $log->store();
-        }*/
+            $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
+            if ( count( $affectedFeedNodes ) )
+            {
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE,
+                    $affectedObjectData,
+                    // We always mark every node as affected, even though
+                    // in practice a given node might not be part of any feed.
+                    // This way we insure that when looking at the node via ezwt
+                    // it is marked as for-sync even though to be synced are in
+                    // reality the other nodes of the same object
+                    array_keys( $objectNodes )
+                );
+            }
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

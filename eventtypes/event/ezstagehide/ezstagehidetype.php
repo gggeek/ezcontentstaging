@@ -36,18 +36,19 @@ class eZStageHideType extends eZWorkflowEventType
         }
 
         $objectId = $node->attribute( 'contentobject_id' );
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $hidden = $node->attribute( 'is_hidden' );
+        $hiddenNodeData = array( 'nodeID' => $nodeID, 'nodeRemoteID' => $node->attribute( 'remote_id' ), 'hide' => $node->attribute( 'is_hidden' ) );
+        $affectedNodes = array( $nodeID );
         foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
             eZContentStagingEvent::addEvent(
                 $target_id,
                 $objectId,
                 eZContentStagingEvent::ACTION_HIDEUNHIDE,
-                array( 'nodeID' => $nodeID, 'nodeRemoteID' => $nodeRemoteID, 'hide' => $hidden ),
-                array( $nodeID )
+                $hiddenNodeData,
+                $affectedNodes
                 );
         }
+
         return eZWorkflowType::STATUS_ACCEPTED;
     }
 }

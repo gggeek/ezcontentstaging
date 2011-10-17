@@ -12,40 +12,56 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
 
-        $MainAssignmentID = $parameters['main_assignment_id'];
-        $ObjectID = $parameters['object_id'];
+        $mainNodeID = $parameters['main_assignment_id'];
+        $objectID = $parameters['object_id'];
 
-        $MainAssignment = eZContentObjectTreeNode::fetch( $MainAssignmentID );
-        $Object = eZContentObject::fetch( $ObjectID );
+        // sanity checks
+
+        $mainNode = eZContentObjectTreeNode::fetch( $mainNodeID );
         if ( !is_object( $MainAssignment ) )
         {
-            eZDebug::writeError( 'Unable to fetch node with ID ' . $MainAssignmentID, 'eZStageUpdateMainAssignmentType::execute' );
+            eZDebug::writeError( 'Unable to fetch node ' . $mainNodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        if ( !is_object( $Object ) )
+        $object = eZContentObject::fetch( $ObjectID );
+        if ( !is_object( $object ) )
         {
-            eZDebug::writeError( 'Unable to fetch object with ID ' . $ObjectID, 'eZStageUpdateMainAssignmentType::execute' );
+            eZDebug::writeError( 'Unable to fetch object ' . $objectID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $MainAssignment );
+        // we need to propagate this event to feeds that include either old or new main node
+        $prevMainNode = $object->attribute( 'main_node' );
+        $affectedNodes = array(
+            $prevMainNode->attribute( 'node_id' ) => $prevMainNode->attribute( 'path_string' ),
+            $mainNode->attribute( 'node_id' ) => $mainNode->attribute( 'path_string' )
+        );
 
-        $nodeAssignmentArray = array( 'object_remote_id' => $Object->attribute( 'remote_id' ),
-                                      'main_assignment_parent_remote_id' => $MainAssignment->attribute( 'remote_id' ) );
-        $time = time();
-        foreach ( $feedSourceIDList as $feedSourceID )
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+        $affectedObjectData = array( "objectRemoteID" => $object->attribute( 'remote_id' ), "..." => '' );
+
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $MainAssignment->attribute( 'remote_id' ),
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_UPDATE_MAIN_ASSIGNMENT,
-                'options' => serialize( $nodeAssignmentArray ) ) );
-            $log->store();
-        }*/
+            $affectedFeedNodes = array_keys( $target->includedNodesByPath( $affectedNodes ) );
+            if ( count( $affectedFeedNodes ) )
+            {
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_UPDATEMAINASSIGNMENT,
+                    $affectedObjectData,
+                    // We always mark every node as affected, even though
+                    // in practice a given node might not be part of any feed.
+                    // This way we insure that when looking at the node via ezwt
+                    // it is marked as for-sync even though to be synced are in
+                    // reality the other nodes of the same object
+                    array_keys( $objectNodes )
+                );
+            }
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

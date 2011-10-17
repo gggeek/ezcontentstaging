@@ -10,48 +10,58 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
         $this->setTriggerTypes( array( 'content' => array( 'updatepriority' => array( 'before' ) ) ) );
     }
 
+    /// @todo shall we show this event as relating to children nodes instead of parent node?
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
 
         $nodeID = $parameters['node_id'];
         $priorityArray = $parameters['priority'];
         $priorityIDArray = $parameters['priority_id'];
 
-        $node = eZContentObjectTreeNode::fetch($nodeID);
+        // sanity checks
 
+        $node = eZContentObjectTreeNode::fetch( $nodeID );
         if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node for nodeID ' . $nodeID, 'eZStageUpdatePriorityType::execute' );
+            eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
         $priorityArrayList = array();
-
-        for ( $i=0; $i<count( $priorityArray );$i++ )
+        /// @todo !important usage of a foreach is ok here?
+        for ( $i = 0; $i < count( $priorityArray ); $i++ )
         {
-            $priority = (int) $priorityArray[$i];
-            $node_id = (int) $priorityIDArray[$i];
-        $nodeObject = eZContentObjectTreeNode::fetch( $node_id );
-        $remote_id = $nodeObject->attribute( 'remote_id' );
-            $priorityArrayList[] = array( 'remote_id' => $remote_id,
-                                          'priority' => $priority );
+            $childNodePriority = (int) $priorityArray[$i];
+            $childNodeID = (int) $priorityIDArray[$i];
+            if ( $childNodeID == 0 || !( $childNode = eZContentObjectTreeNode::fetch( $childNodeID ) ) )
+            {
+                eZDebug::writeError( 'Unable to fetch child node ' . $nodeID . ' to set priority value to it', __METHOD__ );
+                continue;
+            }
+            $childNodeRemoteID = $childNode->attribute( 'remote_id' );
+            $priorityArrayList[] = array( 'nodeID' => $childNodeID,
+                                          'nodeRemoteID' => $childNodeRemoteID,
+                                          'priority' => $childNodePriority );
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        $objectId = $node->attribute( 'contentobject_id' );
+        /// @todo !important we could avoid to encode into event the parent node id+remote_id for a small space saving
+        $affectedNodes = array( $nodeID );
+        $prioritizedNodesData = array(
+            'nodeID' => $nodeID,
+            'nodeRemoteID' => $node->attribute( 'remote_id' ),
+            'priorities' => $priorityArrayList );
+        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_UPDATE_PRIORITY,
-                'options' => serialize($priorityArrayList ) ) );
-            $log->store();
-        }*/
+            eZContentStagingEvent::addEvent(
+            $target_id,
+            $objectId,
+            eZContentStagingEvent::ACTION_UPDATEPRIORITY,
+            $prioritizedNodesData,
+            $affectedNodes );
+        }
+
         return eZWorkflowType::STATUS_ACCEPTED;
     }
 }

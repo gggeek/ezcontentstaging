@@ -39,20 +39,26 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
         $object = $node->attribute( 'object' );
         $objectID = $object->attribute( 'id' );
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
-        $newNodeData = array( "sectionID" => $sectionID, "objectRemoteID" => $object->attribute( 'remote_id' ) );
-        //var_export( eZContentStagingTarget::fetchByNode( $node ) );
-        //die();
-        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+        $affectedObjectData = array( "sectionID" => $sectionID, "objectRemoteID" => $object->attribute( 'remote_id' ) );
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            eZContentStagingEvent::addEvent(
-                        $target_id,
-                        $objectID,
-                        eZContentStagingEvent::ACTION_UPDATESECTION,
-                        $newNodeData,
-                        $objectNodes
-                    );
+            $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
+            if ( count( $affectedFeedNodes ) )
+            {
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_UPDATESECTION,
+                    $affectedObjectData,
+                    // We always mark every node as affected, even though
+                    // in practice a given node might not be part of any feed.
+                    // This way we insure that when looking at the node via ezwt
+                    // it is marked as for-sync even though to be synced are in
+                    // reality the other nodes of the same object
+                    array_keys( $objectNodes )
+                );
+            }
         }
-
         return eZWorkflowType::STATUS_ACCEPTED;
     }
 }

@@ -12,34 +12,34 @@ class eZStageSortType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
-
+        $parameters = $process->attribute( 'parameter_list' );
         $nodeID = $parameters['node_id'];
 
-        $node = eZContentObjectTreeNode::fetch($nodeID);
+        // sanity checks
 
+        $node = eZContentObjectTreeNode::fetch($nodeID);
         if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node for nodeID ' . $nodeID, 'eZStageSortType::execute' );
+            eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-        $action = eZSyndicationNodeActionLog::ACTION_SORT;
-        $options = array( 'sorting_field' => $parameters['sorting_field'], 'sort_order' => $parameters['sorting_order'] );
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        $objectID = $node->attribute( 'contentobject_id' );
+        $sortedNodeData = array(
+                    'nodeID' => $nodeID,
+                    'nodeRemoteID' => $node->attribute( 'remote_id' ),
+                    'sortField' => $parameters['sorting_field'],
+                    'sortOrder' => $parameters['sorting_order'] );
+        $affectedNodes = array( $nodeID );
+        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => $action,
-                'options' => serialize( $options ) ) );
-            $log->store();
-        }*/
+            eZContentStagingEvent::addEvent(
+                $target_id,
+                $objectID,
+                eZContentStagingEvent::ACTION_SORT,
+                $sortedNodeData,
+                $affeceteNodes );
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

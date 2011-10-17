@@ -45,8 +45,11 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
-                case 'delete':
-                    ;
+                case eZContentStagingEvent::ACTION_DELETE:
+                    $method = 'DELETE';
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $url = "/content/objects/remote/$RemoteObjRemoteID?trash={$data['trash']}";
+                    $out = $this->restCall( $method, $url );
                     break;
                 case eZContentStagingEvent::ACTION_HIDEUNHIDE:
                     $method = 'POST';
@@ -66,26 +69,54 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
+                    /// @todo transcode value for trash
+                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID&trash={$data['trash']}";
                     $out = $this->restCall( $method, $url );
                     break;
-                case 'removetranslation':
-                    ;
+                case eZContentStagingEvent::ACTION_REMOVETRANSLATION:
+                    $method = 'DELETE';
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID/translations/";
+                    foreach ( $data['translations'] as $translation )
+                    {
+                        /// @todo transcode value for language
+                        $url = $baseurl . "...";
+                        $out = $this->restCall( $method, $url );
+                        if ( $out != 0 )
+                        {
+                            /// @todo shall we break here or what? we only updated a few priorities, not all of them...
+                            break;
+                        }
+                    }
                     break;
                 case eZContentStagingEvent::ACTION_UPDATESECTION:
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $method = 'PUT';
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}";
                     $out = $this->restCall( $method, $url );
                     break;
-                case 'sort':
-                    ;
+                case eZContentStagingEvent::ACTION_SORT:
+                    $method = 'PUT';
+                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
+                    $payload = array(
+                        /// @todo transcode values
+                        // @todo can we omit safely to send priority?
+                        //'priority' => $data['priority'],
+                        'sortField' => $data['sortField'],
+                        'sortOrder' => $data['sortOrder']
+                        );
+                    $out = $this->restCall( $method, $url, $payload );
                     break;
                 case 'swap':
                     ;
                     break;
-                case 'updatealwaysavailable':
-                    ;
+                case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
+                    $method = 'DELETE';
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
+                    $payload = array( "alwaysAvailable" => $ata['alwaysAvailable'] );
+                    $out = $this->restCall( $method, $url, $payload );
                     break;
                 case 'updateinitiallanguage':
                     ;
@@ -93,8 +124,23 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case 'updatemainassignment':
                     ;
                     break;
-                case 'updatepriority':
-                    ;
+                case eZContentStagingEvent::ACTION_UPDATEPRIORITY:
+                    $method = 'PUT';
+                    foreach ( $data['priorities'] as $priority )
+                    {
+                        $RemoteNodeRemoteID = self::buildRemoteId( $priority['nodeID'], $priority['nodeRemoteID'] );
+                        $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
+                        $payload = array(
+                            // @todo can we omit safely to send rest of data?
+                            'priority' => $priority['priority']
+                        );
+                        $out = $this->restCall( $method, $url, $payload );
+                        if ( $out != 0 )
+                        {
+                            /// @todo shall we break here or what? we only updated a few priorities, not all of them...
+                            break;
+                        }
+                    }
                     break;
                 default:
                     $out = eZContentStagingEvent::ERROR_EVENTTYPEUNKNOWNTOTRANSPORT; // should we store this code in this class?

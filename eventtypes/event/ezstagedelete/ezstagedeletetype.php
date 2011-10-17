@@ -10,18 +10,30 @@ class eZStageDeleteType extends eZWorkflowEventType
         $this->setTriggerTypes( array( 'content' => array( 'delete' => array( 'before' )  ) ) );
     }
 
+    /**
+    * @todo test when this event gets triggered and when removelocation gets triggered instead
+    * @todo test that it is correct: we get a node_id, we do not check for notification all feeds that relate
+    *       to all nodes of the object, but only to current node. We assume thus
+    *       a single node is left when this is triggered?
+    */
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
+        $trash = $parameres['move_to_trash'];
 
         if ( isset( $parameters['node_id_list'] ) )
         {
             $nodeList = eZContentObjectTreeNode::fetch( $parameters['node_id_list'] );
             if ( $nodeList instanceof eZContentObjectTreeNode )
+            {
                 $nodeList = array( $nodeList );
+            }
+
+            /// @todo !important check that count( $nodeList ) == count( $parameters['node_id_list'] )
         }
         else
         {
+            /// @todo !important there seems to be no trace in kernel code of invocation of this event using $parameters['node_list'] instead of $parameters['node_id_list']. Remove?
             $nodeList = $parameters['node_list'];
         }
 
@@ -29,26 +41,30 @@ class eZStageDeleteType extends eZWorkflowEventType
         {
             if ( !$node || !is_object( $node ) )
             {
-                eZDebug::writeError( 'Element in node list is not an object.', 'eZStageDeleteType::execute' );
+                eZDebug::writeError( 'Element in node list is not an object', __METHOD__ );
                 continue;
             }
 
-            $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
-
-            $nodeRemoteID = $node->attribute( 'remote_id' );
-            $time = time();
-
-            foreach ( $feedSourceIDList as $feedSourceID )
+            $object = $node->attribute( 'contentobject' );
+            $objectID = $object->attribute( 'id' );
+            //$nodeRemoteID = $node->attribute( 'remote_id' );
+            $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+            $deletObjectData = array( "objectRemoteID" => $object->attribute( 'remote_id' ), "trash" => $trash );
+            foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
             {
-                $log = new eZSyndicationNodeActionLog( array(
-                    'source_id' => $feedSourceID,
-                    'node_remote_id' => $nodeRemoteID,
-                    'timestamp' => $time,
-                    'action' => eZSyndicationNodeActionLog::ACTION_DELETE ) );
-
-                $log->store();
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_DELETE,
+                    $deletObjectData,
+                    /// @todo decide:
+                    // which nodes to mrk as affected? In theory there should
+                    // be none left after the delete. But we run this trigger before the
+                    // actual action...
+                    $objectNodes
+                    );
             }
-        }*/
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }
