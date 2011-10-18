@@ -61,7 +61,7 @@ class eZStageDeleteType extends eZWorkflowEventType
                     // which nodes to mrk as affected? In theory there should
                     // be none left after the delete. But we run this trigger before the
                     // actual action...
-                    $objectNodes
+                    array_keys( $objectNodes )
                     );
             }
         }
