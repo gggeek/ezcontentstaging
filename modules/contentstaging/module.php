@@ -30,15 +30,27 @@ $ViewList = array(
                      /// @todo add definition of more post actions
                      'single_post_actions' => array( 'SyncEventsButton' => 'SyncEvents' )
                    ),
+    /**
+      @todo move all actions from other views into this one - cleaner architecture
+    // where all the actions take place
+    'actions' => array( 'script' => 'actions.php',
+                        'functions' => 'sync or manage',
+                        'default_navigation_part' => 'ezsetupnavigationpart',
+                        'ui_context' => 'default',
+                        /// @todo add definition of post actions to manage feeds: add/remove/reset/initialize/full sync
+                        'single_post_actions' => array( 'SyncEventsButton' => 'SyncEvents' )
+                       )
+    */
+
     /* moved to ezjscore functions
     /// view used to sync a set of events
     'syncevents' => array( 'script' => 'syncevents.php',
                            'functions' => 'sync',
                            'default_navigation_part' => 'ezsetupnavigationpart',
                            'ui_context' => 'default',
-                           'params' => array( 'event_ids' ) ),
-
-    /// view used to sync a node
+                           'params' => array( 'event_ids' ) ), */
+    /*
+    /// view used to sync a node - DEPRECATED
     'syncnode' => array( 'script' => 'sync.php',
                          'functions' => 'sync',
                          'default_navigation_part' => 'ezsetupnavigationpart',

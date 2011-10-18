@@ -63,8 +63,12 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $out = $this->restCall( $method, $url );
                     break;
 
-                case 'move':
-                    ;
+                case eZContentStagingEvent::ACTION_MOVE:
+                    $method = 'PUT';
+                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID/parent?destParentRemoteId=$RemoteParentNodeRemoteID";
+                    $out = $this->restCall( $method, $url );
                     break;
 
                 case 'publish':

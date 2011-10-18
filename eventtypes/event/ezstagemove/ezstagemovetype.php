@@ -65,7 +65,7 @@ class eZStageMoveType extends eZWorkflowEventType
             {
                 if ( $hasNewParentNode )
                 {
-                    // record a move-node event to this target
+                    // record a create-node event to this target
 
                     /// @todo ...
                 }
