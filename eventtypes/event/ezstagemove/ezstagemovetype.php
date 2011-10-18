@@ -12,37 +12,69 @@ class eZStageMoveType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
+        $nodeID = $parameters['node_id'];
+        $newParentNodeID = $parameters['new_parent_node_id'];
+        $objectID = $parameters['object_id'];
 
-        $node_id = $parameters['node_id'];
-        $object_id = $parameters['object_id'];
-        $new_parent_node_id = $parameters['new_parent_node_id'];
+        // sanity checks
 
-        $nodeObject = eZContentObjectTreeNode::fetch($node_id);
-        $parentNodeObject = eZContentObjectTreeNode::fetch( $new_parent_node_id );
-
-        if ( !is_object( $nodeObject ) OR  !is_object( $parentNodeObject ) )
+        $node = eZContentObjectTreeNode::fetch( $nodeID );
+        if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node for nodeID ' . $node_id . " OR Parent nodeID " . $new_parent_node_id, 'eZStageMoveType::execute' );
+            eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $optionList = array( 'parent_remote_id' => $parentNodeObject->attribute( 'remote_id' ) );
-
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $nodeObject );
-        $nodeRemoteID = $nodeObject->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        $newParentNode = eZContentObjectTreeNode::fetch( $newParentNodeID );
+        if ( !is_object( $newParentNode ) )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_MOVE,
-                'options' => serialize( $optionList ) ) );
-            $log->store();
-        }*/
+            eZDebug::writeError( 'Unable to fetch node ' . $newParentNodeID, __METHOD__ );
+            return eZWorkflowType::STATUS_ACCEPTED;
+        }
+
+        $nodePath = array( $node->attribute( 'path_string' ) );
+        $newParentNodePath = $newParentNode( $newParentNode->attribute( 'path_string' ) );
+        $affectedNodes = array( $nodeID );
+        $movedObjectData = array( 'parentNodeID' => $newParentNodeID, 'parentNodeRemoteID' => $newParentNode->attribute( 'remote_id' ) );
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        {
+            $hasNode = $target->includesNodeByPath( $nodePath );
+            $hasNewParentNode =  $target->includesNodeByPath( $newParentNodePath );
+            if ( $hasNode )
+            {
+                if ( $hasNewParentNode )
+                {
+                    // record a move-node event to this target
+                    eZContentStagingEvent::addEvent(
+                        $target_id,
+                        $objectID,
+                        eZContentStagingEvent::ACTION_MOVE,
+                        $movedObjectData,
+                        $affectedNodes
+                    );
+                }
+                else
+                {
+                    // record a remove-node event to this target
+
+                    /// @todo ...
+                }
+            }
+            else
+            {
+                if ( $hasNewParentNode )
+                {
+                    // record a move-node event to this target
+
+                    /// @todo ...
+                }
+                else
+                {
+                    // nothing to see here, move along
+                }
+            }
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

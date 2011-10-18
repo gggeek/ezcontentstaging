@@ -34,6 +34,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const ACTION_UPDATEALWAYSAVAILABLE = 256;
     const ACTION_UPDATEMAINASSIGNMENT = 512;
     const ACTION_UPDATEINITIALLANGUAGE = 1024;
+    const ACTION_MOVE = 2048;
 
     const STATUS_TOSYNC = 0;
     const STATUS_SYNCING = 1;
