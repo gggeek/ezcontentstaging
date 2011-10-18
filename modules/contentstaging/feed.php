@@ -20,18 +20,15 @@ $http = eZHTTPTool::instance();
 $tpl = eZTemplate::factory();
 $targetId = $Params['target_id'];
 
-//$ini = eZINI::instance();
-//$serviceIni = eZINI::instance( 'contentstaging.ini' );
-
-/*$user = eZUser::currentUser();
-if ( !$user->isLoggedIn() )
-    return $Module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
-$userID = $user->id();*/
-
 if ( $module->isCurrentAction( 'SyncEvents' ) )
 {
-    /// @todo: test if current user has access to contentstaging/sync, as access
-    ///        to the view is only limited by 'view'
+    // test if current user has access to contentstaging/sync, as access to this view is only limited by 'view'
+    $user = eZUser::currentUser();
+    $hasAccess = $user->hasAccessTo( 'contentstaging', 'sync' );
+    if ( $hasAccess['accessWord'] === 'no' )
+    {
+        return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
+    }
 
     $syncErrors = array();
     $syncResults = array();
