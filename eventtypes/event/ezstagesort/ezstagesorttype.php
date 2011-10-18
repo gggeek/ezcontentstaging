@@ -17,7 +17,7 @@ class eZStageSortType extends eZWorkflowEventType
 
         // sanity checks
 
-        $node = eZContentObjectTreeNode::fetch($nodeID);
+        $node = eZContentObjectTreeNode::fetch( $nodeID );
         if ( !is_object( $node ) )
         {
             eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );

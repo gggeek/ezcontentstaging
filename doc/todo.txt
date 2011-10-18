@@ -26,7 +26,7 @@
 
 . finish js code used by ajax calls for ezwt (it misses checking oif return value, alert, changing icon state)
 
-. proper policy checking before allowing sync calls (eg. in "feed" view)
+. proper policy checking before allowing sync calls (ok in "feed" view; remains to be seen in ezjscore call)
 
 . settle on naming conventions (user-side), rewrite all text labels in templates
 
@@ -69,7 +69,9 @@ Phase 2 (?)
   - hide: should not have a pending set section for one of its parents
 
 . verify events that need to happen before action: are we sure that after trigger action can not be skipped (eg: because of some perms checking?).
-  Try to move them to "after" (eventually, patch operations: content/hide, )
+  Try to move them to "after" (eventually, patch operations: content/hide, ), or set up a two-phase logic:
+  1. before action events sets up the sync-event in an "unconfirmed" state
+  2. after action event moves the sync-event to "confirmed" state
 
 . use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expeted more evident
 

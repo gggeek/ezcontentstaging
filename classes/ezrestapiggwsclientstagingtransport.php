@@ -163,7 +163,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     }
                     break;
                 default:
-                    $out = eZContentStagingEvent::ERROR_EVENTTYPEUNKNOWNTOTRANSPORT; // should we store this code in this class?
+                    $out = eZContentStagingEvent::ERROR_EVENTTYPEUNKNOWNTOTRANSPORT; // should we store this code in this class instead?
             }
             $results[] = $out;
         }
@@ -171,7 +171,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         return $results;
     }
 
-    /// @todo ...
+    /// @todo implement result checking and error code parsing ...
     protected function restCall( $method, $url, $payload=array() )
     {
         $options = array( 'method' => $method, 'requestType' => 'application/json' );
