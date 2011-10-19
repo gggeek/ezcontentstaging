@@ -13,7 +13,17 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
 {
     public function getRoutes()
     {
-        $routes = array();
+        $routes = array(
+            'stagingRemove' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId',
+                    'contentStagingRestContentController',
+                    'remove',
+                    'http-delete'
+                ),
+                1
+            ),
+        );
         return $routes;
     }
 
