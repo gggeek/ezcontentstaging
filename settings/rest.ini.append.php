@@ -18,4 +18,7 @@ SkipFilter[]=contentStagingRestApiController_*
 [contentStagingRestContentController_remove_CacheSettings]
 ApplicationCache=disabled
 
+[contentStagingRestContentController_addLocation_CacheSettings]
+ApplicationCache=disabled
+
 */ ?>

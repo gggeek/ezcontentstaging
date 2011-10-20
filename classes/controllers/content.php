@@ -43,5 +43,137 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
+    /**
+     * Handle the PUT request for a content object from its remote id to add a
+     * location to it
+     *
+     * Request:
+     * - PUT /content/objects/remote/:remoteId/locations?parentRemoteId=<parentNodeRemoteID>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doAddLocation()
+    {
+        $result = new ezpRestMvcResult();
+        if ( !isset( $this->request->get['parentRemoteId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                400, 'The "parentRemoteId" parameter is missing'
+            );
+            return $result;
+        }
+        $parentRemoteId = $this->request->get['parentRemoteId'];
+
+        $parentNode = eZContentObjectTreeNode::fetchByRemoteID( $parentRemoteId );
+        if ( !$parentNode instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                400, "Cannot find the node with the remote id {$parentRemoteId}"
+            );
+            return $result;
+        }
+        $object  = eZContentObject::fetchByRemoteID( $this->remoteId );
+        if ( !$object instanceof eZContentObject )
+        {
+            $result->status = new ezpRestHttpResponse(
+                404, 'Cannot find the content object with the remote id ' . $this->remoteId
+            );
+            return $result;
+        }
+
+        $nodes = $object->attribute( 'assigned_nodes' );
+        foreach( $nodes as $node )
+        {
+            if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
+            {
+                $result->status = new ezpRestHttpResponse(
+                    403,
+                    "The object '{$this->remoteId}' already has a location under node '{$parentRemoteId}'"
+                );
+                return $result;
+            }
+        }
+
+        $newNode = $this->addAssignment(
+            $object, $parentNode,
+            $this->request->inputVariables['remoteId'],
+            (int)$this->request->inputVariables['priority'],
+            $this->getSortField( $this->request->inputVariables['sortField'] ),
+            $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
+        );
+
+        $result->variables['Location'] = new contentStagingLocation( $newNode );
+        return $result;
+    }
+
+
+    /**
+     * Returns the eZContentObjectTreeNode::SORT_ORDER_* constant corresponding
+     * to the $stringSortOrder
+     *
+     * @param string $stringSortOrder
+     * @return int
+     */
+    protected function getSortOrder( $stringSortOrder )
+    {
+        // @todo throw an exception if $stringSortOrder is not ASC or DESC ?
+        $sortOrder = eZContentObjectTreeNode::SORT_ORDER_ASC;
+        if ( $stringSortOrder != 'ASC' )
+        {
+            $sortOrder = eZContentObjectTreeNode::SORT_ORDER_DESC;
+        }
+        return $sortOrder;
+    }
+
+    /**
+     * Returns the eZContentObjectTreeNode::SORT_FIELD_* constant corresponding
+     * to the $stringSortField
+     *
+     * @param string $stringSortField
+     * @return int
+     */
+    protected function getSortField( $stringSortField )
+    {
+        $field = eZContentObjectTreeNode::sortFieldID( strtolower( $stringSortField ) );
+        if ( $field === null )
+        {
+            // field might be null if sortFieldID does not recognize its
+            // parameter
+            // @todo throw an exception instead ?
+            $field = eZContentObjectTreeNode::SORT_FIELD_PATH;
+        }
+        return $field;
+    }
+
+
+    /**
+     * Create a new location for the $object under the $parent node.
+     *
+     * @param eZContentObject $object
+     * @param eZContentObjectTreeNode $parent
+     * @param string $newNodeRemoteId
+     * @param int $priority
+     * @param int $sortField
+     * @param int $sortOrder
+     * @return eZContentObjectTreeNode
+     */
+    protected function addAssignment( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+        $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
+        $newNode->setAttribute( 'contentobject_is_published', 1 );
+        $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
+        $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
+        $newNode->setAttribute( 'priority', $priority );
+        $newNode->setAttribute( 'sort_field', $sortField );
+        $newNode->setAttribute( 'sort_order', $sortOrder );
+        // Make sure the url alias is set updated.
+        $newNode->updateSubTreePath();
+        $newNode->sync();
+        $db->commit();
+        return $newNode;
+    }
+
 }
 
