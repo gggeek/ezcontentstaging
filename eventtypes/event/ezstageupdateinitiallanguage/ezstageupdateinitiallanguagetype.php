@@ -66,7 +66,7 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
                 'options' => serialize( array( 'new_initial_language_id' => $parameters['new_initial_language_id'] ) ) ) );
 
             $log->store();
-        }*/
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }
