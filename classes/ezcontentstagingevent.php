@@ -17,25 +17,25 @@
 * @copyright
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
 *
-* @todo review list of SYNC_* constants: should they match more closely event actions?
 */
 
 class eZContentStagingEvent extends eZPersistentObject
 {
-    /// @todo !important reorder in same order as on fs / ezwstransport
     const ACTION_ADDLOCATION = 1;
-    const ACTION_REMOVELOCATION = 2;
-    const ACTION_UPDATESECTION = 4;
-    const ACTION_HIDEUNHIDE = 8;
-    const ACTION_SORT = 16;
-    const ACTION_UPDATEPRIORITY = 32;
-    const ACTION_DELETE = 64;
-    const ACTION_REMOVETRANSLATION = 128;
-    const ACTION_UPDATEALWAYSAVAILABLE = 256;
-    const ACTION_UPDATEMAINASSIGNMENT = 512;
-    const ACTION_UPDATEINITIALLANGUAGE = 1024;
-    const ACTION_MOVE = 2048;
-    const ACTION_PUBLISH = 4096;
+    const ACTION_DELETE = 2;
+    const ACTION_HIDEUNHIDE = 4;
+    const ACTION_MOVE = 8;
+    const ACTION_PUBLISH = 16;
+    const ACTION_REMOVELOCATION = 32;
+    const ACTION_REMOVETRANSLATION = 64;
+    const ACTION_SORT = 128;
+    const ACTION_SWAP = 256; /// @todo
+    const ACTION_UPDATEALWAYSAVAILABLE = 1024;
+    const ACTION_UPDATEINITIALLANGUAGE = 2048;
+    const ACTION_UPDATEMAINASSIGNMENT = 4096;
+    const ACTION_UPDATEOBJECSTATE = 8192; /// @todo
+    const ACTION_UPDATEPRIORITY = 16384;
+    const ACTION_UPDATESECTION = 32768;
 
     const STATUS_TOSYNC = 0;
     const STATUS_SYNCING = 1;
@@ -137,7 +137,7 @@ class eZContentStagingEvent extends eZPersistentObject
             }
             else
             {
-                eZDebug::writeError( "Object " . $this->ObjectID . " gone amiss for sync event. Target" . $this->TargetID, __METHOD__ );
+                eZDebug::writeError( "Object " . $this->ObjectID . " gone amiss for sync event " . $this->ID, __METHOD__ );
             }
         }
         return $return;
@@ -160,7 +160,7 @@ class eZContentStagingEvent extends eZPersistentObject
     {
         $db = eZDB::instance();
         $nodeids = $db->arrayquery( 'SELECT node_id FROM ezcontentstaging_event_node WHERE ezcontentstaging_event_node.event_id = ' . $this->ID, array( 'column' => 'node_id' ) );
-        /// @todo log error if count oif nodes found is lesser than stored node ids ?
+        /// @todo log error if count of nodes found is lesser than stored node ids ?
         return self::fetchObjectList( eZContentObjectTreeNode::definition(),
                                       null,
                                       array( 'node_id' => array( $nodeids ) ),
@@ -171,7 +171,7 @@ class eZContentStagingEvent extends eZPersistentObject
     // *** fetches ***
 
     /**
-    * fetch a specific sync item
+    * fetch a specific sync event
     * @return eZContentStagingEvent or null
     */
     static function fetch( $id, $asObject = true )
@@ -202,8 +202,9 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Fetch all pending ecents for a given node, optionally filtered by feed.
+    * Fetch all pending events for a given node, optionally filtered by feed.
     * 2nd param is there for optimal resource usage
+    * @return array of eZContentStagingEvent
     */
     static function fetchByNode( $nodeId, $objectId=null, $target_id = null, $asObject = true )
     {
@@ -235,6 +236,11 @@ class eZContentStagingEvent extends eZPersistentObject
                                       ' AND ezcontentstaging_event_node.node_id = ' . (int)$nodeId . ' AND ezcontentstaging_event_node.event_id = id' );
     }
 
+    /**
+    * Fetch all pending events for a given node, return them grouped in an
+    * array where the key is the feed id
+    * @return array of array of eZContentStagingEvent
+    */
     static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null )
     {
         $targets = array();
@@ -245,9 +251,10 @@ class eZContentStagingEvent extends eZPersistentObject
         }
         return $targets;
     }
+
     /**
-    * Fetch all items that need to be synced to a given server (or all of them)
-    * @return array of
+    * Fetch all events that need to be synced to a given feed (or all of them)
+    * @return array of eZContentStagingEvent
     */
     static function fetchList( $target_id=false, $asObject = true, $offset = false, $limit = false )
     {
@@ -270,8 +277,9 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Returns count of items to sync to a given server
+    * Returns count of events to sync to a given server
     * If no feed given, groups by object id
+    * @return integer
     */
     static function fetchListCount( $target_id=false )
     {
@@ -388,7 +396,7 @@ class eZContentStagingEvent extends eZPersistentObject
 
                 if ( $result != 0 )
                 {
-                    eZDebug::writeError( "Failed syncing item " . $event->ID . ", transport error code: $result", __METHOD__ );
+                    eZDebug::writeError( "Failed syncing event " . $event->ID . ", transport error code: $result", __METHOD__ );
                     $event->Status = self::STATUS_TOSYNC;
                     $event->SyncBeginDate = null;
                     $event->store();
@@ -404,7 +412,7 @@ class eZContentStagingEvent extends eZPersistentObject
                     self::removeObject( self::definition(), array( 'id' => $event->ID ) );
                     $db->commit();
 
-                    eZDebug::writeDebug( "Synced item " . $event->ID, __METHOD__ );
+                    eZDebug::writeDebug( "Synced event " . $event->ID, __METHOD__ );
                     $results[$event->ID] = 0;
                 }
             }
@@ -432,9 +440,9 @@ class eZContentStagingEvent extends eZPersistentObject
     }*/
 
     /**
-    * Helper function - returns the list of ndoes an obj related to, saving on resources
+    * Helper function - returns the list of ndoes an obj relates to, saving on resources
     * Funny that something similar not implemented in eZContentObject...
-    * @return array node id => path_string
+    * @return array of string node_id => path_string
     */
     static function assignedNodeIds( $objectId )
     {
