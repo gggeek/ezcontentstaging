@@ -55,7 +55,8 @@ class eZStagePublishType extends eZWorkflowEventType
                     $objectID,
                     eZContentStagingEvent::ACTION_PUBLISH,
                     $affectedObjectData,
-                    array_keys( $objectNodes )
+                    array_keys( $objectNodes ),
+                    $initialLanguageID
                 );
             }
         }
