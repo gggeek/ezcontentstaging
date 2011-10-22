@@ -38,8 +38,6 @@
 
 . produce .dba file
 
-. fix: it seems the target (almost persistent) object has problems in feeds tpl
-
 . in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
 . cleanup script that resets and initializes feeds. Also via gui (in "feeds" view)

@@ -40,6 +40,11 @@ class eZContentStagingTarget
         return $this->_attrs[$attrname];
     }
 
+    function hasAttribute( $attribute )
+    {
+        return in_array( $attribute, $this->attributes() );
+    }
+
     /**
     * Returns list of target hosts defined in the system
     *

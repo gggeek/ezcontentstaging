@@ -10,7 +10,8 @@
 <div class="border-ml"><div class="border-mr"><div class="border-mc float-break">
 
 Title: synchronization feeds...
-{def $manage_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'manage' ) )}
+{def $manage_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'manage' ) )
+     $source = false()}
 <form action={'contentstaging/feeds'|ezurl()} method="post">
 <table>
     <tr>
@@ -26,11 +27,17 @@ Title: synchronization feeds...
             {if $manage_sync_access}
             <th><input type="checkbox" name="feeds[]" value="{$id}" /></th>
             {/if}
-            <td><a href={concat('contentstaging/feed/', $id)|ezurl()}>{$feed.name|wash()} {$id}</a></td>
+            <td><a href={concat('contentstaging/feed/', $id)|ezurl()}>{$feed.name|wash()}</a></td>
             <td>
                 {* @todo better display of feed source node: fetch it *}
                 {foreach $feed.subtrees as $nodeid}
-                    <a href={concat('content/view/full/', $nodeid)|ezurl()}>{$id}</a><br/>
+                    {set $source = fetch( 'content', 'node', hash( 'node_id', $nodeid ) )}
+                    {if $source}
+                        <a href={$source.url|ezurl()}>{$source.name|wash()}</a><br/>
+                    {else}
+                        {'Missing node'|i18n()}: {$nodeid}<br/>
+                    {/if}
+
                 {/foreach}
             </td>
         </tr>
@@ -42,7 +49,7 @@ Title: synchronization feeds...
     <input type="submit" name="initailizeFeedAction" value="Initialize feeds..." />
 {/if}
 </form>
-{undef $manage_sync_access}
+{undef $manage_sync_access $source}
 
 </div></div></div>
 <div class="border-bl"><div class="border-br"><div class="border-bc"></div></div></div>
