@@ -12,26 +12,56 @@ class eZStagePublishType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
         $objectID = $parameters['object_id'];
-        $object = eZContentObject::fetch( $objectID );
+        $versionID = $parameters['version'];
 
+        // sanity checks
+
+        $object = eZContentObject::fetch( $objectID );
         if ( !$object )
         {
-            eZDebug::writeError( "No object with ID $objectID", 'eZStagePublishType::execute' );
+            eZDebug::writeError( "Unable to fecth object $objectID", __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
-
-        $versionID = $parameters['version'];
         $version = $object->version( $versionID );
-
         if ( !$version )
         {
-            eZDebug::writeError( "No version $versionID for object with ID $objectID", 'eZStagePublishType::execute' );
+            eZDebug::writeError( "No version $versionID for object $objectID", __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        if ( $version->attribute('status') != eZContentObjectVersion::STATUS_PUBLISHED )
+        /// @todo shall we check if status is "published" here?
+        ///       test if eg. after collab. refusal we pass through here...
+
+        $initialLanguageID = $version->attribute( 'initial_language_id' );
+        $initialLanguage = eZContentLanguage::fetch( $initialLanguageID );
+
+        /*echo '<pre>';
+        var_dump( $version );
+        die();*/
+
+        /// @todo: if this is a 1st version, we need to identify parent node and store its ids too
+
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+        $affectedObjectData = array( "locale" => $initialLanguage->attribute( 'locale' ), "objectRemoteID" => $object->attribute( 'remote_id' ) );
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        {
+            $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
+            if ( count( $affectedFeedNodes ) )
+            {
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_PUBLISH,
+                    $affectedObjectData,
+                    array_keys( $objectNodes )
+                );
+            }
+        }
+
+        /*
+        if ( $version->attribute( 'status' ) != eZContentObjectVersion::STATUS_PUBLISHED )
         {
             eZDebug::writeNotice( "Object not published(status: " . $version->attribute('status') . "), no syndication needed.", 'eZStagePublishType::execute' );
             return eZWorkflowType::STATUS_ACCEPTED;

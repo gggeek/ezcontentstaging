@@ -35,6 +35,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const ACTION_UPDATEMAINASSIGNMENT = 512;
     const ACTION_UPDATEINITIALLANGUAGE = 1024;
     const ACTION_MOVE = 2048;
+    const ACTION_PUBLISH = 4096;
 
     const STATUS_TOSYNC = 0;
     const STATUS_SYNCING = 1;
@@ -68,23 +69,28 @@ class eZContentStagingEvent extends eZPersistentObject
                                                                'foreign_class' => 'eZContentObject',
                                                                'foreign_attribute' => 'id',
                                                                'multiplicity' => '1..*' ),
+                                         // this is only stored for some events. NULL == affects all languages
+                                         'language_mask' => array( 'name' => 'LanguageMask',
+                                                                   'datatype' => 'integer',
+                                                                   'required' => false ),
+                                         // type of event (what to sync)
+                                         'to_sync' => array( 'name' => 'ToSync',
+                                                             'datatype' => 'integer',
+                                                             'required' => true ),
                                          // we store a custom modification date of object, as it includes metadata modifications
                                          /// @todo rename to 'created' ?
                                          'modified' => array( 'name' => 'Modified',
                                                               'datatype' => 'integer',
                                                               'required' => true ),
-                                         // type of event (what to sync)
-                                         'to_sync' => array( 'name' => 'ToSync',
-                                                             'datatype' => 'integer',
-                                                             'required' => true ),
+                                         // we store extra data here, eg. description of deleted objects
+                                         'data_text' => array( 'name' => 'DataText',
+                                                               'datatype' => 'text' ),
+
                                          // used to avoid double syncing in parallel
                                          'status' => array( 'name' => 'Status',
                                                             'datatype' => 'integer',
                                                             'default' => 0,
                                                             'required' => true ),
-                                         // we store extra data here, eg. description of deleted objects
-                                         'data_text' => array( 'name' => 'DataText',
-                                                               'datatype' => 'text' ),
                                          'sync_begin_date' => array( 'name' => 'SyncBeginDate',
                                                                      'datatype' => 'integer',
                                                                      'required' => false,
@@ -289,7 +295,7 @@ class eZContentStagingEvent extends eZPersistentObject
     * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
     *       do not add show but remove hide, etc...
     */
-    static function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array() )
+    static function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array(), $langMask=null )
     {
         if ( count( $nodeIds ) )
         {
@@ -301,7 +307,8 @@ class eZContentStagingEvent extends eZPersistentObject
             'object_id' => $objectId,
             'modified' => time(),
             'to_sync' => $action,
-            'data_text' => json_encode( $data )
+            'data_text' => json_encode( $data ),
+            'language_mask' => $langMask
             ) );
         $event->store();
         $id = $event->ID;
