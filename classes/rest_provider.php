@@ -32,6 +32,15 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
+            'stagingHideUnhide' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/locations',
+                    'contentStagingRestContentController',
+                    'hideUnhide',
+                    'http-post'
+                ),
+                1
+            ),
         );
         return $routes;
     }

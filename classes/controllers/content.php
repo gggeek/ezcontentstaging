@@ -45,6 +45,56 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
+     * Handle hide or unhide request for a location from its remote id
+     *
+     * Request:
+     * - POST /content/locations?remoteId=<remoteId>&hide=<status>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doHideUnhide()
+    {
+        $result = new ezpRestMvcResult();
+        if ( !isset( $this->request->get['remoteId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "remoteId" parameter is missing'
+            );
+            return $result;
+        }
+        if ( !isset( $this->request->get['hide'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "hide" parameter is missing'
+            );
+            return $result;
+        }
+        $remoteId = $this->request->get['remoteId'];
+        $hide = (bool) $this->request->get['hide'];
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId);
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                "Cannot find the node with the remote id {$remoteId}"
+            );
+            return $result;
+        }
+        if ( $hide )
+        {
+            eZContentObjectTreeNode::hideSubTree( $node );
+        }
+        else
+        {
+            eZContentObjectTreeNode::unhideSubTree( $node );
+        }
+        $result->status = new ezpRestHttpResponse( 204, '' );
+        return $result;
+    }
+
+    /**
      * Handle the PUT request for a content object from its remote id to add a
      * location to it
      *
