@@ -95,6 +95,57 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
+     * Handle move operation of a location from its remote id to another
+     * location
+     *
+     * Request:
+     * - PUT /content/locations/remote/<remoteId>/parent?destParentRemoteId=<dest>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doMove()
+    {
+        $result = new ezpRestMvcResult();
+        if ( !isset( $this->request->get['destParentRemoteId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "destParentRemoteId" parameter is missing'
+            );
+            return $result;
+        }
+        $destParentRemoteId = $this->request->get['destParentRemoteId'];
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $this->remoteId );
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Cannot find the node with the remote id '{$this->remoteId}'"
+            );
+            return $result;
+        }
+        $dest = eZContentObjectTreeNode::fetchByRemoteID( $destParentRemoteId );
+        if ( !$dest instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Cannot find the node with the remote id '{$destParentRemoteId}'"
+            );
+            return $result;
+        }
+        eZContentOperationCollection::moveNode(
+            $node->attribute( 'node_id' ),
+            $node->attribute( 'contentobject_id' ),
+            $dest->attribute( 'node_id' )
+        );
+
+        $newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
+        $result->variables['Location'] = new contentStagingLocation( $newNode );
+        return $result;
+
+    }
+
+    /**
      * Handle the PUT request for a content object from its remote id to add a
      * location to it
      *
