@@ -12,14 +12,14 @@
 class eZContentStagingFunctionCollection
 {
     /// @todo implement some filter parameters, to eg. be able to fetch non-currently-syncing items
-    static function fetchSyncEvents( $target_id=false, $offset=false, $limit=false )
+    static function fetchSyncEvents( $target_id=false, $offset=false, $limit=false, $language=false )
     {
-        return array( 'result' => eZContentStagingEvent::fetchList( $target_id, true, $offset, $limit ) );
+        return array( 'result' => eZContentStagingEvent::fetchList( $target_id, true, $offset, $limit, $language ) );
     }
 
-    static function fetchSyncEventsCount( $target_id=false )
+    static function fetchSyncEventsCount( $target_id=false, $language=false )
     {
-        return array( 'result' => eZContentStagingEvent::fetchListCount( $target_id ) );
+        return array( 'result' => eZContentStagingEvent::fetchListCount( $target_id, $language ) );
     }
 
     /*static function fetchObjectSyncTargets( $object_id )
@@ -28,9 +28,9 @@ class eZContentStagingFunctionCollection
     }*/
 
     /// @todo implement some filter parameters, to eg. be able to fetch non-currently-syncing items
-    static function fetchSyncEventsByNodeGroupedByTarget( $node_id, $object_id=false )
+    static function fetchSyncEventsByNodeGroupedByTarget( $node_id, $object_id=false, $language=false )
     {
-        return array( 'result' => eZContentStagingEvent::fetchByNodeGroupedByTarget( $node_id, $object_id ) );
+        return array( 'result' => eZContentStagingEvent::fetchByNodeGroupedByTarget( $node_id, $object_id, $language ) );
     }
 
     static function fetchSynctarget( $target_id=false )

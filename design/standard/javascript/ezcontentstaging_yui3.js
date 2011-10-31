@@ -12,7 +12,7 @@ YUI( YUI3_config ).use( 'node', 'event', 'io-ez', function( Y )
         var args = e.currentTarget.getAttribute( 'id' ).split( '_' );
         /// @todo change link/img class to "syncing"
         Y.one( '#syncnodelink_' + args[1] ).detach( 'click', _sync );
-        Y.io.ez( 'ezcontentstaging::syncnode::' + args[1], { on : { success: _syncCallBack } } );
+        Y.io.ez( 'ezcontentstaging::syncnode::' + args[1] + '::' + args[2], { on : { success: _syncCallBack } } );
     }
 
     function _syncCallBack( id, o )

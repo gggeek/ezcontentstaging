@@ -206,7 +206,7 @@ class eZContentStagingEvent extends eZPersistentObject
     * 2nd param is there for optimal resource usage
     * @return array of eZContentStagingEvent
     */
-    static function fetchByNode( $nodeId, $objectId=null, $target_id = null, $asObject = true )
+    static function fetchByNode( $nodeId, $objectId=null, $target_id=null, $asObject=true, $language=null )
     {
         if ( $objectId == null )
         {
@@ -223,6 +223,11 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $conds['target_id'] = $target_id;
         }
+        $custom_conds = ' AND ezcontentstaging_event_node.node_id = ' . (int)$nodeId . ' AND ezcontentstaging_event_node.event_id = id';
+        if ( $language != null )
+        {
+            $custom_conds .= ' AND ' . self::languagesSQLFilter( $language );
+        }
         return self::fetchObjectList( self::definition(),
                                       null,
                                       $conds,
@@ -233,7 +238,7 @@ class eZContentStagingEvent extends eZPersistentObject
                                       array( 'id' ),
                                       null,
                                       array( 'ezcontentstaging_event_node' ),
-                                      ' AND ezcontentstaging_event_node.node_id = ' . (int)$nodeId . ' AND ezcontentstaging_event_node.event_id = id' );
+                                      $custom_conds );
     }
 
     /**
@@ -241,10 +246,10 @@ class eZContentStagingEvent extends eZPersistentObject
     * array where the key is the feed id
     * @return array of array of eZContentStagingEvent
     */
-    static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null )
+    static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null, $language=null )
     {
         $targets = array();
-        $events = self::fetchByNode( $nodeId, $objectId=null );
+        $events = self::fetchByNode( $nodeId, $objectId, null, true, $language );
         foreach( $events as $event )
         {
             $targets[$event->TargetID][] = $event;
@@ -256,7 +261,7 @@ class eZContentStagingEvent extends eZPersistentObject
     * Fetch all events that need to be synced to a given feed (or all of them)
     * @return array of eZContentStagingEvent
     */
-    static function fetchList( $target_id=false, $asObject = true, $offset = false, $limit = false )
+    static function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -264,35 +269,85 @@ class eZContentStagingEvent extends eZPersistentObject
             $conditions = array( 'target_id' => $target_id );
         }
         $limits = array();
-        if ( $offset !== false )
+        if ( $offset !== null )
+        {
             $limits['offset'] = $offset;
-        if ( $limit !== false )
+        }
+        if ( $limit !== null )
+        {
             $limits['limit'] = $limit;
+        }
+        $custom_conds = null;
+        if ( $language != null )
+        {
+            if ( $conditions )
+            {
+                $custom_conds = ' AND ';
+            }
+            else
+            {
+                $custom_conds = ' WHERE ';
+            }
+            $custom_conds .= self::languagesSQLFilter( $language );
+        }
         return self::fetchObjectList( self::definition(),
                                       null,
                                       $conditions,
                                       null,
                                       $limits,
-                                      $asObject );
+                                      $asObject,
+                                      false,
+                                      null,
+                                      null,
+                                      $custom_conds );
     }
 
     /**
     * Returns count of events to sync to a given server
-    * If no feed given, groups by object id
     * @return integer
     */
-    static function fetchListCount( $target_id=false )
+    static function fetchListCount( $target_id=null, $language=null )
     {
+        $conditions = array();
         if ( $target_id != '' )
         {
-            return self::count( self::definition(), array( 'target_id' => $target_id) );
+            $conditions = array( 'target_id' => $target_id );
+        }
+        $custom_conds = null;
+        if ( $language != null )
+        {
+            if ( $conditions )
+            {
+                $custom_conds = ' AND ';
+            }
+            else
+            {
+                $custom_conds = ' WHERE ';
+            }
+            $custom_conds .= self::languagesSQLFilter( $locale );
+
+        }
+
+        $customFields = array( array( 'operation' => 'COUNT( * )', 'name' => 'row_count' ) );
+        $rows = self::fetchObjectList( self::definition(), array(), $conditions, array(), null, false, array( 'target_id' ), $customFields, null, $custom_conds );
+        return $rows[0]['row_count'];
+    }
+
+
+    protected static function languagesSQLFilter( $language )
+    {
+        // in case of unknown languages $mask will be 0
+        $mask = eZContentLanguage::maskByLocale( $language );
+        $db = eZDB::instance();
+        if ( $db->databaseName() == 'oracle' )
+        {
+            $maskcondition = "bitand( language_mask, $mask ) > 0";
         }
         else
         {
-            $customFields = array( array( 'operation' => 'COUNT( * )', 'name' => 'row_count' ) );
-            $rows = self::fetchObjectList( self::definition(), array(), array(), array(), null, false, array( 'target_id' ), $customFields );
-            return $rows[0]['row_count'];
+            $maskcondition = "language_mask & $mask > 0";
         }
+        return '( language_mask IS NULL OR ( '. $maskcondition .' ) )';
     }
 
     // *** other actions ***

@@ -12,7 +12,7 @@
         var args = $( this ).attr( 'id' ).split( '_' );
         /// @todo change link/img class to "syncing"
         $( '#syncnodelink_' + args[1] ).unbind( 'click' );
-        jQuery.ez( 'ezcontentstaging::syncnode::' + args[1], {}, _syncCallBack );
+        jQuery.ez( 'ezcontentstaging::syncnode::' + args[1] + '::' + args[2], {}, _syncCallBack );
         return false;
     }
 

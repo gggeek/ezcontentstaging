@@ -32,7 +32,11 @@ $FunctionList = array(
                                          'required' => true ),
                                   array( 'name'     => 'object_id',
                                          'type'     => 'integer',
-                                         'required' => false ) ) ),
+                                         'required' => false ),
+                                  array( 'name' => 'language',
+                                         'type' => 'string',
+                                         'required' => false,
+                                         'default' => null ) ) ),
 
     'sync_target' => array(
         'name' => 'sync_target',
@@ -59,7 +63,11 @@ $FunctionList = array(
                                array( 'name'     => 'limit',
                                       'type'     => 'integer',
                                       'required' => false,
-                                      'default'  => 0 ) ) ),
+                                   'default'  => 0 ),
+                               array( 'name' => 'language',
+                                      'type' => 'string',
+                                      'required' => false,
+                                      'default' => null ) ) ),
 
     'sync_events_count'  => array(
         'name' => 'sync_events_count',
@@ -69,7 +77,11 @@ $FunctionList = array(
         'parameters' => array( array( 'name'     => 'target_id',
                                       'type'     => 'string',
                                       'required' => false,
-                                      'default'  => '' ) ) ),
+                                      'default'  => '' ),
+                               array( 'name' => 'language',
+                                      'type' => 'string',
+                                      'required' => false,
+                                      'default' => null ) ) ),
 );
 
 ?>

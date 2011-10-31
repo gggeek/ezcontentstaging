@@ -1,4 +1,8 @@
+. event in fetch functions add optional language parameter
+
 . finish missing events: swap, move, publish
+
+. test: setsection event on a draft is registered or ignored?
 
 . in ezrestapiggwsclient
   - add transcoding of values from event-style to rest-api style (eg ids of languages, booleans etc)
@@ -22,7 +26,7 @@
   - updatemainassignment
   - updateinitiallanguage
 
-. test setsection workflow event: it creates one staging event too much?
+. test setsection workflow event: does it create one staging event too much?
 
 . finish js code used by ajax calls for ezwt (it misses checking oif return value, alert, changing icon state)
 

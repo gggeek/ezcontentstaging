@@ -14,7 +14,7 @@
 class eZContentStagingJSCoreFunctions
 {
     /**
-    * @param array $args ( 0 => node_id,  1 => target_id )
+    * @param array $args ( 0 => node_id,  1 => target_id, 2 => language (optional) )
     * @return array
     *
     * @todo add i18n of returned messages
@@ -31,7 +31,7 @@ class eZContentStagingJSCoreFunctions
         }
         else
         {
-            $events = eZContentStagingEvent::fetchByNode( $args[0], null, $args[1] );
+            $events = eZContentStagingEvent::fetchByNode( $args[0], null, $args[1], true, @$args[2] );
         }
         if ( count( $events ) )
         {

@@ -7,11 +7,13 @@
 {* gg: what is this rss thing doing here? *}
 {*if is_set( ezini( 'RSSSettings', 'DefaultFeedItemClasses', 'site.ini' )[ $content_object.class_identifier ] )*}
 
-    {* @todo check 2 things: if user can sync and if he can see need-to-sync state *}
+    {* check 2 things: if user can sync and if he can see need-to-sync state *}
     {def $view_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'view' ) )}
     {if $view_sync_access}
-        {def $create_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
-             $needs_sync = fetch( 'contentstaging', 'node_sync_events_by_target', hash( 'node_id', $current_node.node_id ) )}
+        {* @todo check if we can actually be editing a version in a different language than the default one set in site.ini... *}
+        {def $current_lang = ezini( 'RegionalSettings', 'ContentObjectLocale' )
+             $create_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
+             $needs_sync = fetch( 'contentstaging', 'node_sync_events_by_target', hash( 'node_id', $current_node.node_id, 'language', $current_lang ) )}
         {if $needs_sync|count()}
 
             {def $preferred_lib = ezini('eZJSCore', 'PreferredLibrary', 'ezjscore.ini')}
@@ -28,8 +30,8 @@
                     {set $ids = $ids|merge( $event.id )}
                 {/foreach}
             {/foreach}
-            {* @todo try to figure out if there are syncing events... *}
-            {if $create_sync_access}<a class="ezcs-sync-node" id="syncnodelink_{$current_node.node_id}" href={concat( "/contentstaging/syncnode/",  $current_node.node_id )|ezurl} title="{'Sync content'|i18n( 'design/ezwebin/parts/website_toolbar' )}">{/if}
+            {* @todo link to syncnode view should take into account current language *}
+            {if $create_sync_access}<a class="ezcs-sync-node" id="syncnodelink_{$current_node.node_id}_{$current_lang}" href={concat( "/contentstaging/syncnode/",  $current_node.node_id )|ezurl} title="{'Sync content'|i18n( 'design/ezwebin/parts/website_toolbar' )}">{/if}
                 <img class="ezwt-input-image" width="16px" height="16px" src={"websitetoolbar/sync.gif"|ezimage} alt="{'Synchronize node'|i18n( 'design/ezwebin/parts/website_toolbar' )}" />
             {if $create_sync_access}</a>{/if}
 
@@ -37,7 +39,7 @@
         {else}
             {* @todo show an icon: no need to sync ? *}
         {/if}
-        {undef $create_sync_access $needs_sync}
+        {undef $create_sync_access $needs_sync $current_lang}
     {/if}
     {undef $view_sync_access}
 
