@@ -26,7 +26,8 @@ class contentStagingRestContentController extends ezpRestMvcController
         if ( !$object instanceof eZContentObject )
         {
             $result->status = new ezpRestHttpResponse(
-                404, "Content with remote id '{$this->remoteId}' not found"
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Content with remote id '{$this->remoteId}' not found"
             );
             return $result;
         }
@@ -58,7 +59,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         if ( !isset( $this->request->get['parentRemoteId'] ) )
         {
             $result->status = new ezpRestHttpResponse(
-                400, 'The "parentRemoteId" parameter is missing'
+                ezpHttpResponseCodes::BAD_REQUEST, 'The "parentRemoteId" parameter is missing'
             );
             return $result;
         }
@@ -68,7 +69,8 @@ class contentStagingRestContentController extends ezpRestMvcController
         if ( !$parentNode instanceof eZContentObjectTreeNode )
         {
             $result->status = new ezpRestHttpResponse(
-                400, "Cannot find the node with the remote id {$parentRemoteId}"
+                ezpHttpResponseCodes::BAD_REQUEST,
+                "Cannot find the node with the remote id {$parentRemoteId}"
             );
             return $result;
         }
@@ -76,7 +78,8 @@ class contentStagingRestContentController extends ezpRestMvcController
         if ( !$object instanceof eZContentObject )
         {
             $result->status = new ezpRestHttpResponse(
-                404, 'Cannot find the content object with the remote id ' . $this->remoteId
+                ezpHttpResponseCodes::NOT_FOUND,
+                'Cannot find the content object with the remote id ' . $this->remoteId
             );
             return $result;
         }
@@ -87,7 +90,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
             {
                 $result->status = new ezpRestHttpResponse(
-                    403,
+                    ezpHttpResponseCodes::FORBIDDEN,
                     "The object '{$this->remoteId}' already has a location under node '{$parentRemoteId}'"
                 );
                 return $result;
