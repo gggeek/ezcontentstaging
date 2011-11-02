@@ -44,6 +44,37 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
+    /**
+     * Handle update of the always available for a content object
+     *
+     * Request:
+     * - PUT /content/objects/remote/<remoteId>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doUpdateAlwaysAvailable()
+    {
+        $result = new ezpRestMvcResult();
+
+        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+        if ( !$object instanceof eZContentObject )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Content with remote id '{$this->remoteId}' not found"
+            );
+            return $result;
+        }
+
+        eZContentOperationCollection::updateAlwaysAvailable(
+            $object->attribute( 'id' ),
+            (bool)$this->request->inputVariables['alwaysAvailable']
+        );
+
+        $result->status = new ezpRestHttpResponse( 204, '' );
+        return $result;
+    }
+
 
     /**
      * Handle DELETE request for a translation of content object
