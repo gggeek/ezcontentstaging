@@ -51,7 +51,7 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
             }
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
+        /*$feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
 
         $nodeRemoteID = $node->attribute( 'remote_id' );
         $time = time();
@@ -66,7 +66,7 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
                 'options' => serialize( array( 'new_initial_language_id' => $parameters['new_initial_language_id'] ) ) ) );
 
             $log->store();
-        }
+        }*/
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

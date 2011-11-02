@@ -33,15 +33,14 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] );
-                    /// @todo test that $RemObjID is not null
+                    /// @todo !important test that $RemoteObjRemoteID is not null
                     $method = 'PUT';
                     $url = "/content/objects/remote/$RemoteObjRemoteID/locations?parentRemoteId=$RemoteParentNodeRemoteID";
                     $payload = array(
                         'remoteId' => $RemoteNodeRemoteID,
-                        /// @todo transcode values
                         'priority' => $data['priority'],
-                        'sortField' => $data['sortField'],
-                        'sortOrder' => $data['sortOrder']
+                        'sortField' => self::encodeSortField( $data['sortField'] ),
+                        'sortOrder' => self::encodeSortOrder( $data['sortOrder'] )
                         );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
@@ -102,8 +101,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    /// @todo transcode value for trash
-                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID&trash={$data['trash']}";
+                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID&trash=" . self::encodeTrash( $data['trash'] );
                     $out = $this->restCall( $method, $url );
                     break;
 
@@ -113,8 +111,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $baseurl = "/content/objects/remote/$RemoteObjRemoteID/translations/";
                     foreach ( $data['translations'] as $translation )
                     {
-                        /// @todo transcode value for language
-                        $url = $baseurl . "...";
+                        $url = $baseurl . self::encodeLanguageId( $translation );
                         $out = $this->restCall( $method, $url );
                         if ( $out != 0 )
                         {
@@ -136,11 +133,10 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
                     $payload = array(
-                        /// @todo transcode values
                         // @todo can we omit safely to send priority?
                         //'priority' => $data['priority'],
-                        'sortField' => $data['sortField'],
-                        'sortOrder' => $data['sortOrder']
+                        'sortField' => self::encodeSortField( $data['sortField'] ),
+                        'sortOrder' => self::encodeSortOrder( $data['sortOrder'] )
                         );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
@@ -154,8 +150,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $method = 'PUT';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
-                    /// @todo transcode values
-                    $payload = array( 'alwaysAvailable' => $data['alwaysAvailable'] );
+                    $payload = array( 'alwaysAvailable' => self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
 
@@ -163,8 +158,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $method = 'PUT';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
-                    /// @todo transcode values
-                    $payload = array( 'initialLanguage' => $data['initialLanguage'] );
+                    $payload = array( 'initialLanguage' => self::encodeLanguageId( $data['initialLanguage'] ) );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
 
@@ -297,6 +291,51 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         }
 
         return $out;
+    }
+
+    /// @todo finish
+    static protected function encodeSortField( $value )
+    {
+            /*return "PATHSTRING";
+            return "CREATED";
+            return "SECTIONIDENTIFIER";
+            return "FIELD";*/
+        $fields = array(
+            eZContentObjectTreeNode::SORT_FIELD_PATH => "PATH",
+            eZContentObjectTreeNode::SORT_FIELD_PUBLISHED => 2,
+            eZContentObjectTreeNode::SORT_FIELD_MODIFIED => "MODIFIED",
+            eZContentObjectTreeNode::SORT_FIELD_SECTION => "SECTIONID",
+            eZContentObjectTreeNode::SORT_FIELD_DEPTH => 5,
+            eZContentObjectTreeNode::SORT_FIELD_CLASS_IDENTIFIER => 6,
+            eZContentObjectTreeNode::SORT_FIELD_CLASS_NAME => 7,
+            eZContentObjectTreeNode::SORT_FIELD_PRIORITY => "PRIORITY",
+            eZContentObjectTreeNode::SORT_FIELD_NAME => "NAME",
+            eZContentObjectTreeNode::SORT_FIELD_MODIFIED_SUBNODE => 10,
+            eZContentObjectTreeNode::SORT_FIELD_NODE_ID => 11,
+            eZContentObjectTreeNode::SORT_FIELD_CONTENTOBJECT_ID => 12
+        );
+        return $fields[$value];
+    }
+
+    static protected function encodeSortOrder( $value )
+    {
+        return $value ? "ASC" : "DESC";
+    }
+
+    static protected function encodeAlwaysAvailable( $value )
+    {
+        return (bool)$value;
+    }
+
+    static protected function encodeTrash( $value )
+    {
+        return $value ? "true" : "false";
+    }
+
+    static protected function encodeLanguageId( $value )
+    {
+        $lang = eZContentLanguage::fetch( $value );
+        return $lang->attribute( 'locale' );
     }
 
     /**
