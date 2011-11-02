@@ -487,6 +487,28 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
+    * Removes a list of events given their ids
+    * @return integer number of deleted events
+    *
+    * @todo return real number of deleted events
+    */
+    static function removeEvents( $eventIDList, $also_syncing=false )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+        if ( $also_syncing != true )
+        {
+            // we first filter out any events in syncing status
+            $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ), array( 'column' => 'id' ) );
+        }
+        $out = count( $eventIDList );
+        $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
+        $db->query( "DELETE FROM ezcontentstaging_event WHERE " . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ) );
+        $db->commit();
+        return $out;
+    }
+
+    /**
     * Removes useless events from array if any atre found
     * cases:
     * . a hide+unhide chain (event with other events in the middle)

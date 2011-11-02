@@ -28,7 +28,9 @@ $ViewList = array(
                      'unordered_params' => array( 'offset' => 'Offset' ),
                      'params' => array( 'target_id' ),
                      /// @todo add definition of more post actions
-                     'single_post_actions' => array( 'SyncEventsButton' => 'SyncEvents' )
+                     'single_post_actions' => array(
+                        'SyncEventsButton' => 'SyncEvents',
+                        'RemoveEventsButton' => 'RemoveEvents' )
                    ),
     /**
       @todo move all actions from other views into this one - cleaner architecture

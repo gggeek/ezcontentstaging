@@ -17,9 +17,9 @@
 {literal}
 function checkAll()
 {
-    if ( document.syncaction.selectall.value == "{/literal}{'Select all'|i18n('ezcontentsatging')}{literal}" )
+    if ( document.syncaction.selectall.value == "{/literal}{'Select all'|i18n('ezcontentstaging')}{literal}" )
     {
-        document.syncaction.selectall.value = "{/literal}{'Deselect all'|i18n('ezcontentsatging')}{literal}";
+        document.syncaction.selectall.value = "{/literal}{'Deselect all'|i18n('ezcontentstaging')}{literal}";
         with (document.syncaction)
         {
             for (var i=0; i < elements.length; i++)
@@ -31,7 +31,7 @@ function checkAll()
     }
     else
     {
-        document.syncaction.selectall.value = "{/literal}{'Select all'|i18n('ezcontentsatging')}{literal}";
+        document.syncaction.selectall.value = "{/literal}{'Select all'|i18n('ezcontentstaging')}{literal}";
         with (document.syncaction)
         {
             for (var i=0; i < elements.length; i++)
@@ -48,7 +48,7 @@ function checkAll()
 
 {if is_set( $sync_results )}
     <div class="message-warning">
-        <h2>{"Content synchronisation action results "|i18n('ezcontentsatging')}:</h2>
+        <h2>{"Content synchronisation action results "|i18n('ezcontentstaging')}:</h2>
         {* @todo mark in  red *}
         {if $sync_errors|count()}
             <ul>
@@ -68,15 +68,16 @@ function checkAll()
 <div class="attribute-header">
     <h1 class="long">
         {if $target_id}
-            {"Feed"|i18n('ezcontentsatging')}: {$target_id|wash()} ...
+            {"Feed"|i18n('ezcontentstaging')}: {$target_id|wash()} ...
         {else}
-            {"Feeds"|i18n('ezcontentsatging')}
+            {"Feeds"|i18n('ezcontentstaging')}
         {/if}
     </h1>
 </div>
 
 {def $page_limit = 30
      $sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
+     $manage_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'manage' ) )
      $sync_nodes = array()}
 {if ne($target_id, '')}
     {def $list_count = fetch( 'contentstaging', 'sync_events_count', hash( 'target_id', $target_id ) )}
@@ -86,7 +87,7 @@ function checkAll()
 {if $list_count}
 
     <p>
-        {"These are the events in need of sync.... You can push them to the destination server."|i18n('ezcontentsatging')|nl2br}
+        {"These are the events in need of sync.... You can push them to the destination server."|i18n('ezcontentstaging')|nl2br}
     </p>
 
     {* @todo add view params to the form target url ? *}
@@ -105,11 +106,11 @@ function checkAll()
         {if $sync_access}
             <th></th>
         {/if}
-        <th>{"Status"|i18n('ezcontentsatging')}</th>
-        <th>{"Content"|i18n('ezcontentsatging')}</th>
-        <th>{"Date"|i18n('ezcontentsatging')}</th>
-        <th>{"Modified"|i18n('ezcontentsatging')}</th>
-        <th>{"Language"|i18n('ezcontentsatging')}</th>
+        <th>{"Status"|i18n('ezcontentstaging')}</th>
+        <th>{"Content"|i18n('ezcontentstaging')}</th>
+        <th>{"Date"|i18n('ezcontentstaging')}</th>
+        <th>{"Modified"|i18n('ezcontentstaging')}</th>
+        <th>{"Language"|i18n('ezcontentstaging')}</th>
     </tr>
     {foreach $item_list as $sync_item sequence array( 'bglight', 'bgdark' ) as $style}
     <tr class="{$style}">
@@ -120,9 +121,9 @@ function checkAll()
         {/if}
         <td>
             {if eq($sync_item.status, 1)}
-                <img src={"sync-executing.gif"|ezimage} width="16px" height="16px" alt="{'Sync ongoing...'|i18n('ezcontentsatging')}" />
+                <img src={"sync-executing.gif"|ezimage} width="16px" height="16px" alt="{'Sync ongoing...'|i18n('ezcontentstaging')}" />
             {else}
-                <img src={"sync.gif"|ezimage} width="16px" height="16px" alt="{'Sync...'|i18n('ezcontentsatging')}" />
+                <img src={"sync.gif"|ezimage} width="16px" height="16px" alt="{'Sync...'|i18n('ezcontentstaging')}" />
             {/if}
         </td>
         <td>
@@ -151,8 +152,11 @@ function checkAll()
     </table>
 
     {if $sync_access}
-        <input class="button" name="selectall" onclick="checkAll()" type="button" value="{'Select all'|i18n('ezcontentsatging')}" />
-        <input class="button" name="SyncEventsButton" type="submit" value="{'Synchronize'|i18n('ezcontentsatging')}" />
+        <input class="button" name="selectall" onclick="checkAll()" type="button" value="{'Select all'|i18n('ezcontentstaging')}" />
+        <input class="button" name="SyncEventsButton" type="submit" value="{'Synchronize'|i18n('ezcontentstaging')}" />
+    {/if}
+    {if $manage_access}
+        <input class="button" name="RemoveEventsButton" type="submit" value="{'Remove'|i18n('ezcontentstaging')}" />
     {/if}
 
     </form>
@@ -165,11 +169,11 @@ function checkAll()
 
 {else}
     <div class="feedback">
-        <h2>{"No pending synchronization events"|i18n('ezcontentsatging')}</h2>
+        <h2>{"No pending synchronization events"|i18n('ezcontentstaging')}</h2>
     </div>
 {/if}
 
-{undef $sync_access $list_count $page_limit $sync_nodes}
+{undef $sync_access $manage_access $list_count $page_limit $sync_nodes}
 
 </div>
 

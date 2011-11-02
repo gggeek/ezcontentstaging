@@ -77,6 +77,57 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
     $tpl->setVariable( 'sync_results', $syncResults );
 
 } // end of 'doing sync' action
+else if (   $module->isCurrentAction( 'RemoveEvents' ) )
+{
+    // test if current user has access to contentstaging/manage, as access to this view is only limited by 'view'
+    $user = eZUser::currentUser();
+    $hasAccess = $user->hasAccessTo( 'contentstaging', 'manage' );
+    if ( $hasAccess['accessWord'] === 'no' )
+    {
+        return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
+    }
+
+    $syncErrors = array();
+    $syncResults = array();
+    if ( $http->hasPostVariable( 'syncArray' ) && is_array( $http->postVariable( 'syncArray' ) ) )
+    {
+        $toremove = array();
+        foreach ( $http->postVariable( 'syncArray' ) as $eventId )
+        {
+            $event = eZContentStagingEvent::fetch( $eventId );
+            /// @todo with finer grained perms, we should check user can sync these items, one by one
+            if ( $event instanceof eZContentStagingEvent )
+            {
+                $toremove[] = $event->attribute( 'id' );
+            }
+            else
+            {
+                eZDebug::writeError( "Invalid event id received for removal: $eventId", 'contentstaging/feed' );
+            }
+        }
+        /// @todo we are actually faking the number of deleted events...
+        $out = eZContentStagingEvent::removeEvents( $toremove );
+        /// @todo apply i18n to messages
+        if ( $out === false )
+        {
+            $syncErrors[] = "Error: events not removed (" . implode( ', ', $toremove ) . ')';
+        }
+        else
+        {
+            $syncResults[] = "$out events removed (" . implode( ', ', $toremove ) . ')';
+        }
+
+    }
+    else
+    {
+        eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
+        /// @todo apply i18n to message
+        $syncErrors[] = "No object to sync...";
+    }
+    /// @todo decide format for these 2 variables: let translation happen here or in tpl?
+    $tpl->setVariable( 'sync_errors', $syncErrors );
+    $tpl->setVariable( 'sync_results', $syncResults );
+}
 
 if ( $targetId !== null )
 {
