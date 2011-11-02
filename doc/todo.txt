@@ -1,20 +1,23 @@
+. look for content/publish event at datatypes where a transcoding of data is needed:
+  - object relations, xml block, etc... -> we need to tranform object ids into their remote equivalent
+
 . when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
 
 . logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them it anymore
   => warn editor (on delete or on sync?), remove pending events, what? ...
 
-. finish missing events: swap, move
-
 . test: setsection event on a draft is registered or ignored?
 
 . in ezrestapiggwsclient
-  - add transcoding of values from event-style to rest-api style (eg ids of languages, booleans etc)
+  - add transcoding of values from event-style to rest-api style (eg. ids of languages, booleans etc)
   - add better error checking on returned http call results
 
 . implement REST api (target-server side)
   - verify if railroute supports optional/mandatory params in query string, how it implements support for PUT/POST/DELETE
 
 . test delete event: how is it triggered? (a: it can be triggered even when obj still has more than 1 node attached)
+
+. finish missing events: swap, move
 
 . check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
   - removelocation: checked
@@ -31,7 +34,7 @@
 
 . test setsection workflow event: does it create one staging event too much?
 
-. finish js code used by ajax calls for ezwt (it misses checking oif return value, alert, changing icon state)
+. finish js code used by ajax calls for ezwt (it misses checking of return value, alert, changing icon state)
 
 . proper policy checking before allowing sync calls (ok in "feed" view; remains to be seen in ezjscore call)
 

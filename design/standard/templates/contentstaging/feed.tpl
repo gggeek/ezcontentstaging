@@ -4,7 +4,8 @@
   @param string target_id
   @param array view_parameters
 
-  @todo items in "syncing" status should not be selectable for sync via js
+  @todo items in "syncing" status should not be selectable for sync via js "select all"
+  @todo move to admin2 style for usage of "box" divs?
 *}
 <div class="border-box">
 <div class="border-tl"><div class="border-tr"><div class="border-tc"></div></div></div>
