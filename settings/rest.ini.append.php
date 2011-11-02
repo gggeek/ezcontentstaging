@@ -30,4 +30,7 @@ ApplicationCache=disabled
 [contentStagingRestContentController_removeLocation_CacheSettings]
 ApplicationCache=disabled
 
+[contentStagingRestContentController_removeTranslation_CacheSettings]
+ApplicationCache=disabled
+
 */ ?>

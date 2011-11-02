@@ -59,7 +59,15 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
-
+            'stagingRemoveTranslation' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId/translations/:localeCode',
+                    'contentStagingRestContentController',
+                    'removeTranslation',
+                    'http-delete'
+                ),
+                1
+            ),
         );
         return $routes;
     }
