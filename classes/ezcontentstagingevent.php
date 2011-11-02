@@ -54,6 +54,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const ERROR_BADPHPCODING = -99;
 
     const ERROR_EVENTTYPEUNKNOWNTOTRANSPORT = -101;
+    const ERROR_EVENTTYPEOBJECTMISSING = -102;
 
     static function definition()
     {

@@ -30,6 +30,13 @@ class eZStagePublishType extends eZWorkflowEventType
             eZDebug::writeError( "No version $versionID for object $objectID", __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
+        $parentNodeId = $version->attribute( 'main_parent_node_id' );
+        $parentNode = eZContentObjectTreeNode::fetch( $parentNodeId );
+        if ( !$parentNode )
+        {
+            eZDebug::writeError( 'Unable to fetch parent node ' . $parentNodeId,  __METHOD__ );
+            return eZWorkflowType::STATUS_ACCEPTED;
+        }
 
         /// @todo shall we check if status is "published" here?
         ///       test if eg. after collab. refusal we pass through here...
@@ -41,10 +48,15 @@ class eZStagePublishType extends eZWorkflowEventType
         var_dump( $version );
         die();*/
 
-        /// @todo: if this is a 1st version, we need to identify parent node and store its ids too
+        // if this is a 1st version, we need to identify parent node and store its ids too
 
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
-        $affectedObjectData = array( "locale" => $initialLanguage->attribute( 'locale' ), "objectRemoteID" => $object->attribute( 'remote_id' ) );
+        $affectedObjectData = array(
+            'version' => $versionID,
+            "locale" => $initialLanguage->attribute( 'locale' ),
+            "objectRemoteID" => $object->attribute( 'remote_id' ),
+            'parentNodeID' => $parentNode->attribute( 'node_id' ),
+            'parentNodeRemoteID' => $parentNode->attribute( 'remote_id' ) );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );

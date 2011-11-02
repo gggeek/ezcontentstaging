@@ -71,8 +71,32 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $out = $this->restCall( $method, $url );
                     break;
 
-                case 'publish':
-                    ;
+                case eZContentStagingEvent::ACTION_PUBLISH:
+                    // this can be either a content creation or update
+                    /// @todo what if we create many drafts and we discard them? Is the first version created still 1? test it!
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    if ( $data['version'] == 1 )
+                    {
+                        $method = 'POST';
+                        $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
+                        $url = "/content/objects?parentRemoteId=$RemoteParentNodeRemoteID";
+                        $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], false, $RemoteObjRemoteID );
+                    }
+                    else
+                    {
+                        $method = 'PUT';
+                        $url = "/content/objects/remote/$RemoteObjRemoteID";
+                        $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], true );
+                    }
+
+                    if ( $payload )
+                    {
+                        $out = $this->restCall( $method, $url, $payload );
+                    }
+                    else
+                    {
+                        $out = eZContentStagingEvent::ERROR_OBJECTCANNOTSERIALIZE;
+                    }
                     break;
 
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
@@ -122,7 +146,8 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     break;
 
                 case 'swap':
-                    ;
+                    /// @todo ...
+                    $out = -333;
                     break;
 
                 case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
@@ -166,6 +191,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         }
                     }
                     break;
+
                 default:
                     $out = eZContentStagingEvent::ERROR_EVENTTYPEUNKNOWNTOTRANSPORT; // should we store this code in this class instead?
             }
@@ -188,6 +214,89 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             return -999;
         }
         return $results['result'];
+    }
+
+    /**
+    * Encodes an object's version (single language) to be sent to the remote server
+    */
+    protected function encodeObject( $objectID, $versionNr, $locale, $isupdate=false, $RemoteObjRemoteID=false )
+    {
+        $object = eZContentObject::fetch( $objectID );
+        if ( !$object )
+        {
+            eZDebug::writeError( "Cannot encode object $objectID for push to staging server: object not found", __METHOD__ );
+            return false;
+        }
+        $version = $object->version( $versionNr );
+        if ( !$version )
+        {
+            eZDebug::writeError( "Cannot encode object $objectID for push to staging server: version $versionNr not found", __METHOD__ );
+            return false;
+        }
+
+        $out = array(
+            'contentType' => $object->attribute( 'class_identifier' ),
+            'fields' => array()
+            );
+
+        foreach( $version->contentObjectAttributes( $locale ) as $attribute )
+        {
+            if ( !$attribute->attribute( 'has_content' ) )
+            {
+                continue;
+            }
+
+            $name = $attribute->attribute( 'contentclass_attribute_identifier' );
+            $datatype = $attribute->attribute( 'data_type_string' );
+            switch( $datatype )
+            {
+                /// @see ezbinaryfilehandler for an example of fething binary data from attributes
+
+                /// @todo shall we check for datatype->isRegularFileInsertionSupported() instead of hardcoding here known datatypes?
+                case 'ezimage':
+                case 'ezbinaryfile':
+                case 'ezmedia':
+                    /// is this check redundant with the above has_content?
+                    if ( !$attribute->hasStoredFileInformation( $bject, $version, $locale ) )
+                    {
+                        continue;
+                    }
+                    $fileInfo = $attribute->storedFileInformation( $bject, $version, $locale );
+                    if ( !$fileInfo )
+                    {
+                        eZDebug::writeError( "Cannot encode object $objectID for push to staging server: version $versionNr - binary not found for attribute in lang $locale for field $name", __METHOD__ );
+                        continue;
+                    }
+
+                    $fileName = $fileInfo['filepath'];
+                    $file = eZClusterFileHandler::instance( $fileName );
+                    if ( ! $file->exists() )
+                    {
+                        eZDebug::writeError( "Cannot encode file for object $objectID for push to staging server: version $versionNr - binary not found for attribute in lang $locale for field $name", __METHOD__ );
+                        continue;
+                    }
+                    /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                    $value = base64_encode( $file->fetchContents() );
+                    break;
+
+                default:
+                    $value = $attribute->toString();
+            }
+
+            $out['fields'][$name] = array(
+                'fieldDef' => $datatype,
+                'value' => $value,
+                'language' => $locale );
+        }
+
+        if ( !$isupdate )
+        {
+            $out['initialLanguage'] = $object->attribute( 'initial_language_code' );
+            $out['alwaysAvailable'] = $object->attribute( 'always_available' );
+            $out['remoteId'] = $RemoteObjRemoteID;
+        }
+
+        return $out;
     }
 
     /**
