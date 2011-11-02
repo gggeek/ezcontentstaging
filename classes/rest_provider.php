@@ -68,6 +68,16 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
+            'stagingUpdateSection' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId/section',
+                    'contentStagingRestContentController',
+                    'updateSection',
+                    'http-put'
+                ),
+                1
+            ),
+
         );
         return $routes;
     }

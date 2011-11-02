@@ -137,6 +137,56 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
+     * Handle change section for a content object from its remote id
+     *
+     * Request:
+     * - PUT /content/objects/remote/<remoteId>/section?sectionId=<sectionId>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doUpdateSection()
+    {
+        $result = new ezpRestMvcResult();
+
+        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+        if ( !$object instanceof eZContentObject )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Content with remote id '{$this->remoteId}' not found"
+            );
+            return $result;
+        }
+
+        if ( !isset( $this->request->get['sectionId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "sectionId" parameter is missing'
+            );
+            return $result;
+        }
+        $sectionId = $this->request->get['sectionId'];
+        $section = eZSection::fetch( $sectionId );
+        if ( !$section instanceof eZSection )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                'The section #' . $sectionId . ' not found'
+            );
+            return $result;
+        }
+
+        eZContentObjectTreeNode::assignSectionToSubTree(
+            $object->attribute( 'main_node_id' ),
+            $sectionId
+        );
+
+        $result->status = new ezpRestHttpResponse( 204, '' );
+        return $result;
+    }
+
+    /**
      * Handle move operation of a location from its remote id to another
      * location
      *
