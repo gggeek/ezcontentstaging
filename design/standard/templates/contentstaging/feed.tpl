@@ -107,9 +107,9 @@ function checkAll()
         {/if}
         <th>{"Status..."|i18n("design/standard/staging/sync")}</th>
         <th>{"Name"|i18n("design/standard/staging/sync")}</th>
-        <th>{"Language..."|i18n("design/standard/staging/sync")}</th>
         <th>{"Date"|i18n("design/standard/staging/sync")}</th>
         <th>{"Changed..."|i18n("design/standard/staging/sync")}</th>
+        <th>{"Language..."|i18n("design/standard/staging/sync")}</th>
     </tr>
     {foreach $item_list as $sync_item sequence array( 'bglight', 'bgdark' ) as $style}
     <tr class="{$style}">
@@ -138,13 +138,13 @@ function checkAll()
             {/if}
         </td>
         <td>
-            {$sync_item.object.initial_language.name|wash}
+            {$sync_item.modified|l10n('shortdatetime')}
         </td>
         <td>
-            {$sync_item.modified}...
+            {concat('action_', $sync_item.to_sync)|d18n('ezcontentstaging')}
         </td>
         <td>
-            {$sync_item.to_sync|wash}
+            {$sync_item.language.locale}
         </td>
     </tr>
     {/foreach}

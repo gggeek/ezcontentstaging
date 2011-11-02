@@ -54,7 +54,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const ERROR_BADPHPCODING = -99;
 
     const ERROR_EVENTTYPEUNKNOWNTOTRANSPORT = -101;
-    const ERROR_EVENTTYPEOBJECTMISSING = -102;
+    const ERROR_OBJECTCANNOTSERIALIZE = -102;
 
     static function definition()
     {
@@ -110,7 +110,8 @@ class eZContentStagingEvent extends eZPersistentObject
                                                       'target' => 'getTarget',
                                                       //'can_sync' => 'canSync',
                                                       'nodes' => 'getNodes',
-                                                      'data' => 'getData' ),
+                                                      'data' => 'getData',
+                                                      'language' => 'language' ),
                       'class_name' => 'eZContentStagingEvent',
                       'sort' => array( 'id' => 'asc' ),
                       'grouping' => array(), // only there to prevent a php warning by ezpo
@@ -169,6 +170,14 @@ class eZContentStagingEvent extends eZPersistentObject
                                       null );
     }
 
+    function language()
+    {
+        if ( $this->LanguageMask == null )
+        {
+            return null;
+        }
+        return eZContentLanguage::fetch( $this->LanguageMask );
+    }
     // *** fetches ***
 
     /**

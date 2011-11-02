@@ -1,6 +1,9 @@
-. event in fetch functions add optional language parameter
+. when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
 
-. finish missing events: swap, move, publish
+. logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them it anymore
+  => warn editor (on delete or on sync?), remove pending events, what? ...
+
+. finish missing events: swap, move
 
 . test: setsection event on a draft is registered or ignored?
 
@@ -11,7 +14,7 @@
 . implement REST api (target-server side)
   - verify if railroute supports optional/mandatory params in query string, how it implements support for PUT/POST/DELETE
 
-. test delete event: how is it triggered?
+. test delete event: how is it triggered? (a: it can be triggered even when obj still has more than 1 node attached)
 
 . check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
   - removelocation: checked
