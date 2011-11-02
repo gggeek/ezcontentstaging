@@ -33,4 +33,7 @@ ApplicationCache=disabled
 [contentStagingRestContentController_removeTranslation_CacheSettings]
 ApplicationCache=disabled
 
+[contentStagingRestContentController_updateSection_CacheSettings]
+ApplicationCache=disabled
+
 */ ?>
