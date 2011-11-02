@@ -137,6 +137,57 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
+     * Update the sort order and sort field of a node from its remote id
+     *
+     * Request:
+     * - PUT /content/locations?remoteId=<remoteId>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doUpdateSort()
+    {
+        $result = new ezpRestMvcResult();
+        if ( !isset( $this->request->get['remoteId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "remoteId" parameter is missing'
+            );
+            return $result;
+        }
+
+        $remoteId = $this->request->get['remoteId'];
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Cannot find the node with the remote id {$remoteId}"
+            );
+            return $result;
+        }
+
+        $db = eZDB::instance();
+        $db->begin();
+        $node->setAttribute(
+            'sort_field',
+            $this->getSortField( $this->request->inputVariables['sortField'] )
+        );
+        $node->setAttribute(
+            'sort_order',
+            $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
+        );
+        $node->store();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+        $db->commit();
+
+        $result->variables['Location'] = new contentStagingLocation( $node );
+        return $result;
+    }
+
+    /**
      * Handle change section for a content object from its remote id
      *
      * Request:
