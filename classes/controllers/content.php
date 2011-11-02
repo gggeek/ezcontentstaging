@@ -44,6 +44,48 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
+
+    /**
+     * Handle DELETE request for a translation of content object
+     *
+     * Request:
+     * - DELETE /content/objects/remote/<remoteId>/translations/<localeCode>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doRemoveTranslation()
+    {
+        $result = new ezpRestMvcResult();
+
+        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+        if ( !$object instanceof eZContentObject )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Content with remote id '{$this->remoteId}' not found"
+            );
+            return $result;
+        }
+        $objectId = $object->attribute( 'id' );
+        $languages = $object->allLanguages();
+        if ( !isset( $languages[$this->localeCode] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Translation in '{$this->localeCode}' not found in the content #" . $objectId
+            );
+            return $result;
+        }
+
+        eZContentOperationCollection::removeTranslation(
+            $objectId,
+            array( $languages[$this->localeCode]->attribute( 'id' ) )
+        );
+
+        $result->status = new ezpRestHttpResponse( 204, '' );
+        return $result;
+    }
+
     /**
      * Handle hide or unhide request for a location from its remote id
      *
