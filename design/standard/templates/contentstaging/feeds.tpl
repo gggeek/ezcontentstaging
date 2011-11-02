@@ -3,6 +3,7 @@
 
  @todo add support for pagination
  @todo if $manage_sync_access is true, allow user to add/edit/remove feeds
+ @todo show  umber of pending evens for every feed
 *}
 
 <div class="border-box">
@@ -13,7 +14,7 @@ Title: synchronization feeds...
 {def $manage_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'manage' ) )
      $source = false()}
 <form action={'contentstaging/feeds'|ezurl()} method="post">
-<table>
+<table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
         {if $manage_sync_access}
         <th></th>
@@ -21,11 +22,11 @@ Title: synchronization feeds...
         <th>Name...</th>
         <th>Sources...</th>
     </tr>
-    {foreach $feeds as $id => $feed}
-        <tr>
+    {foreach $feeds as $id => $feed sequence array( 'bglight', 'bgdark' ) as $style}
+        <tr class="{$style}">
             {*$feed|attribute(show)*}
             {if $manage_sync_access}
-            <th><input type="checkbox" name="feeds[]" value="{$id}" /></th>
+            <td><input type="checkbox" name="feeds[]" value="{$id}" /></td>
             {/if}
             <td><a href={concat('contentstaging/feed/', $id)|ezurl()}>{$feed.name|wash()}</a></td>
             <td>
@@ -45,8 +46,8 @@ Title: synchronization feeds...
 </table>
 {if $manage_sync_access}
     {* @todo ... *}
-    <input type="submit" name="resetFeedAction" value="Reset feeds..." />
-    <input type="submit" name="initailizeFeedAction" value="Initialize feeds..." />
+    <input class="button" type="submit" name="resetFeedAction" value="Reset feeds..." />
+    <input class="button" type="submit" name="initailizeFeedAction" value="Initialize feeds..." />
 {/if}
 </form>
 {undef $manage_sync_access $source}
