@@ -50,6 +50,16 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
+            'stagingRemoveLocation' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/locations',
+                    'contentStagingRestContentController',
+                    'removeLocation',
+                    'http-delete'
+                ),
+                1
+            ),
+
         );
         return $routes;
     }

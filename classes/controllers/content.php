@@ -145,6 +145,52 @@ class contentStagingRestContentController extends ezpRestMvcController
 
     }
 
+
+    /**
+     * Handle DELETE request for a location from its remote id
+     *
+     * Request:
+     * - DELETE /content/locations?remoteId=<remoteId>&trash=0|1
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doRemoveLocation()
+    {
+        $moveToTrash = true;
+        if ( isset( $this->request->get['trash'] ) )
+        {
+            $moveToTrash = (bool)$this->request->get['trash'];
+        }
+
+        $result = new ezpRestMvcResult();
+        if ( !isset( $this->request->get['remoteId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "remoteId" parameter is missing'
+            );
+            return $result;
+        }
+        $remoteId = $this->request->get['remoteId'];
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Node with remote id '{$remoteId}' not found"
+            );
+            return $result;
+        }
+
+        eZContentObjectTreeNode::removeSubtrees(
+            array( $node->attribute( 'node_id' ) ),
+            $moveToTrash
+        );
+
+        $result->status = new ezpRestHttpResponse( 204, '' );
+        return $result;
+    }
+
     /**
      * Handle the PUT request for a content object from its remote id to add a
      * location to it
