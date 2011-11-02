@@ -21,4 +21,13 @@ ApplicationCache=disabled
 [contentStagingRestContentController_addLocation_CacheSettings]
 ApplicationCache=disabled
 
+[contentStagingRestContentController_hideUnhide_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_move_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_removeLocation_CacheSettings]
+ApplicationCache=disabled
+
 */ ?>
