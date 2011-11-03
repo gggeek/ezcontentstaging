@@ -168,14 +168,14 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
-     * Update the sort order and sort field of a node from its remote id
+     * Update the sort order and sort field or the priority of a node from its remote id
      *
      * Request:
      * - PUT /content/locations?remoteId=<remoteId>
      *
      * @return ezpRestMvcResult
      */
-    public function doUpdateSort()
+    public function doUpdateLocation()
     {
         $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['remoteId'] ) )
@@ -198,21 +198,22 @@ class contentStagingRestContentController extends ezpRestMvcController
             return $result;
         }
 
-        $db = eZDB::instance();
-        $db->begin();
-        $node->setAttribute(
-            'sort_field',
-            $this->getSortField( $this->request->inputVariables['sortField'] )
-        );
-        $node->setAttribute(
-            'sort_order',
-            $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
-        );
-        $node->store();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
-        $db->commit();
+        if ( isset( $this->request->inputVariables['sortField'] )
+                && isset( $this->request->inputVariables['sortOrder'] ) )
+        {
+            $this->updateNodeSort(
+                $node,
+                $this->getSortField( $this->request->inputVariables['sortField'] ),
+                $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
+            );
+        }
+        if ( isset( $this->request->inputVariables['priority'] ) )
+        {
+            $this->updateNodePriority(
+                $node,
+                (int)$this->request->inputVariables['priority']
+            );
+        }
 
         $result->variables['Location'] = new contentStagingLocation( $node );
         return $result;
@@ -497,6 +498,44 @@ class contentStagingRestContentController extends ezpRestMvcController
         $newNode->sync();
         $db->commit();
         return $newNode;
+    }
+
+    /**
+     * Update the sort order and the sort field of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param int $sortField
+     * @param int $sortOrder
+     */
+    protected function updateNodeSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+        $node->setAttribute( 'sort_field', $sortField );
+        $node->setAttribute( 'sort_order', $sortOrder );
+        $node->store();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+        $db->commit();
+    }
+
+    /**
+     * Update the priority of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param int $priority
+     */
+    protected function updateNodePriority( eZContentObjectTreeNode $node, $priority )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+        $node->setAttribute( 'priority', $priority );
+        $node->store();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+        $db->commit();
     }
 
 }

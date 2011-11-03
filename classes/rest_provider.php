@@ -51,11 +51,13 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
-            'stagingUpdateSort' => new ezpRestVersionedRoute(
+            // update the sort field / sort order or the priority
+            // depending on the content of the PUT request
+            'stagingUpdateLocation' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations',
                     'contentStagingRestContentController',
-                    'updateSort',
+                    'updateLocation',
                     'http-put'
                 ),
                 1
