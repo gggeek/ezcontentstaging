@@ -376,7 +376,7 @@ class eZContentStagingEvent extends eZPersistentObject
         }
 
         $customFields = array( array( 'operation' => 'COUNT( * )', 'name' => 'row_count' ) );
-        $rows = self::fetchObjectList( self::definition(), array(), $conditions, array(), null, false, array( 'target_id' ), $customFields, null, $custom_conds );
+        $rows = self::fetchObjectList( self::definition(), array(), $conditions, array(), null, false, null, $customFields, null, $custom_conds );
         return $rows[0]['row_count'];
     }
 
