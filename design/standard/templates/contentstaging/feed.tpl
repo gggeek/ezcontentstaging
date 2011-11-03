@@ -47,19 +47,18 @@ function checkAll()
 //-->
 </script>
 
-{if is_set( $sync_results )}
-    <div class="message-warning">
-        <h2>{"Content synchronisation action results "|i18n('ezcontentstaging')}:</h2>
-        {* @todo mark in  red *}
-        {if $sync_errors|count()}
+{if is_set( $action_results )}
+    <div class="{if $action_errors|count()}message-warning{else}message-feedback{/if}">
+        <h2>{concat("Event ", $action, " action results ")|d18n('ezcontentstaging')}:</h2>
+        {if $action_errors|count()}
             <ul>
-            {foreach $sync_errors as $msg}
+            {foreach $action_errors as $msg}
                 <li>{$msg|wash()}</li>
             {/foreach}
             </ul>
         {/if}
         <ul>
-            {foreach $sync_results as $msg}
+            {foreach $action_results as $msg}
                 <li>{$msg|wash()}</li>
             {/foreach}
         </ul>

@@ -30,8 +30,8 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
         return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
     }
 
-    $syncErrors = array();
-    $syncResults = array();
+    $actionErrors = array();
+    $actionResults = array();
     if ( $http->hasPostVariable( 'syncArray' ) && is_array( $http->postVariable( 'syncArray' ) ) )
     {
         $tosync = array();
@@ -57,11 +57,11 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
             $event = $tosync[$id];
             if ( $resultCode !== 0 )
             {
-                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
+                $actionErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
             }
             else
             {
-                $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
+                $actionResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
             }
         }
 
@@ -70,11 +70,12 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
     {
         eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
         /// @todo apply i18n to message
-        $syncErrors[] = "No object to sync...";
+        $actionErrors[] = "No object to sync...";
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
-    $tpl->setVariable( 'sync_errors', $syncErrors );
-    $tpl->setVariable( 'sync_results', $syncResults );
+    $tpl->setVariable( 'action_errors', $actionErrors );
+    $tpl->setVariable( 'action_results', $actionResults );
+    $tpl->setVariable( 'action', 'synchronisation' );
 
 } // end of 'doing sync' action
 else if (   $module->isCurrentAction( 'RemoveEvents' ) )
@@ -87,8 +88,8 @@ else if (   $module->isCurrentAction( 'RemoveEvents' ) )
         return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
     }
 
-    $syncErrors = array();
-    $syncResults = array();
+    $actionErrors = array();
+    $actionResults = array();
     if ( $http->hasPostVariable( 'syncArray' ) && is_array( $http->postVariable( 'syncArray' ) ) )
     {
         $toremove = array();
@@ -110,23 +111,24 @@ else if (   $module->isCurrentAction( 'RemoveEvents' ) )
         /// @todo apply i18n to messages
         if ( $out === false )
         {
-            $syncErrors[] = "Error: events not removed (" . implode( ', ', $toremove ) . ')';
+            $actionErrors[] = "Error: events not removed (" . implode( ', ', $toremove ) . ')';
         }
         else
         {
-            $syncResults[] = "$out events removed (" . implode( ', ', $toremove ) . ')';
+            $actionResults[] = "$out events removed (" . implode( ', ', $toremove ) . ')';
         }
 
     }
     else
     {
-        eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
+        eZDebug::writeError( "No list of events to be removed received. Pen testing? tsk tsk tsk", __METHOD__ );
         /// @todo apply i18n to message
-        $syncErrors[] = "No object to sync...";
+        $actionErrors[] = "No object to remove...";
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
-    $tpl->setVariable( 'sync_errors', $syncErrors );
-    $tpl->setVariable( 'sync_results', $syncResults );
+    $tpl->setVariable( 'action_errors', $actionErrors );
+    $tpl->setVariable( 'action_results', $actionResults );
+    $tpl->setVariable( 'action', 'removal' );
 }
 
 if ( $targetId !== null )
