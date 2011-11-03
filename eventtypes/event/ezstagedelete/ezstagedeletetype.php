@@ -1,4 +1,13 @@
 <?php
+/**
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ */
 
 class eZStageDeleteType extends eZWorkflowEventType
 {
@@ -7,7 +16,7 @@ class eZStageDeleteType extends eZWorkflowEventType
     function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage delete' ) );
-        $this->setTriggerTypes( array( 'content' => array( 'delete' => array( 'before' )  ) ) );
+        $this->setTriggerTypes( array( 'content' => array( 'delete' => array( 'before' ) ) ) );
     }
 
     /**
