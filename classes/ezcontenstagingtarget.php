@@ -61,7 +61,7 @@ class eZContentStagingTarget
         $ini = eZINI::instance( 'contentstaging.ini' );
         foreach( $ini->variable( 'GeneralSettings', 'TargetList' ) as $id )
         {
-            $out[$id] = new eZContentStagingTarget( $ini->group( 'Target_' . $id ) );
+            $out[$id] = new eZContentStagingTarget( array_merge( $ini->group( 'Target_' . $id ), array( 'id' => $id ) ) );
         }
         return $out;
 
@@ -70,7 +70,12 @@ class eZContentStagingTarget
     static function fetch( $id )
     {
         $ini = eZINI::instance( 'contentstaging.ini' );
-        return new eZContentStagingTarget( $ini->group( 'Target_' . $id ) );
+        $targets = $ini->variable( 'GeneralSettings', 'TargetList' );
+        if ( isset( $targets[$id] ) )
+        {
+            return new eZContentStagingTarget( array_merge( $ini->group( 'Target_' . $id ), array( 'id' => $id ) ) );
+        }
+        return null;
     }
 
     /**
