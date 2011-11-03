@@ -17,8 +17,11 @@ $ViewList = array(
                       'functions' => 'view',
                       'default_navigation_part' => 'ezsetupnavigationpart',
                       'ui_context' => 'default',
-                      'unordered_params' => array( 'offset' => 'Offset' )
-                      /// @todo add definition of post actions to manage feeds: add/remove/reset/initialize/full sync
+                      'unordered_params' => array( 'offset' => 'Offset' ),
+                      /// @todo add definition of post actions to manage feeds: add/remove/full sync
+                      'single_post_actions' => array(
+                          'ResetFeedsButton' => 'ResetFeeds',
+                          'InitializeFeedsButton' => 'Initializefeeds' )
                     ),
     /// view of a single feed, also used to sync its events
     'feed' => array( 'script' => 'feed.php',

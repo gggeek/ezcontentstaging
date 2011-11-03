@@ -527,16 +527,46 @@ class eZContentStagingEvent extends eZPersistentObject
     * Removes a list of events given their ids
     * @return integer number of deleted events
     *
-    * @todo return real number of deleted events
+    * @todo return real number of deleted events - this is not really atomic...
     */
     static function removeEvents( $eventIDList, $also_syncing=false )
     {
         $db = eZDB::instance();
         $db->begin();
-        if ( $also_syncing != true )
+        if ( !$also_syncing )
         {
             // we first filter out any events in syncing status
             $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ), array( 'column' => 'id' ) );
+        }
+        $out = count( $eventIDList );
+        $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
+        $db->query( "DELETE FROM ezcontentstaging_event WHERE " . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ) );
+        $db->commit();
+        return $out;
+    }
+
+    /**
+     * Removes a list of events given their targets ids
+     * @return integer number of deleted events
+     *
+     * @todo return real number of deleted events - this is not really atomic...
+     */
+    static function removeEventsByTargets( $targetIDList, $also_syncing=false )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+        foreach ( $targetIDList as $key => $val )
+        {
+            $targetIDList[$key] = "'" . $db->escapeString( $val ) . "'";
+        }
+        if ( !$also_syncing )
+        {
+            // we first filter out any events in syncing status
+            $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' . $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ), array( 'column' => 'id' ) );
+        }
+        else
+        {
+            $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE ' . $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ), array( 'column' => 'id' ) );
         }
         $out = count( $eventIDList );
         $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
