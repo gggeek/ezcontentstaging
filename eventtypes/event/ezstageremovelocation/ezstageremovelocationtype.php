@@ -17,7 +17,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage Remove Location' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage remove location' ) );
         $this->setTriggerTypes( array( 'content' => array( 'removelocation' => array( 'before' ) ) ) );
     }
 

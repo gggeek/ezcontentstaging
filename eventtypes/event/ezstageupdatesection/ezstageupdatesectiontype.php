@@ -17,7 +17,7 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage section update' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage update section' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updatesection' => array( 'before' ) ) ) );
     }
 

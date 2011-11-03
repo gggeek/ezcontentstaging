@@ -6,7 +6,7 @@ class eZStageUpdateObjectStateType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Object State update' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage update object state' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updateobjectstate' => array( 'after' ) ) ) ); // ?
     }
 
