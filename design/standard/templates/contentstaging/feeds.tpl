@@ -19,14 +19,15 @@ Title: synchronization feeds...
         {if $manage_sync_access}
         <th></th>
         {/if}
-        <th>Name...</th>
-        <th>Sources...</th>
+        <th>{'Name'|i18n('ezcontentstaging')}</th>
+        <th>{'Sources'|i18n('ezcontentstaging')}</th>
+        <th>{'Description'|i18n('ezcontentstaging')}</th>
     </tr>
     {foreach $feeds as $id => $feed sequence array( 'bglight', 'bgdark' ) as $style}
         <tr class="{$style}">
             {*$feed|attribute(show)*}
             {if $manage_sync_access}
-            <td><input type="checkbox" name="feeds[]" value="{$id}" /></td>
+            <td align="left" width="1"><input type="checkbox" name="feeds[]" value="{$id}" /></td>
             {/if}
             <td><a href={concat('contentstaging/feed/', $id)|ezurl()}>{$feed.name|wash()}</a></td>
             <td>
@@ -38,9 +39,9 @@ Title: synchronization feeds...
                     {else}
                         {'Missing node'|i18n()}: {$nodeid}<br/>
                     {/if}
-
                 {/foreach}
             </td>
+            <td>{$feed.description|wash()}</td>
         </tr>
     {/foreach}
 </table>

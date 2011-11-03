@@ -110,7 +110,7 @@ function checkAll()
         <th>{"Status"|i18n('ezcontentstaging')}</th>
         <th>{"Content"|i18n('ezcontentstaging')}</th>
         <th>{"Date"|i18n('ezcontentstaging')}</th>
-        <th>{"Modified"|i18n('ezcontentstaging')}</th>
+        <th>{"Modification"|i18n('ezcontentstaging')}</th>
         <th>{"Language"|i18n('ezcontentstaging')}</th>
     </tr>
     {foreach $item_list as $sync_item sequence array( 'bglight', 'bgdark' ) as $style}
