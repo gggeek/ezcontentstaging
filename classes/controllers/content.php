@@ -45,14 +45,15 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
-     * Handle update of the always available for a content object
+     * Handle update of the always available flag or the initial language id
+     * for a content object from its remote id
      *
      * Request:
      * - PUT /content/objects/remote/<remoteId>
      *
      * @return ezpRestMvcResult
      */
-    public function doUpdateAlwaysAvailable()
+    public function doUpdateContent()
     {
         $result = new ezpRestMvcResult();
 
@@ -66,10 +67,22 @@ class contentStagingRestContentController extends ezpRestMvcController
             return $result;
         }
 
-        eZContentOperationCollection::updateAlwaysAvailable(
-            $object->attribute( 'id' ),
-            (bool)$this->request->inputVariables['alwaysAvailable']
-        );
+        if ( isset( $this->request->inputVariables['alwaysAvailable'] )
+                && count( $this->request->inputVariables ) === 1 )
+        {
+            eZContentOperationCollection::updateAlwaysAvailable(
+                $object->attribute( 'id' ),
+                (bool)$this->request->inputVariables['alwaysAvailable']
+            );
+        }
+        elseif ( isset( $this->request->inputVariables['initialLanguage'] )
+                && count( $this->request->inputVariables ) === 1 )
+        {
+            eZContentOperationCollection::updateInitialLanguage(
+                $object->attribute( 'id' ),
+                (int)$this->request->inputVariables['initialLanguage']
+            );
+        }
 
         $result->status = new ezpRestHttpResponse( 204, '' );
         return $result;
