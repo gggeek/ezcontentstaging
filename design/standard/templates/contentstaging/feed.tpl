@@ -143,7 +143,7 @@ function checkAll()
             {$sync_item.modified|l10n('shortdatetime')}
         </td>
         <td>
-            {concat('action_', $sync_item.to_sync)|d18n('ezcontentstaging')}
+            {$sync_item.to_sync_string|d18n('ezcontentstaging')}
         </td>
         <td>
             {$sync_item.language.locale}

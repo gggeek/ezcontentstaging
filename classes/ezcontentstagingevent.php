@@ -37,6 +37,24 @@ class eZContentStagingEvent extends eZPersistentObject
     const ACTION_UPDATEPRIORITY = 16384;
     const ACTION_UPDATESECTION = 32768;
 
+    static $sync_strings = array(
+        1 => 'location added',
+        2 => 'object removed',
+        4 => 'node hidden/shown',
+        8 => 'node moved',
+        16 => 'object published',
+        32 => 'location removed',
+        64 => 'translation removed',
+        128 => 'sort order changed',
+        256 => 'two objects swapped',
+        1024 => 'alwaysavailable updated',
+        2048 => 'main language updated',
+        4096 => 'main location changed',
+        8192 => 'content state changed',
+        16384 => 'child(?) priority changed',
+        32768 => 'section changed'
+    );
+
     const STATUS_TOSYNC = 0;
     const STATUS_SYNCING = 1;
     const STATUS_SUSPENDED = 2;
@@ -111,7 +129,8 @@ class eZContentStagingEvent extends eZPersistentObject
                                                       //'can_sync' => 'canSync',
                                                       'nodes' => 'getNodes',
                                                       'data' => 'getData',
-                                                      'language' => 'language' ),
+                                                      'language' => 'language',
+                                                      'to_sync_string' => 'getSyncString' ),
                       'class_name' => 'eZContentStagingEvent',
                       'sort' => array( 'id' => 'asc' ),
                       'grouping' => array(), // only there to prevent a php warning by ezpo
@@ -178,6 +197,24 @@ class eZContentStagingEvent extends eZPersistentObject
         }
         return eZContentLanguage::fetch( $this->LanguageMask );
     }
+
+    /**
+    * Returns a stings, with a comma separated list of the changes happened with this event
+    */
+    function getSyncString()
+    {
+        $out = array();
+        $bitmask = (int)$this->ToSync;
+        foreach ( self::$sync_strings as $key => $val )
+        {
+            if ( $bitmask & $key )
+            {
+                $out[] = $val;
+            }
+        }
+        return implode( ', ', $out );
+    }
+
     // *** fetches ***
 
     /**
