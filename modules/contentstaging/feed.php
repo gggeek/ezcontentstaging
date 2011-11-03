@@ -137,7 +137,7 @@ if ( $targetId !== null )
 /// @todo !important fetch list of items to be displayed here, not purely in template
 
 $tpl->setVariable( 'target_id', $targetId );
-$tpl->setVariable( 'view_parameters', array( 'offset', (int)$Params['Offset'] ) );
+$tpl->setVariable( 'view_parameters', array( 'offset' => (int)$Params['Offset'] ) );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/feed.tpl' );
