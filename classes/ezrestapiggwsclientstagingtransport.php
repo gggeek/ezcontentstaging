@@ -55,7 +55,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_HIDEUNHIDE:
                     $method = 'POST';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID&hide=" . $data['hide'];
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID&hide=" . $data['hide'];
                     //$payload = array(
                     //    'hide' => $data['hide'],
                     //    );
@@ -101,7 +101,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID&trash=" . self::encodeTrash( $data['trash'] );
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID&trash=" . self::encodeTrash( $data['trash'] );
                     $out = $this->restCall( $method, $url );
                     break;
 
@@ -131,7 +131,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_SORT:
                     $method = 'PUT';
                     $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID";
                     $payload = array(
                         // @todo can we omit safely to send priority?
                         //'priority' => $data['priority'],
@@ -172,9 +172,8 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     foreach ( $data['priorities'] as $priority )
                     {
                         $RemoteNodeRemoteID = self::buildRemoteId( $priority['nodeID'], $priority['nodeRemoteID'] );
-                        $url = "/content/locations?remoteId=$RemoteNodeRemoteID";
+                        $url = "/content/locations/remote/$RemoteNodeRemoteID";
                         $payload = array(
-                            // @todo can we omit safely to send rest of data?
                             'priority' => $priority['priority']
                         );
                         $out = $this->restCall( $method, $url, $payload );
@@ -184,6 +183,44 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                             break;
                         }
                     }
+                    break;
+
+                case eZContentStagingEvent::ACTION_INITIALIZEFEED:
+                    // set remote id on remote node and remote object
+                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+
+                    $method = 'GET';
+                    /// @todo switch from rest api v1 (content/node) to v2 (content/location)
+                    $url = "/content/node/{$data['remoteNodeID']}";
+                    //$url = "/content/locations/{$data['remoteNodeID']}";
+                    $out = $this->restCall( $method, $url );
+                    if ( !is_array( $out ) )
+                    {
+                        return $out;
+                    }
+                    /// @todo check that this is present in response
+                    $remoteObjID = $out['metadata']['objectId'];
+
+                    $method = 'PUT';
+                    $url = "/content/locations/{$data['remoteNodeID']}";
+                    $payload = array(
+                        'remoteId' => $RemoteNodeRemoteID
+                    );
+                    $out = $this->restCall( $method, $url, $payload );
+                    if ( $out != 0 )
+                    {
+                        return $out;
+                    }
+
+                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $method = 'PUT';
+                    $url = "/content/objects/{$data['remoteNodeID']}";
+                    $payload = array(
+                        'remoteId' => $RemoteNodeRemoteID
+                    );
+                    $out = $this->restCall( $method, $url, $payload );
+                    return $out;
+
                     break;
 
                 default:
@@ -201,13 +238,19 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         $options = array( 'method' => $method, 'requestType' => 'application/json' );
 
         /// @todo test that ggws is enabled and that there is a server defined
-        $results = ggeZWebservicesClient::call( $this->target->attribute( 'server' ), $url, $payload, $options );
+        $results = ggeZWebservicesClient::send( $this->target->attribute( 'server' ), $url, $payload, true, $options );
         if ( !isset( $results['result'] ) )
         {
-            /// @todo settle on an error code. Best would be to decode $results['error'], which we get as a string
-            return -999;
+            /// @todo best would be to decode $results['error'], which we get as a string, instead of using a generic error code
+            return eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
         }
-        return $results['result'];
+        $response = $results['result'];
+        if ( $response->isFault() )
+        {
+            // currently we have error ranges -101 to -30x here
+            return $response->faultCode();
+        }
+        return $response->value();
     }
 
     /**

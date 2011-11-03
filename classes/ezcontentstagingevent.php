@@ -36,6 +36,8 @@ class eZContentStagingEvent extends eZPersistentObject
     const ACTION_UPDATEOBJECSTATE = 8192; /// @todo
     const ACTION_UPDATEPRIORITY = 16384;
     const ACTION_UPDATESECTION = 32768;
+    const ACTION_INITIALIZEFEED = 65536;
+
 
     static $sync_strings = array(
         1 => 'location added',
@@ -52,7 +54,8 @@ class eZContentStagingEvent extends eZPersistentObject
         4096 => 'main location changed',
         8192 => 'content state changed',
         16384 => 'child(?) priority changed',
-        32768 => 'section changed'
+        32768 => 'section changed',
+        65536 => 'feed initialization'
     );
 
     const STATUS_TOSYNC = 0;
@@ -68,11 +71,18 @@ class eZContentStagingEvent extends eZPersistentObject
     const ERROR_NOTRANSPORTCLASS = -10;
     /// transport class threw an exception
     const ERROR_TRANSPORTEXCEPTION = -11;
+    /// config error: source node for feed not found in content
+    const ERROR_NOSOURCENODE = -12;
+    /// config error: remote source node for feed not specified
+    const ERROR_NOREMOTESOURCE = -13;
     // an error that should never be returned
     const ERROR_BADPHPCODING = -99;
 
-    const ERROR_EVENTTYPEUNKNOWNTOTRANSPORT = -101;
-    const ERROR_OBJECTCANNOTSERIALIZE = -102;
+    // nb: ggws rest layers uses errors from -101 to -30x currently, we try to
+    // avoid collitions
+    const ERROR_EVENTTYPEUNKNOWNTOTRANSPORT = -501;
+    const ERROR_OBJECTCANNOTSERIALIZE = -502;
+    const ERROR_GENERICTRANSPORTERROR = -503;
 
     static function definition()
     {
@@ -401,7 +411,7 @@ class eZContentStagingEvent extends eZPersistentObject
 
     /**
     * Adds an event to the queue.
-    *
+    * @return integer id of the event created
     * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
     *       do not add show but remove hide, etc...
     */
@@ -430,6 +440,7 @@ class eZContentStagingEvent extends eZPersistentObject
             }
             $db->commit();
         }
+        return $id;
     }
 
     /**

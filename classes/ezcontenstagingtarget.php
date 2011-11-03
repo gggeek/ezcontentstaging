@@ -9,7 +9,7 @@
  * So far hides access to ini file, as later we might want to convert this to
  * a db-based structure
  *
- * @todo add dynamic attributes, eg. to get nr. of events per feed
+ * @todo add dynamic attributes, eg. to get nr. of events per feed, to get instance of tarnsport class
  *
  * @package ezcontentstaging
  *
@@ -148,7 +148,7 @@ class eZContentStagingTarget
     }
 
     /// CamelCase to camel_case conversion
-    function CamelCase2camel_case( $array )
+    protected function CamelCase2camel_case( $array )
     {
         foreach( $array as $key => $val )
         {
@@ -159,24 +159,72 @@ class eZContentStagingTarget
     }
 
     /**
-    * Initializes a target by creating the necessary items/events:
+    * Initializes a target by creating the necessary events and optionally syncing them:
     * - for all top level nodes, we need to sync in remote server the object-id
     *   (and node-id ???)
+    * @return array for every source node, 0 for ok, or an error code
     */
-    function initializeRootItems()
+    function initializeRootItems( $doexecute=true )
     {
-        foreach( $this->_attrs['subtrees'] as $subtreeRoot )
+        $out = array();
+
+        $remotenodes = $this->_attrs['remote_subtrees'];
+        foreach( $this->_attrs['subtrees'] as $key => $nodeID )
         {
-            $node = eZContentObjecTreeNode::fetch( $subtreeRoot );
-            if ( $node )
+            if ( !isset( $remotenodes[$key] ) )
             {
-                /// @todo ...
+                eZDebug::writeError( "Remote root node not specified for feed " . $this->_attrs['Name'], __METHOD__ );
+                $out[] = eZContentStagingEvent::ERROR_NOREMOUTESOURCE;
+                continue;
+            }
+            $remoteNodeID = $remotenodes[$key];
+
+            $node = eZContentObjecTreeNode::fetch( $nodeID );
+            if ( !$node )
+            {
+                eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['Name'] . " does not exist", __METHOD__ );
+                $out[] = eZContentStagingEvent::ERROR_NOSOURCENODE;
+                continue;
+            }
+
+            $object = $node->attribute( 'object' );
+            $initData = array(
+                'nodeID' => $nodeID,
+                'nodeRemoteID' => $node->attribute( 'remote_id' ),
+                'objectRemoteID' => $object->attribute( 'remote_id' ),
+                'remoteNodeID' => $remotenodes[$key]
+            );
+            $evtID = eZContentStagingEvent::addEvent(
+                $this->attribute( 'id' ),
+                $object->attribute( 'id' ),
+                eZContentStagingEvent::ACTION_INITIALIZEFEED,
+                $initData,
+                array( $nodeID )
+                );
+
+            if ( $doexecute )
+            {
+                $ok = eZContentStagingEvent::syncEvents( array( $evtID ) );
+                $out[] = $ok[$evtID];
             }
             else
             {
-                eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['Name'] . " does not exist", __METHOD__ );
+                $out[] = 0;
             }
+
         }
+        return $out;
+    }
+
+    function transport()
+    {
+        $class = $this->attribute( 'transport_class' );
+        if ( !class_exists( $class ) )
+        {
+            eZDebug::writeError( "Can not create transport, class $class not found", __METHOD__ );
+            return null;
+        }
+        return new $class( $this );
     }
 }
 
