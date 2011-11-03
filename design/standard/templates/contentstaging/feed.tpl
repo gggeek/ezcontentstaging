@@ -66,16 +66,6 @@ function checkAll()
     </div>
 {/if}
 
-<div class="attribute-header">
-    <h1 class="long">
-        {if $target_id}
-            {"Feed"|i18n('ezcontentstaging')}: {$target_id|wash()} ...
-        {else}
-            {"Feeds"|i18n('ezcontentstaging')}
-        {/if}
-    </h1>
-</div>
-
 {def $page_limit = 30
      $sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
      $manage_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'manage' ) )
@@ -85,27 +75,41 @@ function checkAll()
 {else}
     {def $list_count = fetch( 'contentstaging', 'sync_events_count' )}
 {/if}
+
+<div class="attribute-header">
+    <h1 class="long">
+        {if $target_id}
+            {"Feed"|i18n('ezcontentstaging')}: {$target_id|wash()} [{$list_count} {'events'|i18n('ezcontentstaging')}]
+        {else}
+            {"All feeds"|i18n('ezcontentstaging')} [{$list_count} {'events'|i18n('ezcontentstaging')}]
+        {/if}
+    </h1>
+</div>
+
 {if $list_count}
 
     <p>
-        {"These are the events in need of sync.... You can push them to the destination server."|i18n('ezcontentstaging')|nl2br}
+        {"These are the events in need of synchronization. You can push them to the destination server."|i18n('ezcontentstaging')|nl2br}
     </p>
 
     {* @todo add view params to the form target url ? *}
     <form name="syncaction" action={concat( "contentstaging/feed/", $target_id )|ezurl} method="post" >
     {if ne($target_id, '')}
         {def $item_list = fetch( 'contentstaging', 'sync_events', hash( 'target_id', $target_id,
-                                                                      'limit', $page_limit,
-                                                                      'offset', $view_parameters.offset ) )}
+                                                                        'limit', $page_limit,
+                                                                        'offset', $view_parameters.offset ) )}
     {else}
         {def $item_list = fetch( 'contentstaging', 'sync_events', hash( 'limit', $page_limit,
-                                                                      'offset', $view_parameters.offset ) )}
+                                                                        'offset', $view_parameters.offset ) )}
     {/if}
 
     <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
         {if $sync_access}
             <th></th>
+        {/if}
+        {if $target_id|not()}
+            <th>{"Feed"|i18n('ezcontentstaging')}</th>
         {/if}
         <th>{"Status"|i18n('ezcontentstaging')}</th>
         <th>{"Content"|i18n('ezcontentstaging')}</th>
@@ -119,6 +123,10 @@ function checkAll()
         <td align="left" width="1">
             <input type="checkbox" name="syncArray[]" value="{$sync_item.id}" {if ne($sync_item.status, 0)}disabled="disabled"{/if}/>
         </td>
+        {/if}
+        {if $target_id|not()}
+        {* @todo display feed name, not id *}
+        <td>{$sync_item.target_id|wash()}</td>
         {/if}
         <td>
             {if eq($sync_item.status, 1)}
