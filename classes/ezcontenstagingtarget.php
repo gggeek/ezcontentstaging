@@ -71,7 +71,7 @@ class eZContentStagingTarget
     {
         $ini = eZINI::instance( 'contentstaging.ini' );
         $targets = $ini->variable( 'GeneralSettings', 'TargetList' );
-        if ( isset( $targets[$id] ) )
+        if ( in_array( $id, $targets ) )
         {
             return new eZContentStagingTarget( array_merge( $ini->group( 'Target_' . $id ), array( 'id' => $id ) ) );
         }
