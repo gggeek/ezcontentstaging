@@ -73,7 +73,7 @@
 {if $manage_sync_access}
     {* @todo ... *}
     <input class="button" type="submit" name="ResetFeedsButton" value="{'Reset feeds'|i18n('ezcontentstaging')}" />
-    <input class="button" type="submit" name="initailizeFeedAction" value="Initialize feeds..." />
+    <input class="button" type="submit" name="InitializeFeedsButton" value="{'Initialize feeds'|i18n('ezcontentstaging')}" />
 {/if}
 </form>
 {undef $manage_sync_access $source $events_count}

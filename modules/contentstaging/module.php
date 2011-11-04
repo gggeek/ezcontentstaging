@@ -21,7 +21,7 @@ $ViewList = array(
                       /// @todo add definition of post actions to manage feeds: add/remove/full sync
                       'single_post_actions' => array(
                           'ResetFeedsButton' => 'ResetFeeds',
-                          'InitializeFeedsButton' => 'Initializefeeds' )
+                          'InitializeFeedsButton' => 'InitializeFeeds' )
                     ),
     /// view of a single feed, also used to sync its events
     'feed' => array( 'script' => 'feed.php',

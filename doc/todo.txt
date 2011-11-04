@@ -1,6 +1,8 @@
 . look for content/publish event at datatypes where a transcoding of data is needed:
   - object relations, xml block, etc... -> we need to tranform object ids into their remote equivalent
 
+. when sending binary data over (ezimage, ezbinaryfile), it is not enough the base64 encoding - we need additional info (eg. original filename)
+
 . when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
 
 . logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them it anymore
@@ -8,12 +10,7 @@
 
 . test: setsection event on a draft is registered or ignored?
 
-. in ezrestapiggwsclient
-  - add transcoding of values from event-style to rest-api style (eg. ids of languages, booleans etc)
-  - add better error checking on returned http call results
-
-. implement REST api (target-server side)
-  - verify if railroute supports optional/mandatory params in query string, how it implements support for PUT/POST/DELETE
+. implement REST api (target-server side): work in progress...
 
 . test delete event: how is it triggered? (a: it can be triggered even when obj still has more than 1 node attached)
 
@@ -50,12 +47,7 @@
 
 . in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
-. cleanup script that resets and initializes feeds. Also via gui (in "feeds" view)
-  Feed initailization is done:
-  - storing in ini file node_id on remmote server for all sourcenodes
-  - adding to stream of feed events one setobjremoteid and one setobjremoteid events
-
-. tpl operator for sync type icon (or text) by its code
+. cli script that resets and initializes feeds. Also creates an onpublish event for all of content (same az efndexcontents)
 
 . rework dashboard block so that it lists nodes instead of sync events?
   note that we will have problems with deleted objects not being shown there
@@ -65,18 +57,22 @@
   - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
   - details of complex cases (where this logic is not straight)
 
+. add confirmation dliagos when deleting events / resetting feeds
+
+. allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
+
 
 Phase 2 (?)
 
 . for ezp 4.6, add a new subtab in object view for admin design
 
 . dependency tracking:
-  - all events should not have a pending create event for any of their parents
+  - all events should not have a pending create event for any of their parents (or they cannot be synced)
   - obj relations?
   - set section: should not have a pending set section for one of its parents (nb: even for 2ndary locations? test it)
   - hide: should not have a pending set section for one of its parents
 
-. verify events that need to happen before action: are we sure that after trigger action can not be skipped (eg: because of some perms checking?).
+. verify events that need to happen before action: are we sure that after this event action can not be skipped (eg: because of some perms checking or some other events in chain?)
   Try to move them to "after" (eventually, patch operations: content/hide, ), or set up a two-phase logic:
   1. before action events sets up the sync-event in an "unconfirmed" state
   2. after action event moves the sync-event to "confirmed" state
@@ -86,12 +82,10 @@ Phase 2 (?)
 
 Phase 2:
 
-. in feed view, add an action to init a feed (eg set all objects to "to be synced" status)
 . allow sync items that fail 3 consecutive sync attempts to be set to "suspended" state
 . allow finer grained permissions (sync per feed)
 . cronjob that passes and removes/resets sync items that have been in sync status for too long
-. allow user with 'manage' rights to manually remove sync items from feeds, one by one, if they want to (but trace it)
 . coalescing of sync events
 . add a sync-to-localhost transport class, that copies data to separate content trees
-. graceful degradation: allow wt button to rate with no js by posting to contentstaging/syncnode
+. graceful degradation: allow wt button to sync with no js available by posting to contentstaging/syncnode
 . add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and

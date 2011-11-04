@@ -191,15 +191,20 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                     $method = 'GET';
                     /// @todo switch from rest api v1 (content/node) to v2 (content/location)
-                    $url = "/content/node/{$data['remoteNodeID']}";
+                    $url = "/content/locations/{$data['remoteNodeID']}";
                     //$url = "/content/locations/{$data['remoteNodeID']}";
                     $out = $this->restCall( $method, $url );
                     if ( !is_array( $out ) )
                     {
-                        return $out;
+                       break;
                     }
-                    /// @todo check that this is present in response
-                    $remoteObjID = $out['metadata']['objectId'];
+                    if ( !isset( $out['contentId'] ) )
+                    {
+                        /// @todo !important use a specific error code
+                        $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
+                        break;
+                    }
+                    $remoteObjID = $out['contentId'];
 
                     $method = 'PUT';
                     $url = "/content/locations/{$data['remoteNodeID']}";
@@ -209,9 +214,12 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $out = $this->restCall( $method, $url, $payload );
                     if ( $out != 0 )
                     {
-                        return $out;
+                        break;
                     }
 
+                    // nb: this is a non-transactional API: we might succeed in updating
+                    // node remote id but not object remote id. In such case
+                    // we do NOT rollback our changes
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $method = 'PUT';
                     $url = "/content/objects/$remoteObjID";
@@ -219,7 +227,6 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'remoteId' => $RemoteObjRemoteID
                     );
                     $out = $this->restCall( $method, $url, $payload );
-                    return $out;
 
                     break;
 
@@ -250,6 +257,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             // currently we have error ranges -101 to -30x here
             return $response->faultCode();
         }
+
         return $response->value();
     }
 
