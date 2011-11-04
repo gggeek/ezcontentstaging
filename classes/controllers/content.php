@@ -1,35 +1,33 @@
 <?php
 
 
-class contentStagingRestContentController extends ezpRestMvcController
+class contentStagingRestContentController extends contentStagingRestBaseController
 {
+
+    // *** rest actions ***
 
     /**
      * Handle DELETE request for a content object from its remote id
      *
      * Request:
-     * - DELETE /api/contentstaging/content/objects/:remoteId[?trash=true|false]
+     * - DELETE /api/contentstaging/content/objects/remote/<remoteId>[?trash=true|false]
+     * - DELETE /api/contentstaging/content/objects/<Id>[?trash=true|false]
      *
      * @return ezpRestMvcResult
      */
     public function doRemove()
     {
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        $result = new ezpRestMvcResult();
         $moveToTrash = true;
         if ( isset( $this->request->get['trash'] ) )
         {
             $moveToTrash = ( $this->request->get['trash'] === 'true' );
-        }
-
-        $result = new ezpRestMvcResult();
-
-        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
-        if ( !$object instanceof eZContentObject )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Content with remote id '{$this->remoteId}' not found"
-            );
-            return $result;
         }
 
         $nodeIDs = array();
@@ -49,12 +47,14 @@ class contentStagingRestContentController extends ezpRestMvcController
      * Handle POST request to create a content object
      *
      * Request:
-     * - POST /content/objects?parentRemoteId=<remoteId>
+     * - POST /content/objects
      *
      * @return ezpRestMvcResult
      */
     public function doCreateContent()
     {
+        /// @todo add support for parent Id besides parent remote Id
+
         $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['parentRemoteId'] ) )
         {
@@ -71,7 +71,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         {
             $result->status = new ezpRestHttpResponse(
                 ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id {$remoteId}"
+                "Cannot find the location with remote id '{$remoteId}'"
             );
             return $result;
         }
@@ -80,6 +80,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
+        /// @todo we should support creation failure here
         $content = $this->createContent( $node );
 
         // generate a 201 response
@@ -97,23 +98,18 @@ class contentStagingRestContentController extends ezpRestMvcController
      *
      * Request:
      * - PUT /content/objects/remote/<remoteId>
-     *
+     * - PUT /content/objects/<Id>
      * @return ezpRestMvcResult
      */
     public function doUpdateContent()
     {
-        $result = new ezpRestMvcResult();
-
-        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+        $object = $this->object();
         if ( !$object instanceof eZContentObject )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Content with remote id '{$this->remoteId}' not found"
-            );
-            return $result;
+            return $object;
         }
 
+        $result = new ezpRestMvcResult();
         if ( isset( $this->request->inputVariables['alwaysAvailable'] )
                 && count( $this->request->inputVariables ) === 1 )
         {
@@ -146,35 +142,31 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
-
     /**
      * Handle DELETE request for a translation of content object
      *
      * Request:
      * - DELETE /content/objects/remote/<remoteId>/translations/<localeCode>
+     * - DELETE /content/objects/<Id>/translations/<localeCode>
      *
      * @return ezpRestMvcResult
      */
     public function doRemoveTranslation()
     {
-        $result = new ezpRestMvcResult();
-
-        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+        $object = $this->object();
         if ( !$object instanceof eZContentObject )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Content with remote id '{$this->remoteId}' not found"
-            );
-            return $result;
+            return $object;
         }
+
+        $result = new ezpRestMvcResult();
         $objectId = $object->attribute( 'id' );
         $languages = $object->allLanguages();
         if ( !isset( $languages[$this->localeCode] ) )
         {
             $result->status = new ezpRestHttpResponse(
                 ezpHttpResponseCodes::NOT_FOUND,
-                "Translation in '{$this->localeCode}' not found in the content #" . $objectId
+                "Translation in '{$this->localeCode}' not found in the content '$objectId'"
             );
             return $result;
         }
@@ -188,139 +180,24 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
-
-    /**
-     * Handle GET on a location from its remote id
-     *
-     * Request:
-     * - GET /content/locations/remote/<remoteId>
-     *
-     * @return void
-     */
-    public function doViewLocation()
-    {
-        $result = new ezpRestMvcResult();
-        $remoteId = $this->remoteId;
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
-        if ( !$node instanceof eZContentObjectTreeNode )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id {$remoteId}"
-            );
-            return $result;
-        }
-        $result->variables['Location'] = new contentStagingLocation( $node );
-        return $result;
-    }
-
-    /**
-     * Handle hide or unhide request for a location from its remote id
-     *
-     * Request:
-     * - POST /content/locations/remote/<remoteId>?hide=<status>
-     *
-     * @return ezpRestMvcResult
-     */
-    public function doHideUnhide()
-    {
-        $result = new ezpRestMvcResult();
-        if ( !isset( $this->request->get['hide'] ) )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "hide" parameter is missing'
-            );
-            return $result;
-        }
-        $remoteId = $this->remoteId;
-        $hide = (bool) $this->request->get['hide'];
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
-        if ( !$node instanceof eZContentObjectTreeNode )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id {$remoteId}"
-            );
-            return $result;
-        }
-        if ( $hide )
-        {
-            eZContentObjectTreeNode::hideSubTree( $node );
-        }
-        else
-        {
-            eZContentObjectTreeNode::unhideSubTree( $node );
-        }
-        $result->status = new ezpRestHttpResponse( 204 );
-        return $result;
-    }
-
-    /**
-     * Update the sort order and sort field or the priority of a node from its remote id
-     *
-     * Request:
-     * - PUT /content/locations/remote/<remoteId>
-     *
-     * @return ezpRestMvcResult
-     */
-    public function doUpdateLocation()
-    {
-        $result = new ezpRestMvcResult();
-        $remoteId = $this->remoteId;
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
-        if ( !$node instanceof eZContentObjectTreeNode )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id {$remoteId}"
-            );
-            return $result;
-        }
-
-        if ( isset( $this->request->inputVariables['sortField'] )
-                && isset( $this->request->inputVariables['sortOrder'] ) )
-        {
-            $this->updateNodeSort(
-                $node,
-                $this->getSortField( $this->request->inputVariables['sortField'] ),
-                $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
-            );
-        }
-        if ( isset( $this->request->inputVariables['priority'] ) )
-        {
-            $this->updateNodePriority(
-                $node,
-                (int)$this->request->inputVariables['priority']
-            );
-        }
-
-        $result->variables['Location'] = new contentStagingLocation( $node );
-        return $result;
-    }
-
     /**
      * Handle change section for a content object from its remote id
      *
      * Request:
      * - PUT /content/objects/remote/<remoteId>/section?sectionId=<sectionId>
+     * - PUT /content/objects/<Id>/section?sectionId=<sectionId>
      *
      * @return ezpRestMvcResult
      */
     public function doUpdateSection()
     {
-        $result = new ezpRestMvcResult();
-
-        $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+        $object = $this->object();
         if ( !$object instanceof eZContentObject )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Content with remote id '{$this->remoteId}' not found"
-            );
-            return $result;
+            return $object;
         }
 
+        $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['sectionId'] ) )
         {
             $result->status = new ezpRestHttpResponse(
@@ -335,7 +212,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         {
             $result->status = new ezpRestHttpResponse(
                 ezpHttpResponseCodes::NOT_FOUND,
-                'The section #' . $sectionId . ' not found'
+                "Section with Id '$sectionId' not found"
             );
             return $result;
         }
@@ -350,105 +227,23 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
     /**
-     * Handle move operation of a location from its remote id to another
-     * location
-     *
-     * Request:
-     * - PUT /content/locations/remote/<remoteId>/parent?destParentRemoteId=<dest>
-     *
-     * @return ezpRestMvcResult
-     */
-    public function doMove()
-    {
-        $result = new ezpRestMvcResult();
-        if ( !isset( $this->request->get['destParentRemoteId'] ) )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "destParentRemoteId" parameter is missing'
-            );
-            return $result;
-        }
-        $destParentRemoteId = $this->request->get['destParentRemoteId'];
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $this->remoteId );
-        if ( !$node instanceof eZContentObjectTreeNode )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id '{$this->remoteId}'"
-            );
-            return $result;
-        }
-        $dest = eZContentObjectTreeNode::fetchByRemoteID( $destParentRemoteId );
-        if ( !$dest instanceof eZContentObjectTreeNode )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id '{$destParentRemoteId}'"
-            );
-            return $result;
-        }
-        eZContentOperationCollection::moveNode(
-            $node->attribute( 'node_id' ),
-            $node->attribute( 'contentobject_id' ),
-            $dest->attribute( 'node_id' )
-        );
-
-        $newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
-        $result->variables['Location'] = new contentStagingLocation( $newNode );
-        return $result;
-
-    }
-
-
-    /**
-     * Handle DELETE request for a location from its remote id
-     *
-     * Request:
-     * - DELETE /content/locations/remote/<remoteId>?trash=true|false
-     *
-     * @return ezpRestMvcResult
-     */
-    public function doRemoveLocation()
-    {
-        $moveToTrash = true;
-        if ( isset( $this->request->get['trash'] ) )
-        {
-            $moveToTrash = ( $this->request->get['trash'] === 'true' );
-        }
-
-        $result = new ezpRestMvcResult();
-        $remoteId = $this->remoteId;
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
-        if ( !$node instanceof eZContentObjectTreeNode )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Node with remote id '{$remoteId}' not found"
-            );
-            return $result;
-        }
-
-        eZContentObjectTreeNode::removeSubtrees(
-            array( $node->attribute( 'node_id' ) ),
-            $moveToTrash
-        );
-
-        $result->status = new ezpRestHttpResponse( 204 );
-        return $result;
-    }
-
-    /**
      * Handle the PUT request for a content object from its remote id to add a
      * location to it
      *
      * Request:
      * - PUT /content/objects/remote/:remoteId/locations?parentRemoteId=<parentNodeRemoteID>
+     * - PUT /content/objects/:Id/locations?parentRemoteId=<parentNodeRemoteID>
      *
      * @return ezpRestMvcResult
      */
     public function doAddLocation()
     {
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
         $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['parentRemoteId'] ) )
         {
@@ -464,16 +259,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         {
             $result->status = new ezpRestHttpResponse(
                 ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id {$parentRemoteId}"
-            );
-            return $result;
-        }
-        $object  = eZContentObject::fetchByRemoteID( $this->remoteId );
-        if ( !$object instanceof eZContentObject )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                'Cannot find the content object with the remote id ' . $this->remoteId
+                "Cannot find the location with remote id '{$parentRemoteId}'"
             );
             return $result;
         }
@@ -485,7 +271,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             {
                 $result->status = new ezpRestHttpResponse(
                     ezpHttpResponseCodes::FORBIDDEN,
-                    "The object '{$this->remoteId}' already has a location under node '{$parentRemoteId}'"
+                    "The object '{$this->remoteId}' already has a location under of location '{$parentRemoteId}'"
                 );
                 return $result;
             }
@@ -503,6 +289,39 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
+
+    // *** helper methods ***
+
+    /// @todo assert error if neither Id nor remoteId are present
+    protected function object()
+    {
+        if ( isset( $this->remoteId ) )
+        {
+            $object = eZContentObject::fetchByRemoteID( $this->remoteId );
+            if ( !$object instanceof eZContentObject )
+            {
+                $result->status = new ezpRestHttpResponse(
+                    ezpHttpResponseCodes::NOT_FOUND,
+                    "Content with remote id '{$this->remoteId}' not found"
+                );
+                return $result;
+            }
+            return $node;
+        }
+        if ( isset( $this->Id ) )
+        {
+            $object = eZContentObject::fetch( $this->Id );
+            if ( !$object instanceof eZContentObject )
+            {
+                $result->status = new ezpRestHttpResponse(
+                    ezpHttpResponseCodes::NOT_FOUND,
+                    "Content with id '{$this->Id}' not found"
+                );
+                return $result;
+            }
+        }
+        return $object;
+    }
 
     /**
      * Updates the $object with the provided fields in the request
@@ -630,7 +449,6 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $content;
     }
 
-
     /**
      * Returns the eZContentObjectTreeNode::SORT_ORDER_* constant corresponding
      * to the $stringSortOrder
@@ -669,7 +487,6 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $field;
     }
 
-
     /**
      * Create a new location for the $object under the $parent node.
      *
@@ -697,44 +514,6 @@ class contentStagingRestContentController extends ezpRestMvcController
         $newNode->sync();
         $db->commit();
         return $newNode;
-    }
-
-    /**
-     * Update the sort order and the sort field of the $node
-     *
-     * @param eZContentObjectTreeNode $node
-     * @param int $sortField
-     * @param int $sortOrder
-     */
-    protected function updateNodeSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
-    {
-        $db = eZDB::instance();
-        $db->begin();
-        $node->setAttribute( 'sort_field', $sortField );
-        $node->setAttribute( 'sort_order', $sortOrder );
-        $node->store();
-        $db->commit();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
-    }
-
-    /**
-     * Update the priority of the $node
-     *
-     * @param eZContentObjectTreeNode $node
-     * @param int $priority
-     */
-    protected function updateNodePriority( eZContentObjectTreeNode $node, $priority )
-    {
-        $db = eZDB::instance();
-        $db->begin();
-        $node->setAttribute( 'priority', $priority );
-        $node->store();
-        $db->commit();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
     }
 
 }
