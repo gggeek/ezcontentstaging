@@ -44,6 +44,44 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
+
+    public function doCreateContent()
+    {
+        $result = new ezpRestMvcResult();
+        if ( !isset( $this->request->get['parentRemoteId'] ) )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::BAD_REQUEST,
+                'The "parentRemoteId" parameter is missing'
+            );
+            return $result;
+        }
+
+        $remoteId = $this->request->get['parentRemoteId'];
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Cannot find the node with the remote id {$remoteId}"
+            );
+            return $result;
+        }
+
+        // workaround to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
+        $content = $this->createContent( $node );
+
+        $result->status = new contentStagingCreatedHttpResponse(
+            array(
+                'Content' => '/content/objects/' . $content->attribute( 'id' )
+            )
+        );
+        return $result;
+    }
+
     /**
      * Handle update of the always available flag or the initial language id
      * for a content object from its remote id
@@ -442,6 +480,91 @@ class contentStagingRestContentController extends ezpRestMvcController
 
         $result->variables['Location'] = new contentStagingLocation( $newNode );
         return $result;
+    }
+
+
+    /**
+     * Create a content under $parent with the input variables
+     *
+     * @param eZContentObjectTreeNode $parent
+     * @return eZContentObject
+     */
+    protected function createContent( eZContentObjectTreeNode $parent )
+    {
+        $input = $this->request->post; // shouldn't it be inputVariables ? but it's empty ?
+        $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
+        if ( !$class instanceof eZContentClass )
+        {
+            throw new RuntimeException(
+                'Unable to load the class with identifier ' . $input['contentType']
+            );
+        }
+        $db = eZDB::instance();
+        $db->begin();
+        $content = $class->instantiateIn( $input['initialLanguage'] );
+        $content->setAttribute( 'remote_id', $input['remoteId'] );
+        $content->store();
+
+        $nodeAssignment = eZNodeAssignment::create(
+            array(
+                'contentobject_id' => $content->attribute( 'id' ),
+                'contentobject_version' => $content->attribute( 'current_version' ),
+                'parent_node' => $parent->attribute( 'node_id' ),
+                'is_main' => 1,
+                'sort_field' => $class->attribute( 'sort_field' ),
+                'sort_order' => $class->attribute( 'sort_order' )
+            )
+        );
+        $nodeAssignment->store();
+
+        $version = $content->version( 1 );
+        $version->setAttribute( 'modified', time() );
+        $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
+        $version->store();
+
+        $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
+        $fields = $input['fields'];
+        foreach ( $attributes as $attribute )
+        {
+            $identifier = $attribute->attribute( 'contentclass_attribute_identifier' );
+            if ( !isset( $fields[$identifier] ) )
+            {
+                continue;
+            }
+            $field = $fields[$identifier];
+            switch( $field['fieldDef'] )
+            {
+                case 'ezimage':
+                case 'ezbinaryfile':
+                case 'ezmedia':
+                {
+                    $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
+                    // todo use the origin filename when it'll be available
+                    $fileName = uniqid();
+
+                    eZFile::create( $fileName, $tmpDir, base64_decode( $field['value'] ) );
+                    $field['value'] = $tmpDir . '/' . $fileName;
+                }
+                default:
+            }
+            $attribute->fromString( $field['value'] );
+            $attribute->store();
+            if ( isset( $tmpDir ) )
+            {
+                eZDir::recursiveDelete( $tmpDir, false );
+                unset( $tmpDir );
+            }
+        }
+        $db->commit();
+
+        $operationResult = eZOperationHandler::execute(
+            'content', 'publish',
+            array(
+                'object_id' => $content->attribute( 'id' ),
+                'version' => 1
+             )
+        );
+        return $content;
     }
 
 
