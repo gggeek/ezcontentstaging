@@ -1,13 +1,5 @@
 <?php /*
 
-[Authentication]
-# disabled all authentication and force admin user for now
-# should be implemented perhaps in the provider
-# or with a custom AuthenticationStyle
-RequireAuthentication=disabled
-RequireHTTPS=disabled
-DefaultUserID=14
-
 [ApiProvider]
 ProviderClass[contentstaging]=contentStagingRestApiProvider
 
