@@ -235,11 +235,11 @@ class contentStagingRestContentController extends ezpRestMvcController
         }
         $remoteId = $this->remoteId;
         $hide = (bool) $this->request->get['hide'];
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId);
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
         if ( !$node instanceof eZContentObjectTreeNode )
         {
             $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
+                ezpHttpResponseCodes::NOT_FOUND,
                 "Cannot find the node with the remote id {$remoteId}"
             );
             return $result;
@@ -463,7 +463,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         if ( !$parentNode instanceof eZContentObjectTreeNode )
         {
             $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
+                ezpHttpResponseCodes::NOT_FOUND,
                 "Cannot find the node with the remote id {$parentRemoteId}"
             );
             return $result;
