@@ -712,10 +712,10 @@ class contentStagingRestContentController extends ezpRestMvcController
         $node->setAttribute( 'sort_field', $sortField );
         $node->setAttribute( 'sort_order', $sortOrder );
         $node->store();
+        $db->commit();
         eZContentCacheManager::clearContentCache(
             $node->attribute( 'contentobject_id' )
         );
-        $db->commit();
     }
 
     /**
@@ -730,10 +730,10 @@ class contentStagingRestContentController extends ezpRestMvcController
         $db->begin();
         $node->setAttribute( 'priority', $priority );
         $node->store();
+        $db->commit();
         eZContentCacheManager::clearContentCache(
             $node->attribute( 'contentobject_id' )
         );
-        $db->commit();
     }
 
 }
