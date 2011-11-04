@@ -52,7 +52,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             ),
             'stagingHideUnhide' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
-                    '/content/locations',
+                    '/content/locations/remote/:remoteId',
                     'contentStagingRestContentController',
                     'hideUnhide',
                     'http-post'
@@ -63,7 +63,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             // depending on the content of the PUT request
             'stagingUpdateLocation' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
-                    '/content/locations',
+                    '/content/locations/remote/:remoteId',
                     'contentStagingRestContentController',
                     'updateLocation',
                     'http-put'
@@ -81,7 +81,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             ),
             'stagingRemoveLocation' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
-                    '/content/locations',
+                    '/content/locations/remote/:remoteId',
                     'contentStagingRestContentController',
                     'removeLocation',
                     'http-delete'

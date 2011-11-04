@@ -199,14 +199,6 @@ class contentStagingRestContentController extends ezpRestMvcController
     public function doHideUnhide()
     {
         $result = new ezpRestMvcResult();
-        if ( !isset( $this->request->get['remoteId'] ) )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "remoteId" parameter is missing'
-            );
-            return $result;
-        }
         if ( !isset( $this->request->get['hide'] ) )
         {
             $result->status = new ezpRestHttpResponse(
@@ -215,7 +207,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             );
             return $result;
         }
-        $remoteId = $this->request->get['remoteId'];
+        $remoteId = $this->remoteId;
         $hide = (bool) $this->request->get['hide'];
         $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId);
         if ( !$node instanceof eZContentObjectTreeNode )
@@ -249,16 +241,7 @@ class contentStagingRestContentController extends ezpRestMvcController
     public function doUpdateLocation()
     {
         $result = new ezpRestMvcResult();
-        if ( !isset( $this->request->get['remoteId'] ) )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "remoteId" parameter is missing'
-            );
-            return $result;
-        }
-
-        $remoteId = $this->request->get['remoteId'];
+        $remoteId = $this->remoteId;
         $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
         if ( !$node instanceof eZContentObjectTreeNode )
         {
@@ -409,15 +392,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         }
 
         $result = new ezpRestMvcResult();
-        if ( !isset( $this->request->get['remoteId'] ) )
-        {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "remoteId" parameter is missing'
-            );
-            return $result;
-        }
-        $remoteId = $this->request->get['remoteId'];
+        $remoteId = $this->remoteId;
         $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
         if ( !$node instanceof eZContentObjectTreeNode )
         {
