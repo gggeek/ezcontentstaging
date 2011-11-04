@@ -179,7 +179,7 @@ class eZContentStagingTarget
             }
             $remoteNodeID = $remotenodes[$key];
 
-            $node = eZContentObjecTreeNode::fetch( $nodeID );
+            $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
                 eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['Name'] . " does not exist", __METHOD__ );
@@ -216,6 +216,7 @@ class eZContentStagingTarget
         return $out;
     }
 
+    /* unused so far
     function transport()
     {
         $class = $this->attribute( 'transport_class' );
@@ -225,7 +226,7 @@ class eZContentStagingTarget
             return null;
         }
         return new $class( $this );
-    }
+    }*/
 }
 
 ?>
