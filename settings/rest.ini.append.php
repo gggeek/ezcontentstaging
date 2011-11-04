@@ -4,7 +4,40 @@
 ProviderClass[contentstaging]=contentStagingRestApiProvider
 
 [RouteSettings]
-# Skip (auth) filter for every action in 'myController' which is of API version 2
-SkipFilter[]=contentStagingRestApiController_*
+# Skip (auth) filter for every action in 'myController' which is of API version 1
+SkipFilter[]=contentStagingRestContentController_*
+
+[RequestFilters]
+Filters[]=contentStagingAutoAuthFilter
+
+[contentStagingRestContentController_remove_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_createContent_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_updateContent_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_addLocation_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_hideUnhide_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_updateLocation_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_move_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_removeLocation_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_removeTranslation_CacheSettings]
+ApplicationCache=disabled
+
+[contentStagingRestContentController_updateSection_CacheSettings]
+ApplicationCache=disabled
 
 */ ?>
