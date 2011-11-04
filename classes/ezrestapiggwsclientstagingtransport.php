@@ -263,6 +263,8 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
     /**
     * Encodes an object's version (single language) to be sent to the remote server
+    *
+    * @todo move to an external class, to avoid parsing all this code for every event?
     */
     protected function encodeObject( $objectID, $versionNr, $locale, $isupdate=false, $RemoteObjRemoteID=false )
     {
@@ -293,12 +295,48 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
             $name = $attribute->attribute( 'contentclass_attribute_identifier' );
             $datatype = $attribute->attribute( 'data_type_string' );
+
+            /// @see serializeContentObjectAttribute and toString in different datatypes
+            ///      for datatypes that need special treatment
+
+            /// @todo implement this conversion within the datatypes themselves:
+            /// it is a much better idea...
             switch( $datatype )
             {
-                /// @see ezbinaryfilehandler for an example of fething binary data from attributes
+
+                case 'ezobjectrelation':
+                    $relatedObjectID = $attribute->attribute( 'content' );
+                    $relatedObject = eZContentObject::fetch( $relatedObjectID );
+                    if ( $relatedObject )
+                    {
+                        $value = array( 'remoteId' => self::buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' ) );
+                    }
+                    else
+                    {
+                        eZDebug::writeError( "Cannot encode attribute of object $objectID for push to staging server: version $versionNr - related object $relatedObjectID not found for attribute in lang $locale for field $name", __METHOD__ );
+                        continue;
+                    }
+                    break;
+
+                case 'ezobjectrelationlist':
+                    $relation_list = $attribute->attribute( 'content' );
+                    $relation_list = $relation_list['relation_list'];
+                    $value = array();
+                    foreach ( $relation_list as $relatedObjectInfo )
+                    {
+                        // nb: for the object relation we check for objects that have disappeared we do it here too. Even though it is bad for perfs...
+                        $relatedObject = eZContentObject::fetch( $relatedObjectInfo['contentobject_id'] );
+                        if ( $relatedObject )
+                        {
+                            eZDebug::writeError( "Cannot encode attribute of object $objectID for push to staging server: version $versionNr - related object {$relatedObjectInfo['contentobject_id']} not found for attribute in lang $locale for field $name", __METHOD__ );
+                            continue;
+                        }
+                        $value = array( 'remoteId' => self::buildRemoteId( $relatedObjectInfo['contentobject_id'], $relatedObjectInfo['contentobject_remote_id'], 'object' ) );
+                    }
+                    break;
 
                 /// @todo shall we check for datatype->isRegularFileInsertionSupported() instead of hardcoding here known datatypes?
-                case 'ezimage':
+                /*case 'ezimage':
                 case 'ezbinaryfile':
                 case 'ezmedia':
                     /// is this check redundant with the above has_content?
@@ -309,7 +347,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $fileInfo = $attribute->storedFileInformation( $bject, $version, $locale );
                     if ( !$fileInfo )
                     {
-                        eZDebug::writeError( "Cannot encode object $objectID for push to staging server: version $versionNr - binary not found for attribute in lang $locale for field $name", __METHOD__ );
+                        eZDebug::writeError( "Cannot encode attribute of object $objectID for push to staging server: version $versionNr - binary not found for attribute in lang $locale for field $name", __METHOD__ );
                         continue;
                     }
 
@@ -321,9 +359,57 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         continue;
                     }
                     /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
-                    $value = base64_encode( $file->fetchContents() );
+                    $value = base64_encode( $file->fetchContents() );*/
+
+                // nb: this datatype has, as of eZ 4.5, a broken toString method
+                case 'ezmedia':
+                    $content = $attribute->attribute( 'content' );
+                    $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
+                    /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                    $value = array(
+                        'fileSize' => (int)$content->attribute( 'filesize' ),
+                        'fileName' => $content->attribute( 'original_filename' ),
+                        'width' => $content->attribute( 'width' ),
+                        'height' => $content->attribute( 'height' ),
+                        'hasController' => (bool)$content->attribute( 'has_controller' ),
+                        'controls' => (bool)$content->attribute( 'controls' ),
+                        'isAutoplay' => (bool)$content->attribute( 'is_autoplay' ),
+                        'pluginsPage' => $content->attribute( 'pluginspage' ),
+                        'quality' => $content->attribute( 'quality' ),
+                        'isLoop' => (bool)$content->attribute( 'is_loop' ),
+                        'content' => base64_encode( $file->fetchContents() )
+                        );
                     break;
 
+                case 'ezbinaryfile':
+                    $content = $attribute->attribute( 'content' );
+                    $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
+                    /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                    $value = array(
+                        'fileSize' => (int)$content->attribute( 'filesize' ),
+                        'fileName' => $content->attribute( 'original_filename' ),
+                        'content' => base64_encode( $file->fetchContents() )
+                        );
+                    break;
+
+                case 'ezimage':
+                    $content = $attribute->attribute( 'content' );
+                    $original = $content->attribute( 'original' );
+                    $file = eZClusterFileHandler::instance( $original['url'] );
+                    /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                    $value = array(
+                        'fileSize' => (int)$original['filesize'],
+                        'fileName' => $original['original_filename'],
+                        'alternativeText' => $original['alternative_text'],
+                        'content' => base64_encode( $file->fetchContents() )
+                        );
+                    break;
+
+                // known bug in ezuser serialization: #018609
+                case 'ezuser':
+
+                // see also http://issues.ez.no/IssueList.php?Search=fromstring&SearchIn=1
+                // see also http://issues.ez.no/IssueList.php?Search=tostring&SearchIn=1
                 default:
                     $value = $attribute->toString();
             }
@@ -339,6 +425,8 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             $out['initialLanguage'] = $object->attribute( 'initial_language_code' );
             $out['alwaysAvailable'] = $object->attribute( 'always_available' );
             $out['remoteId'] = $RemoteObjRemoteID;
+            $out['sectionId'] = $object->attribute( 'section_id' );
+            $out['ownerId'] = $object->attribute( 'owner_id' );
         }
 
         return $out;

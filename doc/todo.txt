@@ -65,6 +65,7 @@
 Phase 2 (?)
 
 . for ezp 4.6, add also to the media gallery (anbd to users?) the new subtab added to object view for admin2 design
+  - also maybe add items to context menus?
 
 . dependency tracking:
   - all events should not have a pending create event for any of their parents (or they cannot be synced)
@@ -89,3 +90,4 @@ Phase 2:
 . add a sync-to-localhost transport class, that copies data to separate content trees
 . graceful degradation: allow wt button to sync with no js available by posting to contentstaging/syncnode
 . add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and
+. add an extra per-feed ini parameter that decides whether content creation/modification dates on targets are kept in sync with source or sync event execution date is used instead
