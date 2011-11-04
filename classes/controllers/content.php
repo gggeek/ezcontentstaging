@@ -93,7 +93,7 @@ class contentStagingRestContentController extends ezpRestMvcController
 
     /**
      * Handle update of the always available flag or the initial language id
-     * for a content object from its remote id
+     * or the whole content from its remote id
      *
      * Request:
      * - PUT /content/objects/remote/<remoteId>
@@ -121,6 +121,7 @@ class contentStagingRestContentController extends ezpRestMvcController
                 $object->attribute( 'id' ),
                 (bool)$this->request->inputVariables['alwaysAvailable']
             );
+            $result->status = new ezpRestHttpResponse( 204 );
         }
         elseif ( isset( $this->request->inputVariables['initialLanguage'] )
                 && count( $this->request->inputVariables ) === 1 )
@@ -129,9 +130,19 @@ class contentStagingRestContentController extends ezpRestMvcController
                 $object->attribute( 'id' ),
                 (int)$this->request->inputVariables['initialLanguage']
             );
+            $result->status = new ezpRestHttpResponse( 204 );
+        }
+        elseif ( isset( $this->request->inputVariables['fields'] )
+                && count( $this->request->inputVariables['fields'] ) > 0 )
+        {
+            // whole update
+            // workaround to be able to publish
+            $moduleRepositories = eZModule::activeModuleRepositories();
+            eZModule::setGlobalPathList( $moduleRepositories );
+            $object =$this->updateContent( $object );
+            $result->variables['content'] = new contentStagingContent( $object );
         }
 
-        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
@@ -493,6 +504,79 @@ class contentStagingRestContentController extends ezpRestMvcController
 
 
     /**
+     * Updates the $object with the provided fields in the request
+     *
+     * @param eZContentObject $object
+     * @return eZContentObject
+     */
+    protected function updateContent( eZContentObject $object )
+    {
+        $input = $this->request->inputVariables;
+        $db = eZDB::instance();
+        $db->begin();
+        $version = $object->createNewVersionIn( $input['localeCode'] );
+        $version->setAttribute( 'modified', time() );
+        $version->store();
+
+        $this->updateAttributesList(
+            $version->attribute( 'contentobject_attributes' ),
+            $input['fields']
+        );
+        $db->commit();
+
+        $operationResult = eZOperationHandler::execute(
+            'content', 'publish',
+            array(
+                'object_id' => $object->attribute( 'id' ),
+                'version' => $version->attribute( 'version' )
+             )
+        );
+        return eZContentObject::fetch( $object->attribute( 'id' ) );
+    }
+
+    /**
+     * Updates the eZContentObjectAttribute in $attributes with the values
+     * provided in $fields
+     *
+     * @param array $attributes array of eZContentObjectAttribute to update
+     * @param array $fields
+     */
+    protected function updateAttributesList( array $attributes, array $fields )
+    {
+        foreach ( $attributes as $attribute )
+        {
+            $identifier = $attribute->attribute( 'contentclass_attribute_identifier' );
+            if ( !isset( $fields[$identifier] ) )
+            {
+                continue;
+            }
+            $field = $fields[$identifier];
+            switch( $field['fieldDef'] )
+            {
+                case 'ezimage':
+                case 'ezbinaryfile':
+                case 'ezmedia':
+                {
+                    $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
+                    // todo use the origin filename when it'll be available
+                    $fileName = uniqid();
+
+                    eZFile::create( $fileName, $tmpDir, base64_decode( $field['value'] ) );
+                    $field['value'] = $tmpDir . '/' . $fileName;
+                }
+                default:
+            }
+            $attribute->fromString( $field['value'] );
+            $attribute->store();
+            if ( isset( $tmpDir ) )
+            {
+                eZDir::recursiveDelete( $tmpDir, false );
+                unset( $tmpDir );
+            }
+        }
+    }
+
+    /**
      * Create a content under $parent with the input variables
      *
      * @param eZContentObjectTreeNode $parent
@@ -532,38 +616,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         $version->store();
 
         $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
-        $fields = $input['fields'];
-        foreach ( $attributes as $attribute )
-        {
-            $identifier = $attribute->attribute( 'contentclass_attribute_identifier' );
-            if ( !isset( $fields[$identifier] ) )
-            {
-                continue;
-            }
-            $field = $fields[$identifier];
-            switch( $field['fieldDef'] )
-            {
-                case 'ezimage':
-                case 'ezbinaryfile':
-                case 'ezmedia':
-                {
-                    $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
-                    // todo use the origin filename when it'll be available
-                    $fileName = uniqid();
-
-                    eZFile::create( $fileName, $tmpDir, base64_decode( $field['value'] ) );
-                    $field['value'] = $tmpDir . '/' . $fileName;
-                }
-                default:
-            }
-            $attribute->fromString( $field['value'] );
-            $attribute->store();
-            if ( isset( $tmpDir ) )
-            {
-                eZDir::recursiveDelete( $tmpDir, false );
-                unset( $tmpDir );
-            }
-        }
+        $this->updateAttributesList( $attributes, $input['fields'] );
         $db->commit();
 
         $operationResult = eZOperationHandler::execute(
