@@ -45,6 +45,14 @@ class contentStagingRestContentController extends ezpRestMvcController
     }
 
 
+    /**
+     * Handle POST request to create a content object
+     *
+     * Request:
+     * - POST /content/objects?parentRemoteId=<remoteId>
+     *
+     * @return ezpRestMvcResult
+     */
     public function doCreateContent()
     {
         $result = new ezpRestMvcResult();
@@ -74,6 +82,7 @@ class contentStagingRestContentController extends ezpRestMvcController
 
         $content = $this->createContent( $node );
 
+        // generate a 201 response
         $result->status = new contentStagingCreatedHttpResponse(
             array(
                 'Content' => '/content/objects/' . $content->attribute( 'id' )
