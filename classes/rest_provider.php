@@ -50,6 +50,15 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
+            'stagingLocation' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/locations/remote/:remoteId',
+                    'contentStagingRestContentController',
+                    'viewLocation',
+                    'http-get'
+                ),
+                1
+            ),
             'stagingHideUnhide' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/remote/:remoteId',

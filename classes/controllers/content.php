@@ -188,6 +188,32 @@ class contentStagingRestContentController extends ezpRestMvcController
         return $result;
     }
 
+
+    /**
+     * Handle GET on a location from its remote id
+     *
+     * Request:
+     * - GET /content/locations/remote/<remoteId>
+     *
+     * @return void
+     */
+    public function doViewLocation()
+    {
+        $result = new ezpRestMvcResult();
+        $remoteId = $this->remoteId;
+        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            $result->status = new ezpRestHttpResponse(
+                ezpHttpResponseCodes::NOT_FOUND,
+                "Cannot find the node with the remote id {$remoteId}"
+            );
+            return $result;
+        }
+        $result->variables['Location'] = new contentStagingLocation( $node );
+        return $result;
+    }
+
     /**
      * Handle hide or unhide request for a location from its remote id
      *
