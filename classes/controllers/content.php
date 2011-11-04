@@ -218,7 +218,7 @@ class contentStagingRestContentController extends ezpRestMvcController
      * Handle hide or unhide request for a location from its remote id
      *
      * Request:
-     * - POST /content/locations?remoteId=<remoteId>&hide=<status>
+     * - POST /content/locations/remote/<remoteId>?hide=<status>
      *
      * @return ezpRestMvcResult
      */
@@ -260,7 +260,7 @@ class contentStagingRestContentController extends ezpRestMvcController
      * Update the sort order and sort field or the priority of a node from its remote id
      *
      * Request:
-     * - PUT /content/locations?remoteId=<remoteId>
+     * - PUT /content/locations/remote/<remoteId>
      *
      * @return ezpRestMvcResult
      */
@@ -405,7 +405,7 @@ class contentStagingRestContentController extends ezpRestMvcController
      * Handle DELETE request for a location from its remote id
      *
      * Request:
-     * - DELETE /content/locations?remoteId=<remoteId>&trash=true|false
+     * - DELETE /content/locations/remote/<remoteId>?trash=true|false
      *
      * @return ezpRestMvcResult
      */
