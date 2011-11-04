@@ -8,7 +8,7 @@ class contentStagingRestContentController extends ezpRestMvcController
      * Handle DELETE request for a content object from its remote id
      *
      * Request:
-     * - DELETE /api/contentstaging/content/objects/:remoteId[?trash=0|1]
+     * - DELETE /api/contentstaging/content/objects/:remoteId[?trash=true|false]
      *
      * @return ezpRestMvcResult
      */
@@ -17,7 +17,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         $moveToTrash = true;
         if ( isset( $this->request->get['trash'] ) )
         {
-            $moveToTrash = (bool)$this->request->get['trash'];
+            $moveToTrash = ( $this->request->get['trash'] === 'true' );
         }
 
         $result = new ezpRestMvcResult();
@@ -396,7 +396,7 @@ class contentStagingRestContentController extends ezpRestMvcController
      * Handle DELETE request for a location from its remote id
      *
      * Request:
-     * - DELETE /content/locations?remoteId=<remoteId>&trash=0|1
+     * - DELETE /content/locations?remoteId=<remoteId>&trash=true|false
      *
      * @return ezpRestMvcResult
      */
@@ -405,7 +405,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         $moveToTrash = true;
         if ( isset( $this->request->get['trash'] ) )
         {
-            $moveToTrash = (bool)$this->request->get['trash'];
+            $moveToTrash = ( $this->request->get['trash'] === 'true' );
         }
 
         $result = new ezpRestMvcResult();
