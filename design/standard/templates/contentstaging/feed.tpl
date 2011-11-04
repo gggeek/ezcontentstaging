@@ -139,7 +139,7 @@ function checkAll()
             {set $sync_nodes = $sync_item.nodes}
             {if $sync_nodes|count()}
                 {foreach $sync_nodes as $sync_node}
-                    <a href={$sync_node.url|ezurl()}>{$sync_node.name|wash}</a>
+                    <a href={$sync_node.url|ezurl()} title="{'Node ID:'|i18n('ezcontentstaging')} {$sync_node.node_id}">{$sync_node.name|wash}</a>
                     {delimiter}<br/>{/delimiter}
                 {/foreach}
             {else}

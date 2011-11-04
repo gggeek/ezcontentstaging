@@ -60,7 +60,7 @@
                 {foreach $feed.subtrees as $nodeid}
                     {set $source = fetch( 'content', 'node', hash( 'node_id', $nodeid ) )}
                     {if $source}
-                        <a href={$source.url|ezurl()}>{$source.name|wash()}</a><br/>
+                        <a href={$source.url|ezurl()} title="{'Node ID:'|i18n('ezcontentstaging')} {$source.node_id}">{$source.name|wash()}</a><br/>
                     {else}
                         {'Missing node'|i18n('ezcontentsatging')}: {$nodeid}<br/>
                     {/if}
