@@ -11,7 +11,7 @@ class contentStagingAutoAuthFilter implements ezpRestRequestFilterInterface
 
     public function filter()
     {
-        $ini = eZINI::instance( 'contentstaging.ini' );
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $controllers = $ini->variable( 'RestAutoAuthFilter', 'AutoAuthControllers' );
         if ( in_array( $this->controllerClass, $controllers ) )
         {
