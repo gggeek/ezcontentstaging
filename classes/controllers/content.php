@@ -40,7 +40,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         // @todo handle Content object without nodes ?
         eZContentObjectTreeNode::removeSubtrees( $nodeIDs, $moveToTrash );
 
-        $result->status = new ezpRestHttpResponse( 204, '' );
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
@@ -122,7 +122,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             );
         }
 
-        $result->status = new ezpRestHttpResponse( 204, '' );
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
@@ -164,7 +164,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             array( $languages[$this->localeCode]->attribute( 'id' ) )
         );
 
-        $result->status = new ezpRestHttpResponse( 204, '' );
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
@@ -214,7 +214,7 @@ class contentStagingRestContentController extends ezpRestMvcController
         {
             eZContentObjectTreeNode::unhideSubTree( $node );
         }
-        $result->status = new ezpRestHttpResponse( 204, '' );
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
@@ -316,7 +316,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             $sectionId
         );
 
-        $result->status = new ezpRestHttpResponse( 204, '' );
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
@@ -413,7 +413,7 @@ class contentStagingRestContentController extends ezpRestMvcController
             $moveToTrash
         );
 
-        $result->status = new ezpRestHttpResponse( 204, '' );
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
