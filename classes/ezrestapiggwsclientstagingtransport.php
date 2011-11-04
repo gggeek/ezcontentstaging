@@ -214,9 +214,9 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $method = 'PUT';
-                    $url = "/content/objects/{$data['remoteNodeID']}";
+                    $url = "/content/objects/$remoteObjID";
                     $payload = array(
-                        'remoteId' => $RemoteNodeRemoteID
+                        'remoteId' => $RemoteObjRemoteID
                     );
                     $out = $this->restCall( $method, $url, $payload );
                     return $out;
