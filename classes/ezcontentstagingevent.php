@@ -75,6 +75,8 @@ class eZContentStagingEvent extends eZPersistentObject
     const ERROR_NOSOURCENODE = -12;
     /// config error: remote source node for feed not specified
     const ERROR_NOREMOTESOURCE = -13;
+    /// config error: target feed for event not found
+    const ERROR_NOTARGETDEFINED = -14;
     // an error that should never be returned
     const ERROR_BADPHPCODING = -99;
 
@@ -461,6 +463,13 @@ class eZContentStagingEvent extends eZPersistentObject
         foreach( $events as $id => $event )
         {
             $target = eZContentStagingTarget::fetch( $event->TargetID );
+            if ( !$target )
+            {
+                eZDebug::writeError( "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", target not found", __METHOD__ );
+                $results[$event->ID] = self::ERROR_NOTARGETDEFINED;
+                unset( $events[$id] );
+                continue;
+            }
             $class = $target->attribute( 'transport_class' );
             if ( !isset( $transports[$event->TargetID] ) )
             {
@@ -543,16 +552,19 @@ class eZContentStagingEvent extends eZPersistentObject
     static function removeEvents( $eventIDList, $also_syncing=false )
     {
         $db = eZDB::instance();
-        $db->begin();
         if ( !$also_syncing )
         {
             // we first filter out any events in syncing status
             $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ), array( 'column' => 'id' ) );
         }
         $out = count( $eventIDList );
-        $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
-        $db->query( "DELETE FROM ezcontentstaging_event WHERE " . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ) );
-        $db->commit();
+        if ( $out )
+        {
+            $db->begin();
+            $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
+            $db->query( "DELETE FROM ezcontentstaging_event WHERE " . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ) );
+            $db->commit();
+        }
         return $out;
     }
 
@@ -565,7 +577,6 @@ class eZContentStagingEvent extends eZPersistentObject
     static function removeEventsByTargets( $targetIDList, $also_syncing=false )
     {
         $db = eZDB::instance();
-        $db->begin();
         foreach ( $targetIDList as $key => $val )
         {
             $targetIDList[$key] = "'" . $db->escapeString( $val ) . "'";
@@ -580,9 +591,13 @@ class eZContentStagingEvent extends eZPersistentObject
             $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE ' . $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ), array( 'column' => 'id' ) );
         }
         $out = count( $eventIDList );
-        $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
-        $db->query( "DELETE FROM ezcontentstaging_event WHERE " . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ) );
-        $db->commit();
+        if ( $out )
+        {
+            $db->begin();
+            $db->query( "DELETE FROM ezcontentstaging_event_node WHERE " . $db->generateSQLINStatement( $eventIDList, 'event_id', false, true, 'integer' ) );
+            $db->query( "DELETE FROM ezcontentstaging_event WHERE " . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ) );
+            $db->commit();
+        }
         return $out;
     }
 
