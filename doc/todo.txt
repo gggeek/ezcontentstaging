@@ -64,7 +64,7 @@
 
 Phase 2 (?)
 
-. for ezp 4.6, add a new subtab in object view for admin design
+. for ezp 4.6, add also to the media gallery (anbd to users?) the new subtab added to object view for admin2 design
 
 . dependency tracking:
   - all events should not have a pending create event for any of their parents (or they cannot be synced)
