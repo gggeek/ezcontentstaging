@@ -20,7 +20,7 @@ class contentStagingLocation
     public $depth;
     public $invisible;
     public $modifiedSubLocation;
-    public $items;
+    public $children;
     public $sortField;
     public $sortOrder;
 
@@ -38,7 +38,7 @@ class contentStagingLocation
         $this->invisible = (bool)$node->attribute( 'invisible' );
         $this->modifiedSubLocation = (int)$node->attribute( 'modified_subnode' ); // @todo type: "date" ?
 
-        $this->items = array(); // @todo not filled for now
+        $this->children = array(); // @todo not filled for now
 
         $this->sortOrder = 'ASC';
         if ( $node->attribute( 'sort_order' ) == eZContentObjectTreeNode::SORT_ORDER_DESC )
