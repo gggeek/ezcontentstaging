@@ -4,31 +4,33 @@
 ProviderClass[contentstaging]=contentStagingRestApiProvider
 
 [RouteSettings]
-# Skip (auth) filter for every action in 'myController' which is of API version 1
+# no oauth auth: client does not support it (yet)
 SkipFilter[]=contentStagingRestContentController_*
+SkipFilter[]=contentStagingRestLocationController_*
 
 [RequestFilters]
 Filters[]=contentStagingAutoAuthFilter
 
+
 [contentStagingRestContentController_remove_CacheSettings]
 ApplicationCache=disabled
 
-[contentStagingRestContentController_createContent_CacheSettings]
+[contentStagingRestContentController_create_CacheSettings]
 ApplicationCache=disabled
 
-[contentStagingRestContentController_updateContent_CacheSettings]
+[contentStagingRestContentController_update_CacheSettings]
 ApplicationCache=disabled
 
 [contentStagingRestContentController_addLocation_CacheSettings]
 ApplicationCache=disabled
 
-[contentStagingRestContentController_hideUnhide_CacheSettings]
+[contentStagingRestLocationController_hideUnhide_CacheSettings]
 ApplicationCache=disabled
 
 [contentStagingRestContentController_updateLocation_CacheSettings]
 ApplicationCache=disabled
 
-[contentStagingRestContentController_move_CacheSettings]
+[contentStagingRestLocationController_move_CacheSettings]
 ApplicationCache=disabled
 
 [contentStagingRestContentController_removeLocation_CacheSettings]

@@ -198,13 +198,13 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     {
                        break;
                     }
-                    if ( !isset( $out['contentId'] ) )
+                    if ( !isset( $out['Location']['contentId'] ) )
                     {
                         /// @todo !important use a specific error code
                         $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
                         break;
                     }
-                    $remoteObjID = $out['contentId'];
+                    $remoteObjID = $out['Location']['contentId'];
 
                     $method = 'PUT';
                     $url = "/content/locations/{$data['remoteNodeID']}";
@@ -212,8 +212,14 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'remoteId' => $RemoteNodeRemoteID
                     );
                     $out = $this->restCall( $method, $url, $payload );
-                    if ( $out != 0 )
+                    if ( !is_array( $out ) )
                     {
+                        break;
+                    }
+                    if ( !isset( $out['Locations']['remoteId'] ) || $out['Locations']['remoteId'] != $RemoteNodeRemoteID )
+                    {
+                        /// @todo !important use a specific error code
+                        $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
                         break;
                     }
 
@@ -227,6 +233,17 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'remoteId' => $RemoteObjRemoteID
                     );
                     $out = $this->restCall( $method, $url, $payload );
+                    if ( is_array( $out ) )
+                    {
+                        if ( !isset( $out['Content']['remoteId'] ) || $out['Content']['remoteId'] != $RemoteObjRemoteID )
+                        {
+                            /// @todo !important use a specific error code
+                            $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
+                            break;
+                        }
+                        /// @todo check that response contains 'Content' ?
+                        $out = 0;
+                    }
 
                     break;
 
@@ -425,7 +442,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             $out['initialLanguage'] = $object->attribute( 'initial_language_code' );
             $out['alwaysAvailable'] = $object->attribute( 'always_available' );
             $out['remoteId'] = $RemoteObjRemoteID;
-            $out['sectionId'] = $object->attribute( 'section_id' );
+            //$out['sectionId'] = $object->attribute( 'section_id' );
             $out['ownerId'] = $object->attribute( 'owner_id' );
         }
 

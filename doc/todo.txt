@@ -61,6 +61,12 @@
 
 . allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
 
+. rename classes for target server to be prefixed with "eZ" ?
+
+. use the same classe to encode/decode objects on both source and target
+
+. fix bug: when using auto_auth filter, eZ sends 2 session cookies
+
 
 Phase 2 (?)
 
