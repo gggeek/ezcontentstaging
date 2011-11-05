@@ -1,5 +1,13 @@
 <?php
-
+/**
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ */
 
 class contentStagingRestLocationController extends contentStagingRestBaseController
 {
@@ -141,7 +149,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         {
             $result->status = new ezpRestHttpResponse(
                 ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the node with the remote id '{$destParentRemoteId}'"
+                "Cannot find the location with remote id '{$destParentRemoteId}'"
             );
             return $result;
         }

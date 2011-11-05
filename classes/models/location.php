@@ -1,12 +1,20 @@
 <?php
-
 /**
- * contentStagingLocation class is used to provide the rest of REST API calls
- * that outputs a Location (a node).
+ * contentStagingLocation class is used to provide the representation of a Location
+ * (a node) used in REST api calls.
  *
  * It mainly takes care of exposing the needed attributes and casting each of
  * them in the right type.
+ *
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
+
 class contentStagingLocation
 {
     public $pathString;

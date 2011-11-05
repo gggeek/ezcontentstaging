@@ -1,12 +1,20 @@
 <?php
-
 /**
- * contentStagingContent class is used to provide the result of REST API calls
- * that outputs a Content.
+ * The contentStagingContent class is used to provide the representation of a Content
+ * (an object) used in REST api calls.
  *
  * It mainly takes care of exposing the needed attributes and casting each of
  * them in the right type.
+ *
+ * @package ezcontentstaging
+ *
+ * @version $Id$;
+ *
+ * @author
+ * @copyright
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
+
 class contentStagingContent
 {
     public $contentType;
@@ -33,11 +41,17 @@ class contentStagingContent
         $this->creatorId = (int)$this->ownerId;
         $this->sectionId = (int)$object->attribute( 'section_id' );
 
-        $this->state = 'PUBLISHED';
-        if ( $object->attribute( 'status' ) == eZContentObject::STATUS_DRAFT )
-            $this->state = 'DRAFT';
-        elseif ( $object->attribute( 'status' ) == eZContentObject::STATUS_ARCHIVED )
-            $this->state = 'ARCHIVED';
+        switch( $object->attribute( 'status' ) )
+        {
+            case eZContentObject::STATUS_DRAFT:
+                $this->state = 'DRAFT';
+                break;
+            case eZContentObject::STATUS_ARCHIVED:
+                $this->state = 'ARCHIVED';
+                break;
+            default:
+                $this->state = 'PUBLISHED';
+        }
 
         $this->versionNo = (int)$object->attribute( 'current_version' );
         $this->created = 0; // ??
@@ -46,6 +60,7 @@ class contentStagingContent
         $this->remoteId = $object->attribute( 'remote_id' );
 
         $this->locationIds = array();
+        /// @todo this is bad for performances, we should not fetch full nodes
         foreach ( $object->attribute( 'assigned_nodes' ) as $node )
         {
             $this->locationIds[] = (int)$node->attribute( 'node_id' );
@@ -54,10 +69,16 @@ class contentStagingContent
         $this->fields = array();
         foreach ( $object->attribute( 'data_map' ) as $identifier => $attr )
         {
+            $type = $attr->attribute( 'data_type_string' );
+            switch( $type )
+            {
+                default:
+                    $value = $attr->toString();
+            }
             $this->fields[$identifier] = array(
-                'fieldDef' => $attr->attribute( 'data_type_string' ),
+                'fieldDef' => $type,
                 'id' => (int)$attr->attribute( 'id' ),
-                'value' => $attr->toString(),
+                'value' => $value,
                 'language' => $attr->attribute( 'language_code' )
             );
         }
