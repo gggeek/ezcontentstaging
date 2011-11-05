@@ -216,7 +216,7 @@ class ezRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     {
                         break;
                     }
-                    if ( !isset( $out['Locations']['remoteId'] ) || $out['Locations']['remoteId'] != $RemoteNodeRemoteID )
+                    if ( !isset( $out['Location']['remoteId'] ) || $out['Location']['remoteId'] != $RemoteNodeRemoteID )
                     {
                         /// @todo !important use a specific error code
                         $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;

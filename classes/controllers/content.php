@@ -35,7 +35,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Content'] = new contentStagingContent( $object );
+        $result->variables['Content'] = (array) new contentStagingContent( $object );
         return $result;
 
     }
@@ -201,7 +201,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $object = $this->updateContent( $object );
         }
 
-        $result->variables['Content'] = new contentStagingContent( $object );
+        $result->variables['Content'] = (array) new contentStagingContent( $object );
         return $result;
     }
 
@@ -348,7 +348,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
         );
 
-        $result->variables['Location'] = new contentStagingLocation( $newNode );
+        $result->variables['Location'] = (array) new contentStagingLocation( $newNode );
         return $result;
     }
 
@@ -586,7 +586,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      * @param eZContentObjectTreeNode $node
      * @param string $remoteId
      */
-    protected function updateObjectRemoteId( eZContentObject $object, $remoteId )
+    protected function updateRemoteId( eZContentObject $object, $remoteId )
     {
         $object->setAttribute( 'remote_id', $remoteId );
         $object->store();

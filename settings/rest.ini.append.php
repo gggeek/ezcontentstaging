@@ -10,36 +10,32 @@ SkipFilter[]=contentStagingRestLocationController_*
 
 [RequestFilters]
 Filters[]=contentStagingAutoAuthFilter
+Filters[]=contentStagingJsonRequestFilter
 
-
-[contentStagingRestContentController_remove_CacheSettings]
-ApplicationCache=disabled
 
 [contentStagingRestContentController_create_CacheSettings]
 ApplicationCache=disabled
-
 [contentStagingRestContentController_update_CacheSettings]
 ApplicationCache=disabled
-
+[contentStagingRestContentController_remove_CacheSettings]
+ApplicationCache=disabled
 [contentStagingRestContentController_addLocation_CacheSettings]
+ApplicationCache=disabled
+[contentStagingRestContentController_updateSection_CacheSettings]
+ApplicationCache=disabled
+[contentStagingRestContentController_removeTranslation_CacheSettings]
 ApplicationCache=disabled
 
 [contentStagingRestLocationController_hideUnhide_CacheSettings]
 ApplicationCache=disabled
-
-[contentStagingRestContentController_updateLocation_CacheSettings]
+[contentStagingRestLocationController_update_CacheSettings]
 ApplicationCache=disabled
-
 [contentStagingRestLocationController_move_CacheSettings]
 ApplicationCache=disabled
-
-[contentStagingRestContentController_removeLocation_CacheSettings]
+[contentStagingRestContentController_remove_CacheSettings]
 ApplicationCache=disabled
 
-[contentStagingRestContentController_removeTranslation_CacheSettings]
-ApplicationCache=disabled
 
-[contentStagingRestContentController_updateSection_CacheSettings]
-ApplicationCache=disabled
+
 
 */ ?>

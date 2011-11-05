@@ -35,7 +35,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Location'] = new contentStagingLocation( $node );
+        $result->variables['Location'] = (array) new contentStagingLocation( $node );
         return $result;
 
     }
@@ -100,7 +100,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
-            $this->updateNodeSort(
+            $this->updateSort(
                 $node,
                 $this->getSortField( $this->request->inputVariables['sortField'] ),
                 $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
@@ -109,7 +109,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
 
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
-            $this->updateNodePriority(
+            $this->updatePriority(
                 $node,
                 (int)$this->request->inputVariables['priority']
             );
@@ -123,7 +123,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
             );
         }
 
-        $result->variables['Location'] = new contentStagingLocation( $node );
+        $result->variables['Location'] = (array) new contentStagingLocation( $node );
         return $result;
     }
 
@@ -170,7 +170,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         );
 
         $newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
-        $result->variables['Location'] = new contentStagingLocation( $newNode );
+        $result->variables['Location'] = (array) new contentStagingLocation( $newNode );
         return $result;
 
     }
@@ -287,7 +287,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      * @param int $sortField
      * @param int $sortOrder
      */
-    protected function updateNodeSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
+    protected function updateSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
     {
         //$db = eZDB::instance();
         //$db->begin();
@@ -306,7 +306,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      * @param eZContentObjectTreeNode $node
      * @param int $priority
      */
-    protected function updateNodePriority( eZContentObjectTreeNode $node, $priority )
+    protected function updatePriority( eZContentObjectTreeNode $node, $priority )
     {
         //$db = eZDB::instance();
         //$db->begin();
@@ -324,7 +324,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      * @param eZContentObjectTreeNode $node
      * @param string $remoteId
      */
-    protected function updateNodeRemoteId( eZContentObjectTreeNode $node, $remoteId )
+    protected function updateRemoteId( eZContentObjectTreeNode $node, $remoteId )
     {
         $node->setAttribute( 'remote_id', $remoteId );
         $node->store();
