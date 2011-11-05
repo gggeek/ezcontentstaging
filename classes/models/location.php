@@ -1,10 +1,10 @@
 <?php
 /**
- * contentStagingLocation class is used to provide the representation of a Location
+ * The contentStagingLocation class is used to provide the representation of a Location
  * (a node) used in REST api calls.
  *
  * It mainly takes care of exposing the needed attributes and casting each of
- * them in the right type.
+ * them in the correct type.
  *
  * @package ezcontentstaging
  *
@@ -44,9 +44,14 @@ class contentStagingLocation
         $this->hidden = (bool)$node->attribute( 'hidden' );
         $this->depth = (int)$node->attribute( 'depth' );
         $this->invisible = (bool)$node->attribute( 'invisible' );
-        $this->modifiedSubLocation = (int)$node->attribute( 'modified_subnode' ); // @todo type: "date" ?
+        $this->modifiedSubLocation = (int)$node->attribute( 'modified_subnode' );
 
-        $this->children = array(); // @todo not filled for now
+        $this->children = array();
+        /// @todo optimize: do not load all children just to get their ids
+        foreach ( $node->attribute( 'children' ) as  $child )
+        {
+            $this->children[] = (int)$child->attribute( 'node_id' );
+        }
 
         $this->sortOrder = 'ASC';
         if ( $node->attribute( 'sort_order' ) == eZContentObjectTreeNode::SORT_ORDER_DESC )
