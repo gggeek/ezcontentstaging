@@ -54,7 +54,7 @@ class contentStagingContent
         }
 
         $this->versionNo = (int)$object->attribute( 'current_version' );
-        $this->created = 0; // ??
+        $this->created = (int)$object->attribute( 'published' );
         $this->modified = (int)$object->attribute( 'modified' );
         $this->alwaysAvailable = (bool)$object->attribute( 'always_available' );
         $this->remoteId = $object->attribute( 'remote_id' );
