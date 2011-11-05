@@ -7,6 +7,8 @@
  * @author
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ * @todo move all actions (CRUD) and type mapping to the model
  */
 
 class contentStagingRestContentController extends contentStagingRestBaseController
@@ -82,37 +84,56 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      *
      * @return ezpRestMvcResult
      */
-    public function doCreateContent()
+    public function doCreate()
     {
-        /// @todo add support for parent Id besides parent remote Id
-
         $result = new ezpRestMvcResult();
-        if ( !isset( $this->request->get['parentRemoteId'] ) )
+        if ( !isset( $this->request->get['parentRemoteId'] ) && !isset( $this->request->get['parentId'] ) )
         {
             $result->status = new ezpRestHttpResponse(
                 ezpHttpResponseCodes::BAD_REQUEST,
-                'The "parentRemoteId" parameter is missing'
+                'The "parentRemoteId"or "parentId" parameters are missing'
             );
             return $result;
         }
 
-        $remoteId = $this->request->get['parentRemoteId'];
-        $node = eZContentObjectTreeNode::fetchByRemoteID( $remoteId );
-        if ( !$node instanceof eZContentObjectTreeNode )
+        if ( isset( $this->request->get['parentRemoteId'] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the location with remote id '{$remoteId}'"
-            );
-            return $result;
+            $parentRemoteId = $this->request->get['parentRemoteId'];
+            $node = eZContentObjectTreeNode::fetchByRemoteID( $parentRemoteId );
+            if ( !$node instanceof eZContentObjectTreeNode )
+            {
+                $result->status = new ezpRestHttpResponse(
+                    ezpHttpResponseCodes::NOT_FOUND,
+                    "Cannot find the location with remote id '{$parentRemoteId}'"
+                );
+                return $result;
+            }
+        }
+        else
+        {
+            $parentId = $this->request->get['parentId'];
+            $node = eZContentObjectTreeNode::fetch( $parentId );
+            if ( !$node instanceof eZContentObjectTreeNode )
+            {
+                $result->status = new ezpRestHttpResponse(
+                    ezpHttpResponseCodes::NOT_FOUND,
+                    "Cannot find the location with id '{$parentId}'"
+                );
+                return $result;
+            }
         }
 
-        // workaround to be able to publish
+        $sectionId = null;
+        if ( isset( $this->request->get['sectionId'] ) )
+        {
+            $sectionId = (int) $this->request->get['sectionId'];
+        }
+        // workaround bug #0xxx to be able to publish
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
         /// @todo we should support creation failure here
-        $content = $this->createContent( $node );
+        $content = $this->createContent( $node, $sectionId );
 
         // generate a 201 response
         $result->status = new contentStagingCreatedHttpResponse(
@@ -132,7 +153,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      * - PUT /content/objects/<Id>
      * @return ezpRestMvcResult
      */
-    public function doUpdateContent()
+    public function doUpdate()
     {
         $object = $this->object();
         if ( !$object instanceof eZContentObject )
@@ -141,35 +162,46 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         }
 
         $result = new ezpRestMvcResult();
-        if ( isset( $this->request->inputVariables['alwaysAvailable'] )
-                && count( $this->request->inputVariables ) === 1 )
+        if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
         {
             eZContentOperationCollection::updateAlwaysAvailable(
                 $object->attribute( 'id' ),
                 (bool)$this->request->inputVariables['alwaysAvailable']
             );
-            $result->status = new ezpRestHttpResponse( 204 );
+            //$result->status = new ezpRestHttpResponse( 204 );
         }
-        elseif ( isset( $this->request->inputVariables['initialLanguage'] )
-                && count( $this->request->inputVariables ) === 1 )
+
+        if ( isset( $this->request->inputVariables['initialLanguage'] ) )
         {
             eZContentOperationCollection::updateInitialLanguage(
                 $object->attribute( 'id' ),
-                (int)$this->request->inputVariables['initialLanguage']
+                $this->request->inputVariables['initialLanguage']
             );
-            $result->status = new ezpRestHttpResponse( 204 );
+            //$result->status = new ezpRestHttpResponse( 204 );
         }
-        elseif ( isset( $this->request->inputVariables['fields'] )
+
+        if ( isset( $this->request->inputVariables['remoteId'] ) )
+        {
+            $this->updateRemoteId(
+                $object,
+                $this->request->inputVariables['remoteId']
+            );
+            //$result->status = new ezpRestHttpResponse( 204 );
+        }
+
+        if ( isset( $this->request->inputVariables['fields'] )
                 && count( $this->request->inputVariables['fields'] ) > 0 )
         {
             // whole update
+
             // workaround to be able to publish
             $moduleRepositories = eZModule::activeModuleRepositories();
             eZModule::setGlobalPathList( $moduleRepositories );
-            $object =$this->updateContent( $object );
-            $result->variables['content'] = new contentStagingContent( $object );
+
+            $object = $this->updateContent( $object );
         }
 
+        $result->variables['Content'] = new contentStagingContent( $object );
         return $result;
     }
 
@@ -433,7 +465,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      * @param eZContentObjectTreeNode $parent
      * @return eZContentObject
      */
-    protected function createContent( eZContentObjectTreeNode $parent )
+    protected function createContent( eZContentObjectTreeNode $parent, $sectionId=null )
     {
         $input = $this->request->post; // shouldn't it be inputVariables ? but it's empty ?
         $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
@@ -531,6 +563,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      */
     protected function addAssignment( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
     {
+        /// @todo do we need a transaction here?
         $db = eZDB::instance();
         $db->begin();
         $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
@@ -547,5 +580,19 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         return $newNode;
     }
 
+    /**
+     * Update the remote id of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param string $remoteId
+     */
+    protected function updateObjectRemoteId( eZContentObject $object, $remoteId )
+    {
+        $object->setAttribute( 'remote_id', $remoteId );
+        $object->store();
+        eZContentCacheManager::clearContentCache(
+            $object->attribute( 'id' )
+        );
+    }
 }
 

@@ -7,6 +7,8 @@
  * @author
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ * @todo move all actions (CRUD) and type mapping to the model
  */
 
 class contentStagingRestLocationController extends contentStagingRestBaseController
@@ -75,11 +77,10 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         }
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
-
     }
 
     /**
-     * Update the sort order and sort field or the priority of a node from its remote id
+     * Update the sort order and sort field or the priority of a node
      *
      * Request:
      * - PUT /content/locations/remote/<remoteId>
@@ -95,6 +96,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         }
 
         $result = new ezpRestMvcResult();
+
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
@@ -104,6 +106,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
                 $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
             );
         }
+
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
             $this->updateNodePriority(
@@ -112,13 +115,20 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
             );
         }
 
+        if ( isset( $this->request->inputVariables['remoteId'] ) )
+        {
+            $this->updateRemoteId(
+                $node,
+                $this->request->inputVariables['remoteId']
+            );
+        }
+
         $result->variables['Location'] = new contentStagingLocation( $node );
         return $result;
     }
 
     /**
-     * Handle move operation of a location from its remote id to another
-     * location
+     * Handle move operation of a location to another location
      *
      * Request:
      * - PUT /content/locations/remote/<remoteId>/parent?destParentRemoteId=<dest>
@@ -166,7 +176,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
     }
 
     /**
-     * Handle DELETE request for a location from its remote id
+     * Handle DELETE request for a location
      *
      * Request:
      * - DELETE /content/locations/remote/<remoteId>?trash=true|false
@@ -279,12 +289,12 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      */
     protected function updateNodeSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
     {
-        $db = eZDB::instance();
-        $db->begin();
+        //$db = eZDB::instance();
+        //$db->begin();
         $node->setAttribute( 'sort_field', $sortField );
         $node->setAttribute( 'sort_order', $sortOrder );
         $node->store();
-        $db->commit();
+        //$db->commit();
         eZContentCacheManager::clearContentCache(
             $node->attribute( 'contentobject_id' )
         );
@@ -298,15 +308,29 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      */
     protected function updateNodePriority( eZContentObjectTreeNode $node, $priority )
     {
-        $db = eZDB::instance();
-        $db->begin();
+        //$db = eZDB::instance();
+        //$db->begin();
         $node->setAttribute( 'priority', $priority );
         $node->store();
-        $db->commit();
+        //$db->commit();
         eZContentCacheManager::clearContentCache(
             $node->attribute( 'contentobject_id' )
         );
     }
 
+    /**
+     * Update the remote id of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param string $remoteId
+     */
+    protected function updateNodeRemoteId( eZContentObjectTreeNode $node, $remoteId )
+    {
+        $node->setAttribute( 'remote_id', $remoteId );
+        $node->store();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+    }
 }
 
