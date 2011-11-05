@@ -15,6 +15,7 @@ class contentStagingAutoAuthFilter implements ezpRestRequestFilterInterface
         $controllers = $ini->variable( 'RestAutoAuthFilter', 'AutoAuthControllers' );
         if ( in_array( $this->controllerClass, $controllers ) )
         {
+            /// @todo take care: what if user does not exist?
             $user = eZUser::fetch( $ini->variable( 'RestAutoAuthFilter', 'UserID' ) );
             $user->loginCurrent();
         }
