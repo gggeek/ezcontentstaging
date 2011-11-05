@@ -7,6 +7,29 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
     // *** rest actions ***
 
     /**
+     * Handle GET on an oject from its [remote] id
+     *
+     * Requests:
+     * - GET /content/objects/remote/<remoteId>
+     * - GET /content/objects/<Id>
+     *
+     * @return void
+     */
+    public function doLoad()
+    {
+
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        $result = new ezpRestMvcResult();
+        $result->variables['Content'] = new contentStagingContent( $object );
+        return $result;
+
+    }
+    /**
      * Handle DELETE request for a content object from its remote id
      *
      * Request:
