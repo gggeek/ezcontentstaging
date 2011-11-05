@@ -66,7 +66,5 @@ class contentStagingLocation
             $this->sortField = 'PATH';
     }
 
-
-
 }
 

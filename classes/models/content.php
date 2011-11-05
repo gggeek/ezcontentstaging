@@ -1,10 +1,10 @@
 <?php
 /**
- * The contentStagingContent class is used to provide the representation of a Content
+ * The contentStagingVersion class is used to provide the representation of a Content
  * (an object) used in REST api calls.
  *
  * It mainly takes care of exposing the needed attributes and casting each of
- * them in the right type.
+ * them in the correct type.
  *
  * @package ezcontentstaging
  *
