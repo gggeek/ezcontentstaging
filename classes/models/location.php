@@ -27,6 +27,7 @@ class contentStagingLocation
     public $hidden;
     public $depth;
     public $invisible;
+    public $remoteId;
     public $modifiedSubLocation;
     public $children;
     public $sortField;
@@ -44,6 +45,7 @@ class contentStagingLocation
         $this->hidden = (bool)$node->attribute( 'hidden' );
         $this->depth = (int)$node->attribute( 'depth' );
         $this->invisible = (bool)$node->attribute( 'invisible' );
+        $this->remoteId = $node->attribute( 'remote_id' );
         $this->modifiedSubLocation = (int)$node->attribute( 'modified_subnode' );
 
         $this->children = array();
