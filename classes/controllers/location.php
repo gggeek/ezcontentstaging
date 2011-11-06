@@ -8,7 +8,8 @@
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *
- * @todo move all actions (CRUD) and type mapping to the model
+ * @todo finish moving all content-mofication-actions to the model
+ * @todo decide how much typecast we do on parameters passed to calls of model's methods
  */
 
 class contentStagingRestLocationController extends contentStagingRestBaseController
@@ -100,16 +101,16 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
-            $this->updateSort(
+            contentStagingLocation::updateSort(
                 $node,
-                $this->getSortField( $this->request->inputVariables['sortField'] ),
-                $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
+                $this->request->inputVariables['sortField'],
+                $this->request->inputVariables['sortOrder']
             );
         }
 
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
-            $this->updatePriority(
+            contentStagingLocation::updatePriority(
                 $node,
                 (int)$this->request->inputVariables['priority']
             );
@@ -117,7 +118,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            $this->updateRemoteId(
+            contentStagingLocation::updateRemoteId(
                 $node,
                 $this->request->inputVariables['remoteId']
             );
@@ -242,95 +243,5 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         return $node;
     }
 
-    /**
-     * Returns the eZContentObjectTreeNode::SORT_ORDER_* constant corresponding
-     * to the $stringSortOrder
-     *
-     * @param string $stringSortOrder
-     * @return int
-     */
-    protected function getSortOrder( $stringSortOrder )
-    {
-        // @todo throw an exception if $stringSortOrder is not ASC or DESC ?
-        $sortOrder = eZContentObjectTreeNode::SORT_ORDER_ASC;
-        if ( $stringSortOrder != 'ASC' )
-        {
-            $sortOrder = eZContentObjectTreeNode::SORT_ORDER_DESC;
-        }
-        return $sortOrder;
-    }
-
-    /**
-     * Returns the eZContentObjectTreeNode::SORT_FIELD_* constant corresponding
-     * to the $stringSortField
-     *
-     * @param string $stringSortField
-     * @return int
-     */
-    protected function getSortField( $stringSortField )
-    {
-        $field = eZContentObjectTreeNode::sortFieldID( strtolower( $stringSortField ) );
-        if ( $field === null )
-        {
-            // field might be null if sortFieldID does not recognize its
-            // parameter
-            // @todo throw an exception instead ?
-            $field = eZContentObjectTreeNode::SORT_FIELD_PATH;
-        }
-        return $field;
-    }
-
-    /**
-     * Update the sort order and the sort field of the $node
-     *
-     * @param eZContentObjectTreeNode $node
-     * @param int $sortField
-     * @param int $sortOrder
-     */
-    protected function updateSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
-    {
-        //$db = eZDB::instance();
-        //$db->begin();
-        $node->setAttribute( 'sort_field', $sortField );
-        $node->setAttribute( 'sort_order', $sortOrder );
-        $node->store();
-        //$db->commit();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
-    }
-
-    /**
-     * Update the priority of the $node
-     *
-     * @param eZContentObjectTreeNode $node
-     * @param int $priority
-     */
-    protected function updatePriority( eZContentObjectTreeNode $node, $priority )
-    {
-        //$db = eZDB::instance();
-        //$db->begin();
-        $node->setAttribute( 'priority', $priority );
-        $node->store();
-        //$db->commit();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
-    }
-
-    /**
-     * Update the remote id of the $node
-     *
-     * @param eZContentObjectTreeNode $node
-     * @param string $remoteId
-     */
-    protected function updateRemoteId( eZContentObjectTreeNode $node, $remoteId )
-    {
-        $node->setAttribute( 'remote_id', $remoteId );
-        $node->store();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
-    }
 }
 

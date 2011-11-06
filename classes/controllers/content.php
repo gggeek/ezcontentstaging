@@ -8,7 +8,8 @@
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *
- * @todo move all actions (CRUD) and type mapping to the model
+ * @todo finish moving all content-mofication-actions to the model
+ * @todo decide how much typecast we do on parameters passed to calls of model's methods
  */
 
 class contentStagingRestContentController extends contentStagingRestBaseController
@@ -133,7 +134,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         eZModule::setGlobalPathList( $moduleRepositories );
 
         /// @todo we should support creation failure here
-        $content = $this->createContent( $node, $sectionId );
+        $content = contentStagingContent::createContent( $node, $this->request->inputVariables, $sectionId );
 
         // generate a 201 response
         $result->status = new contentStagingCreatedHttpResponse(
@@ -182,7 +183,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            $this->updateRemoteId(
+            contentStagingContent::updateRemoteId(
                 $object,
                 $this->request->inputVariables['remoteId']
             );
@@ -194,11 +195,11 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         {
             // whole update
 
-            // workaround to be able to publish
+            // workaround to be able to publish (bug #018337)
             $moduleRepositories = eZModule::activeModuleRepositories();
             eZModule::setGlobalPathList( $moduleRepositories );
 
-            $object = $this->updateContent( $object );
+            $object = contentStagingContent::updateContent( $object, $this->request->inputVariables );
         }
 
         $result->variables['Content'] = (array) new contentStagingContent( $object );
@@ -340,12 +341,12 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             }
         }
 
-        $newNode = $this->addAssignment(
+        $newNode = contentStagingContent::addAssignment(
             $object, $parentNode,
             $this->request->inputVariables['remoteId'],
-            (int)$this->request->inputVariables['priority'],
-            $this->getSortField( $this->request->inputVariables['sortField'] ),
-            $this->getSortOrder( $this->request->inputVariables['sortOrder'] )
+            (int)$this->request->inputVariables['priority'], /// @todo why typecast only this value?
+            $this->request->inputVariables['sortField'],
+            $this->request->inputVariables['sortOrder']
         );
 
         $result->variables['Location'] = (array) new contentStagingLocation( $newNode );
@@ -386,213 +387,5 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         return $object;
     }
 
-    /**
-     * Updates the $object with the provided fields in the request
-     *
-     * @param eZContentObject $object
-     * @return eZContentObject
-     */
-    protected function updateContent( eZContentObject $object )
-    {
-        $input = $this->request->inputVariables;
-        $db = eZDB::instance();
-        $db->begin();
-        $version = $object->createNewVersionIn( $input['localeCode'] );
-        $version->setAttribute( 'modified', time() );
-        $version->store();
-
-        $this->updateAttributesList(
-            $version->attribute( 'contentobject_attributes' ),
-            $input['fields']
-        );
-        $db->commit();
-
-        $operationResult = eZOperationHandler::execute(
-            'content', 'publish',
-            array(
-                'object_id' => $object->attribute( 'id' ),
-                'version' => $version->attribute( 'version' )
-             )
-        );
-        return eZContentObject::fetch( $object->attribute( 'id' ) );
-    }
-
-    /**
-     * Updates the eZContentObjectAttribute in $attributes with the values
-     * provided in $fields
-     *
-     * @param array $attributes array of eZContentObjectAttribute to update
-     * @param array $fields
-     */
-    protected function updateAttributesList( array $attributes, array $fields )
-    {
-        foreach ( $attributes as $attribute )
-        {
-            $identifier = $attribute->attribute( 'contentclass_attribute_identifier' );
-            if ( !isset( $fields[$identifier] ) )
-            {
-                continue;
-            }
-            $field = $fields[$identifier];
-            switch( $field['fieldDef'] )
-            {
-                case 'ezimage':
-                case 'ezbinaryfile':
-                case 'ezmedia':
-                {
-                    $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
-                    // todo use the origin filename when it'll be available
-                    $fileName = uniqid();
-
-                    eZFile::create( $fileName, $tmpDir, base64_decode( $field['value'] ) );
-                    $field['value'] = $tmpDir . '/' . $fileName;
-                }
-                default:
-            }
-            $attribute->fromString( $field['value'] );
-            $attribute->store();
-            if ( isset( $tmpDir ) )
-            {
-                eZDir::recursiveDelete( $tmpDir, false );
-                unset( $tmpDir );
-            }
-        }
-    }
-
-    /**
-     * Create a content under $parent with the input variables
-     *
-     * @param eZContentObjectTreeNode $parent
-     * @return eZContentObject
-     */
-    protected function createContent( eZContentObjectTreeNode $parent, $sectionId=null )
-    {
-        $input = $this->request->post; // shouldn't it be inputVariables ? but it's empty ?
-        $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
-        if ( !$class instanceof eZContentClass )
-        {
-            throw new RuntimeException(
-                'Unable to load the class with identifier ' . $input['contentType']
-            );
-        }
-        $db = eZDB::instance();
-        $db->begin();
-        $content = $class->instantiateIn( $input['initialLanguage'] );
-        $content->setAttribute( 'remote_id', $input['remoteId'] );
-        $content->store();
-
-        $nodeAssignment = eZNodeAssignment::create(
-            array(
-                'contentobject_id' => $content->attribute( 'id' ),
-                'contentobject_version' => $content->attribute( 'current_version' ),
-                'parent_node' => $parent->attribute( 'node_id' ),
-                'is_main' => 1,
-                'sort_field' => $class->attribute( 'sort_field' ),
-                'sort_order' => $class->attribute( 'sort_order' )
-            )
-        );
-        $nodeAssignment->store();
-
-        $version = $content->version( 1 );
-        $version->setAttribute( 'modified', time() );
-        $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
-        $version->store();
-
-        $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
-        $this->updateAttributesList( $attributes, $input['fields'] );
-        $db->commit();
-
-        $operationResult = eZOperationHandler::execute(
-            'content', 'publish',
-            array(
-                'object_id' => $content->attribute( 'id' ),
-                'version' => 1
-             )
-        );
-        return $content;
-    }
-
-    /**
-     * Returns the eZContentObjectTreeNode::SORT_ORDER_* constant corresponding
-     * to the $stringSortOrder
-     *
-     * @param string $stringSortOrder
-     * @return int
-     */
-    protected function getSortOrder( $stringSortOrder )
-    {
-        // @todo throw an exception if $stringSortOrder is not ASC or DESC ?
-        $sortOrder = eZContentObjectTreeNode::SORT_ORDER_ASC;
-        if ( $stringSortOrder != 'ASC' )
-        {
-            $sortOrder = eZContentObjectTreeNode::SORT_ORDER_DESC;
-        }
-        return $sortOrder;
-    }
-
-    /**
-     * Returns the eZContentObjectTreeNode::SORT_FIELD_* constant corresponding
-     * to the $stringSortField
-     *
-     * @param string $stringSortField
-     * @return int
-     */
-    protected function getSortField( $stringSortField )
-    {
-        $field = eZContentObjectTreeNode::sortFieldID( strtolower( $stringSortField ) );
-        if ( $field === null )
-        {
-            // field might be null if sortFieldID does not recognize its
-            // parameter
-            // @todo throw an exception instead ?
-            $field = eZContentObjectTreeNode::SORT_FIELD_PATH;
-        }
-        return $field;
-    }
-
-    /**
-     * Create a new location for the $object under the $parent node.
-     *
-     * @param eZContentObject $object
-     * @param eZContentObjectTreeNode $parent
-     * @param string $newNodeRemoteId
-     * @param int $priority
-     * @param int $sortField
-     * @param int $sortOrder
-     * @return eZContentObjectTreeNode
-     */
-    protected function addAssignment( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
-    {
-        /// @todo do we need a transaction here?
-        $db = eZDB::instance();
-        $db->begin();
-        $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
-        $newNode->setAttribute( 'contentobject_is_published', 1 );
-        $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
-        $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
-        $newNode->setAttribute( 'priority', $priority );
-        $newNode->setAttribute( 'sort_field', $sortField );
-        $newNode->setAttribute( 'sort_order', $sortOrder );
-        // Make sure the url alias is set updated.
-        $newNode->updateSubTreePath();
-        $newNode->sync();
-        $db->commit();
-        return $newNode;
-    }
-
-    /**
-     * Update the remote id of the $node
-     *
-     * @param eZContentObjectTreeNode $node
-     * @param string $remoteId
-     */
-    protected function updateRemoteId( eZContentObject $object, $remoteId )
-    {
-        $object->setAttribute( 'remote_id', $remoteId );
-        $object->store();
-        eZContentCacheManager::clearContentCache(
-            $object->attribute( 'id' )
-        );
-    }
 }
 

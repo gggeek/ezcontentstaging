@@ -15,7 +15,7 @@
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
 
-class contentStagingLocation
+class contentStagingLocation extends contentStagingBase
 {
     public $pathString;
     public $pathIdentificationString;
@@ -66,5 +66,60 @@ class contentStagingLocation
             $this->sortField = 'PATH';
     }
 
+    /**
+     * Update the sort order and the sort field of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param int $sortField
+     * @param int $sortOrder
+     */
+    static function updateSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
+    {
+        $sortField = self::getSortField( $sortField );
+        $sortOrder = self:: getSortOrder( $sortOrder);
+
+        //$db = eZDB::instance();
+        //$db->begin();
+        $node->setAttribute( 'sort_field', $sortField );
+        $node->setAttribute( 'sort_order', $sortOrder );
+        $node->store();
+        //$db->commit();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+    }
+
+    /**
+     * Update the priority of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param int $priority
+     */
+    static function updatePriority( eZContentObjectTreeNode $node, $priority )
+    {
+        //$db = eZDB::instance();
+        //$db->begin();
+        $node->setAttribute( 'priority', $priority );
+        $node->store();
+        //$db->commit();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+    }
+
+    /**
+     * Update the remote id of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param string $remoteId
+     */
+    static function updateRemoteId( eZContentObjectTreeNode $node, $remoteId )
+    {
+        $node->setAttribute( 'remote_id', $remoteId );
+        $node->store();
+        eZContentCacheManager::clearContentCache(
+            $node->attribute( 'contentobject_id' )
+        );
+    }
 }
 

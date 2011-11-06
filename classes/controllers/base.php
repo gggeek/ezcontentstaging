@@ -12,6 +12,7 @@
 
 class contentStagingRestBaseController extends ezpRestMvcController
 {
+
 }
 
 ?>
