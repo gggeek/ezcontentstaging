@@ -66,16 +66,8 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
             );
             return $result;
         }
-        /// @todo
-        $hide = (bool) $this->request->get['hide'];
-        if ( $hide )
-        {
-            eZContentObjectTreeNode::hideSubTree( $node );
-        }
-        else
-        {
-            eZContentObjectTreeNode::unhideSubTree( $node );
-        }
+        contentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] );
+
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
@@ -136,6 +128,9 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      * - PUT /content/locations/<Id>/parent?destParentRemoteId=<dest>
      *
      * @return ezpRestMvcResult
+     *
+     * @todo add support for parentId also besides parentRemoteId
+     * @todo move logic to model
      */
     public function doMove()
     {
@@ -184,6 +179,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
      * - DELETE /content/locations/<Id>?trash=true|false
      *
      * @return ezpRestMvcResult
+     * @todo move logic to model
      */
     public function doRemove()
     {
@@ -244,4 +240,3 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
     }
 
 }
-

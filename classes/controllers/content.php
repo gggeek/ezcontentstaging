@@ -40,6 +40,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         return $result;
 
     }
+
     /**
      * Handle DELETE request for a content object from its remote id
      *
@@ -48,6 +49,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      * - DELETE /api/contentstaging/content/objects/<Id>[?trash=true|false]
      *
      * @return ezpRestMvcResult
+     * @todo move logic to model
      */
     public function doRemove()
     {
@@ -75,7 +77,6 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
-
 
     /**
      * Handle POST request to create a content object
@@ -214,6 +215,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      * - DELETE /content/objects/<Id>/translations/<localeCode>
      *
      * @return ezpRestMvcResult
+     * @todo move logic to model
      */
     public function doRemoveTranslation()
     {
@@ -252,6 +254,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      * - PUT /content/objects/<Id>/section?sectionId=<sectionId>
      *
      * @return ezpRestMvcResult
+     * @todo move logic to model
      */
     public function doUpdateSection()
     {
