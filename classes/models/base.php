@@ -9,11 +9,16 @@
  * @author
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ * @todo separate methods names: use prefixes meaning fromstruct / tostruct
  */
 
 class contentStagingBase
 {
-
+    protected static function formatDatetIme( $time )
+    {
+        return gmdate( DATE_ISO8601, $time );
+    }
 
     /**
      * Returns the eZContentObjectTreeNode::SORT_ORDER_* constant corresponding

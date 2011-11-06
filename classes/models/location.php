@@ -46,7 +46,7 @@ class contentStagingLocation extends contentStagingBase
         $this->depth = (int)$node->attribute( 'depth' );
         $this->invisible = (bool)$node->attribute( 'invisible' );
         $this->remoteId = $node->attribute( 'remote_id' );
-        $this->modifiedSubLocation = (int)$node->attribute( 'modified_subnode' );
+        $this->modifiedSubLocation = self::formatDatetIme( $node->attribute( 'modified_subnode' ) );
 
         $this->children = array();
         /// @todo optimize: do not load all children just to get their ids
@@ -120,6 +120,24 @@ class contentStagingLocation extends contentStagingBase
         eZContentCacheManager::clearContentCache(
             $node->attribute( 'contentobject_id' )
         );
+    }
+
+    /**
+     * Update the visibility of the $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param bool $hide
+     */
+    static function updateVisibility( eZContentObjectTreeNode $node, $hide )
+    {
+        if ( $hide )
+        {
+            eZContentObjectTreeNode::hideSubTree( $node );
+        }
+        else
+        {
+            eZContentObjectTreeNode::unhideSubTree( $node );
+        }
     }
 }
 

@@ -55,8 +55,8 @@ class contentStagingContent extends contentStagingBase
 
         $this->versionNo = (int)$object->attribute( 'current_version' );
         $this->creatorId = (int)$object->attribute( 'current' )->attribute( 'creator_id' );
-        $this->created = (int)$object->attribute( 'published' );
-        $this->modified = (int)$object->attribute( 'modified' );
+        $this->created = self::formatDatetIme( $object->attribute( 'published' ) );
+        $this->modified = self::formatDatetIme( $object->attribute( 'modified' ) );
         $this->alwaysAvailable = (bool)$object->attribute( 'always_available' );
         $this->remoteId = $object->attribute( 'remote_id' );
 
