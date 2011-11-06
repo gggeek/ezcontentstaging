@@ -216,6 +216,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
             $node = eZContentObjectTreeNode::fetchByRemoteID( $this->remoteId );
             if ( !$node instanceof eZContentObjectTreeNode )
             {
+                $result = new ezpRestMvcResult();
                 $result->status = new ezpRestHttpResponse(
                     ezpHttpResponseCodes::NOT_FOUND,
                     "Location with remote id '{$this->remoteId}' not found"
@@ -229,6 +230,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
             $node = eZContentObjectTreeNode::fetch( $this->Id );
             if ( !$node instanceof eZContentObjectTreeNode )
             {
+                $result = new ezpRestMvcResult();
                 $result->status = new ezpRestHttpResponse(
                     ezpHttpResponseCodes::NOT_FOUND,
                     "Location with id '{$this->Id}' not found"

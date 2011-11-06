@@ -367,6 +367,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $object = eZContentObject::fetchByRemoteID( $this->remoteId );
             if ( !$object instanceof eZContentObject )
             {
+                $result = new ezpRestMvcResult();
                 $result->status = new ezpRestHttpResponse(
                     ezpHttpResponseCodes::NOT_FOUND,
                     "Content with remote id '{$this->remoteId}' not found"
@@ -380,6 +381,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $object = eZContentObject::fetch( $this->Id );
             if ( !$object instanceof eZContentObject )
             {
+                $result = new ezpRestMvcResult();
                 $result->status = new ezpRestHttpResponse(
                     ezpHttpResponseCodes::NOT_FOUND,
                     "Content with id '{$this->Id}' not found"
