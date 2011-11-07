@@ -1,6 +1,6 @@
 <?php
 
-class contentStagingCreatedHttpResponse extends ezpRestHttpResponse
+class eZContentStagingCreatedHttpResponse extends ezpRestHttpResponse
 {
     public $uris;
 

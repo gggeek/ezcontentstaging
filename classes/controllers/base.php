@@ -10,7 +10,7 @@
 */
 
 
-class contentStagingRestBaseController extends ezpRestMvcController
+class eZContentStagingRestBaseController extends ezpRestMvcController
 {
     protected static function errorResult( $code, $message )
     {

@@ -9,7 +9,7 @@
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
 
-class contentStagingRestApiProvider implements ezpRestProviderInterface
+class eZContentStagingRestApiProvider implements ezpRestProviderInterface
 {
     public function getRoutes()
     {
@@ -19,7 +19,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentLoad' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/:Id',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'load',
                     'http-get'
                 ),
@@ -28,7 +28,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentLoadRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/remote/:remoteId',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'load',
                     'http-get'
                 ),
@@ -37,7 +37,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentCreate' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'create',
                     'http-post'
                 ),
@@ -46,7 +46,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentUpdate' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/:Id',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'update',
                     'http-put'
                 ),
@@ -55,7 +55,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentUpdateRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/remote/:remoteId',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'update',
                     'http-put'
                 ),
@@ -64,7 +64,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentRemove' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/:Id',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'remove',
                     'http-delete'
                 ),
@@ -73,7 +73,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentRemoveRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/remote/:remoteId',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'remove',
                     'http-delete'
                 ),
@@ -82,7 +82,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentAddLocation' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/:Id/locations',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'addLocation',
                     'http-put'
                 ),
@@ -91,7 +91,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingContentAddLocationRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/remote/:remoteId/locations',
-                    'contentStagingRestContentController',
+                    'eZContentStagingRestContentController',
                     'addLocation',
                     'http-put'
                 ),
@@ -102,7 +102,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationLoad' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/:Id',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'load',
                     'http-get'
                 ),
@@ -111,7 +111,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationLoadRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/remote/:remoteId',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'load',
                     'http-get'
                 ),
@@ -120,7 +120,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationHideUnhide' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/:Id',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'hideUnhide',
                     'http-post'
                 ),
@@ -129,7 +129,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationHideUnhideRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/remote/:remoteId',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'hideUnhide',
                     'http-post'
                 ),
@@ -140,7 +140,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationUpdate' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/:Id',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'update',
                     'http-put'
                 ),
@@ -149,7 +149,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationUpdateRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/remote/:remoteId',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'update',
                     'http-put'
                 ),
@@ -158,7 +158,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationMove' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/:Id/parent',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'move',
                     'http-put'
                 ),
@@ -167,7 +167,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationMoveRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/remote/:remoteId/parent',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'move',
                     'http-put'
                 ),
@@ -176,7 +176,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationRemove' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/:Id',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'remove',
                     'http-delete'
                 ),
@@ -185,7 +185,7 @@ class contentStagingRestApiProvider implements ezpRestProviderInterface
             'stagingLocationRemoveRemote' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/locations/remote/:remoteId',
-                    'contentStagingRestLocationController',
+                    'eZContentStagingRestLocationController',
                     'remove',
                     'http-delete'
                 ),

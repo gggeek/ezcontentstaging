@@ -12,7 +12,7 @@
  * @todo decide how much typecast we do on parameters passed to calls of model's methods
  */
 
-class contentStagingRestContentController extends contentStagingRestBaseController
+class eZContentStagingStagingRestContentController extends eZContentStagingRestBaseController
 {
 
     // *** rest actions ***
@@ -36,7 +36,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Content'] = (array) new contentStagingContent( $object );
+        $result->variables['Content'] = (array) new eZContentStagingContent( $object );
         return $result;
 
     }
@@ -124,10 +124,10 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         eZModule::setGlobalPathList( $moduleRepositories );
 
         /// @todo we should support creation failure here
-        $content = contentStagingContent::createContent( $node, $this->request->inputVariables, $sectionId );
+        $content = eZContentStagingContent::createContent( $node, $this->request->inputVariables, $sectionId );
 
         // generate a 201 response
-        $result->status = new contentStagingCreatedHttpResponse(
+        $result->status = new eZContentStagingCreatedHttpResponse(
             array(
                 'Content' => '/content/objects/' . $content->attribute( 'id' )
             )
@@ -174,7 +174,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            if ( ( $result = contentStagingContent::updateRemoteId(
+            if ( ( $result = eZContentStagingContent::updateRemoteId(
                        $object,
                        $this->request->inputVariables['remoteId'] )
                  ) !== 0 )
@@ -193,10 +193,10 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $moduleRepositories = eZModule::activeModuleRepositories();
             eZModule::setGlobalPathList( $moduleRepositories );
 
-            $object = contentStagingContent::updateContent( $object, $this->request->inputVariables );
+            $object = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
         }
 
-        $result->variables['Content'] = (array) new contentStagingContent( $object );
+        $result->variables['Content'] = (array) new eZContentStagingContent( $object );
         return $result;
     }
 
@@ -315,7 +315,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             }
         }
 
-        $newNode = contentStagingContent::addAssignment(
+        $newNode = eZContentStagingContent::addAssignment(
             $object, $parentNode,
             $this->request->inputVariables['remoteId'],
             (int)$this->request->inputVariables['priority'], /// @todo why typecast only this value?
@@ -324,7 +324,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         );
 
         $result = new ezpRestMvcResult();
-        $result->variables['Location'] = (array) new contentStagingLocation( $newNode );
+        $result->variables['Location'] = (array) new eZContentStagingLocation( $newNode );
         return $result;
     }
 

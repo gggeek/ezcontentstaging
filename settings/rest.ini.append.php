@@ -1,41 +1,38 @@
 <?php /*
 
 [ApiProvider]
-ProviderClass[contentstaging]=contentStagingRestApiProvider
+ProviderClass[contentstaging]=eZContentStagingRestApiProvider
 
 [RouteSettings]
 # no oauth auth: client does not support it (yet)
-SkipFilter[]=contentStagingRestContentController_*
-SkipFilter[]=contentStagingRestLocationController_*
+SkipFilter[]=eZContentStagingRestContentController_*
+SkipFilter[]=eZContentStagingRestLocationController_*
 
 [RequestFilters]
-Filters[]=contentStagingAutoAuthFilter
-Filters[]=contentStagingJsonRequestFilter
+Filters[]=eZContentStagingAutoAuthFilter
+Filters[]=eZContentStagingJsonRequestFilter
 
 
-[contentStagingRestContentController_create_CacheSettings]
+[eZContentStagingRestContentController_create_CacheSettings]
 ApplicationCache=disabled
-[contentStagingRestContentController_update_CacheSettings]
+[eZContentStagingRestContentController_update_CacheSettings]
 ApplicationCache=disabled
-[contentStagingRestContentController_remove_CacheSettings]
+[eZContentStagingRestContentController_remove_CacheSettings]
 ApplicationCache=disabled
-[contentStagingRestContentController_addLocation_CacheSettings]
+[eZContentStagingRestContentController_addLocation_CacheSettings]
 ApplicationCache=disabled
-[contentStagingRestContentController_updateSection_CacheSettings]
+[eZContentStagingRestContentController_updateSection_CacheSettings]
 ApplicationCache=disabled
-[contentStagingRestContentController_removeTranslation_CacheSettings]
-ApplicationCache=disabled
-
-[contentStagingRestLocationController_hideUnhide_CacheSettings]
-ApplicationCache=disabled
-[contentStagingRestLocationController_update_CacheSettings]
-ApplicationCache=disabled
-[contentStagingRestLocationController_move_CacheSettings]
-ApplicationCache=disabled
-[contentStagingRestContentController_remove_CacheSettings]
+[eZContentStagingRestContentController_removeTranslation_CacheSettings]
 ApplicationCache=disabled
 
-
-
+[eZContentStagingRestLocationController_hideUnhide_CacheSettings]
+ApplicationCache=disabled
+[eZContentStagingRestLocationController_update_CacheSettings]
+ApplicationCache=disabled
+[eZContentStagingRestLocationController_move_CacheSettings]
+ApplicationCache=disabled
+[eZContentStagingRestContentController_remove_CacheSettings]
+ApplicationCache=disabled
 
 */ ?>

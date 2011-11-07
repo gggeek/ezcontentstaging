@@ -12,7 +12,7 @@
  * @todo decide how much typecast we do on parameters passed to calls of model's methods
  */
 
-class contentStagingRestLocationController extends contentStagingRestBaseController
+class eZContentStagingRestLocationController extends eZContentStagingRestBaseController
 {
 
     // *** rest actions ***
@@ -36,7 +36,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Location'] = (array) new contentStagingLocation( $node );
+        $result->variables['Location'] = (array) new eZcontentStagingLocation( $node );
         return $result;
 
     }
@@ -66,7 +66,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
             );
             return $result;
         }
-        contentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] );
+        eZcontentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] );
 
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
@@ -93,7 +93,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
-            contentStagingLocation::updateSort(
+            eZcontentStagingLocation::updateSort(
                 $node,
                 $this->request->inputVariables['sortField'],
                 $this->request->inputVariables['sortOrder']
@@ -102,7 +102,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
 
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
-            contentStagingLocation::updatePriority(
+            eZcontentStagingLocation::updatePriority(
                 $node,
                 (int)$this->request->inputVariables['priority']
             );
@@ -110,13 +110,13 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            contentStagingLocation::updateRemoteId(
+            eZcontentStagingLocation::updateRemoteId(
                 $node,
                 $this->request->inputVariables['remoteId']
             );
         }
 
-        $result->variables['Location'] = (array) new contentStagingLocation( $node );
+        $result->variables['Location'] = (array) new eZcontentStagingLocation( $node );
         return $result;
     }
 
@@ -166,7 +166,7 @@ class contentStagingRestLocationController extends contentStagingRestBaseControl
         );
 
         $newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
-        $result->variables['Location'] = (array) new contentStagingLocation( $newNode );
+        $result->variables['Location'] = (array) new eZcontentStagingLocation( $newNode );
         return $result;
 
     }
