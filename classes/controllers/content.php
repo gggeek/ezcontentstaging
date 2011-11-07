@@ -88,14 +88,9 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
      */
     public function doCreate()
     {
-        $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['parentRemoteId'] ) && !isset( $this->request->get['parentId'] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "parentRemoteId"or "parentId" parameters are missing'
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "parentRemoteId"or "parentId" parameters are missing' );
         }
 
         if ( isset( $this->request->get['parentRemoteId'] ) )
@@ -104,11 +99,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $node = eZContentObjectTreeNode::fetchByRemoteID( $parentRemoteId );
             if ( !$node instanceof eZContentObjectTreeNode )
             {
-                $result->status = new ezpRestHttpResponse(
-                    ezpHttpResponseCodes::NOT_FOUND,
-                    "Cannot find the location with remote id '{$parentRemoteId}'"
-                );
-                return $result;
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$parentRemoteId}'" );
             }
         }
         else
@@ -117,13 +108,11 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $node = eZContentObjectTreeNode::fetch( $parentId );
             if ( !$node instanceof eZContentObjectTreeNode )
             {
-                $result->status = new ezpRestHttpResponse(
-                    ezpHttpResponseCodes::NOT_FOUND,
-                    "Cannot find the location with id '{$parentId}'"
-                );
-                return $result;
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with id '{$parentId}'" );
             }
         }
+
+        $result = new ezpRestMvcResult();
 
         $sectionId = null;
         if ( isset( $this->request->get['sectionId'] ) )
@@ -164,6 +153,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
         }
 
         $result = new ezpRestMvcResult();
+
         if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
         {
             eZContentOperationCollection::updateAlwaysAvailable(
@@ -184,10 +174,13 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            contentStagingContent::updateRemoteId(
-                $object,
-                $this->request->inputVariables['remoteId']
-            );
+            if ( ( $result = contentStagingContent::updateRemoteId(
+                       $object,
+                       $this->request->inputVariables['remoteId'] )
+                 ) !== 0 )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+            }
             //$result->status = new ezpRestHttpResponse( 204 );
         }
 
@@ -225,16 +218,11 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             return $object;
         }
 
-        $result = new ezpRestMvcResult();
         $objectId = $object->attribute( 'id' );
         $languages = $object->allLanguages();
         if ( !isset( $languages[$this->localeCode] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Translation in '{$this->localeCode}' not found in the content '$objectId'"
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Translation in '{$this->localeCode}' not found in the content '$objectId'" );
         }
 
         eZContentOperationCollection::removeTranslation(
@@ -242,6 +230,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             array( $languages[$this->localeCode]->attribute( 'id' ) )
         );
 
+        $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
@@ -264,24 +253,15 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             return $object;
         }
 
-        $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['sectionId'] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "sectionId" parameter is missing'
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "sectionId" parameter is missing' );
         }
         $sectionId = $this->request->get['sectionId'];
         $section = eZSection::fetch( $sectionId );
         if ( !$section instanceof eZSection )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Section with Id '$sectionId' not found"
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Section with Id '$sectionId' not found" );
         }
 
         eZContentObjectTreeNode::assignSectionToSubTree(
@@ -289,6 +269,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $sectionId
         );
 
+        $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
@@ -311,36 +292,26 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             return $object;
         }
 
-        $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['parentRemoteId'] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST, 'The "parentRemoteId" parameter is missing'
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "parentRemoteId" parameter is missing' );
         }
         $parentRemoteId = $this->request->get['parentRemoteId'];
 
         $parentNode = eZContentObjectTreeNode::fetchByRemoteID( $parentRemoteId );
         if ( !$parentNode instanceof eZContentObjectTreeNode )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the location with remote id '{$parentRemoteId}'"
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$parentRemoteId}'" );
         }
 
+        /// @todo are we sure we want to do this? PUT requests are supposed to be idempotent,
+        /// that means we should say OK and just not add a location again
         $nodes = $object->attribute( 'assigned_nodes' );
         foreach( $nodes as $node )
         {
             if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
             {
-                $result->status = new ezpRestHttpResponse(
-                    ezpHttpResponseCodes::FORBIDDEN,
-                    "The object '{$this->remoteId}' already has a location under of location '{$parentRemoteId}'"
-                );
-                return $result;
+                return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$this->remoteId}' already has a location under of location '{$parentRemoteId}'" );
             }
         }
 
@@ -352,6 +323,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $this->request->inputVariables['sortOrder']
         );
 
+        $result = new ezpRestMvcResult();
         $result->variables['Location'] = (array) new contentStagingLocation( $newNode );
         return $result;
     }
@@ -367,12 +339,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $object = eZContentObject::fetchByRemoteID( $this->remoteId );
             if ( !$object instanceof eZContentObject )
             {
-                $result = new ezpRestMvcResult();
-                $result->status = new ezpRestHttpResponse(
-                    ezpHttpResponseCodes::NOT_FOUND,
-                    "Content with remote id '{$this->remoteId}' not found"
-                );
-                return $result;
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Content with remote id '{$this->remoteId}' not found" );
             }
             return $node;
         }
@@ -381,12 +348,7 @@ class contentStagingRestContentController extends contentStagingRestBaseControll
             $object = eZContentObject::fetch( $this->Id );
             if ( !$object instanceof eZContentObject )
             {
-                $result = new ezpRestMvcResult();
-                $result->status = new ezpRestHttpResponse(
-                    ezpHttpResponseCodes::NOT_FOUND,
-                    "Content with id '{$this->Id}' not found"
-                );
-                return $result;
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Content with id '{$this->Id}' not found" );
             }
         }
         return $object;

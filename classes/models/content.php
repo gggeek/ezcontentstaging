@@ -253,11 +253,26 @@ class contentStagingContent extends contentStagingBase
      */
     static function updateRemoteId( eZContentObject $object, $remoteId )
     {
-        $object->setAttribute( 'remote_id', $remoteId );
-        $object->store();
-        eZContentCacheManager::clearContentCache(
-            $object->attribute( 'id' )
-        );
+        $db = eZDB::instance();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        //echo $db->transactionCounter();
+        //echo $remoteId;
+        try
+        {
+            $object->setAttribute( 'remote_id', $remoteId );
+            $object->store();
+            //echo $db->transactionCounter();
+            eZContentCacheManager::clearContentCache(
+                $object->attribute( 'id' )
+            );
+            return 0;
+            //echo $db->transactionCounter();
+            /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
 }

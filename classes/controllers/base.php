@@ -12,7 +12,12 @@
 
 class contentStagingRestBaseController extends ezpRestMvcController
 {
-
+    protected static function errorResult( $code, $message )
+    {
+        $result = new ezpRestMvcResult();
+        $result->status = new ezpRestHttpResponse( $code, $message );
+        return $result;
+    }
 }
 
 ?>
