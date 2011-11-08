@@ -32,7 +32,7 @@ class eZContentStagingField
     */
     function __construct( eZContentObjectAttribute $attribute, $locale )
     {
-        $this->datatype = $attribute->attribute( 'datatype' );
+        $this->datatype = $attribute->attribute( 'data_type_string' );
         $this->language = $locale;
         switch( $this->datatype )
         {
