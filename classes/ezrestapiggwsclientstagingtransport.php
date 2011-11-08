@@ -198,13 +198,13 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     {
                        break;
                     }
-                    if ( !isset( $out['Location']['contentId'] ) )
+                    if ( !isset( $out['contentId'] ) )
                     {
                         /// @todo !important use a specific error code
                         $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
                         break;
                     }
-                    $remoteObjID = $out['Location']['contentId'];
+                    $remoteObjID = $out['contentId'];
 
                     $method = 'PUT';
                     $url = "/content/locations/{$data['remoteNodeID']}";
@@ -216,7 +216,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     {
                         break;
                     }
-                    if ( !isset( $out['Location']['remoteId'] ) || $out['Location']['remoteId'] != $RemoteNodeRemoteID )
+                    if ( !isset( $out['remoteId'] ) || $out['remoteId'] != $RemoteNodeRemoteID )
                     {
                         /// @todo !important use a specific error code
                         $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;
@@ -235,7 +235,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $out = $this->restCall( $method, $url, $payload );
                     if ( is_array( $out ) )
                     {
-                        if ( !isset( $out['Content']['remoteId'] ) || $out['Content']['remoteId'] != $RemoteObjRemoteID )
+                        if ( !isset( $out['remoteId'] ) || $out['remoteId'] != $RemoteObjRemoteID )
                         {
                             /// @todo !important use a specific error code
                             $out = eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR;

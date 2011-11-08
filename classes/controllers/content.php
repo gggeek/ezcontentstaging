@@ -36,7 +36,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Content'] = (array) new eZContentStagingContent( $object );
+        $result->variables = (array) new eZContentStagingContent( $object );
         return $result;
 
     }
@@ -204,7 +204,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Content'] = (array) new eZContentStagingContent( $object );
+        $result->variables = (array) new eZContentStagingContent( $object );
         return $result;
     }
 

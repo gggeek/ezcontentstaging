@@ -1,7 +1,12 @@
-. look for content/publish event at datatypes where a transcoding of data is needed:
-  - object relations, xml block, etc... -> we need to tranform object ids into their remote equivalent
 
-. when sending binary data over (ezimage, ezbinaryfile), it is not enough the base64 encoding - we need additional info (eg. original filename)
+. look for package creation/import code for every datatype to find out where a transcoding of data is needed:
+  - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
+  - binary datatypes -> we need better support than fromstring/tostring do natively
+  
+  status: export ok of object relations(s) and binary files (to be tested), import to be done for all
+
+. add support for sending in object creation/modification requests the original timestamp and remote_id of creator user;
+  - add support for importing that data into target system
 
 . when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
 
@@ -10,11 +15,11 @@
 
 . test: setsection event on a draft is registered or ignored?
 
-. implement REST api (target-server side): work in progress...
+. implement REST api (target-server side): realign POST/PUT usage to latest cba specs
 
 . test delete event: how is it triggered? (a: it can be triggered even when obj still has more than 1 node attached)
 
-. finish missing events: swap, move
+. finish missing events: swap, move (both source and target sides)
 
 . check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
   - removelocation: checked
@@ -41,13 +46,13 @@
 
 . settle on list of cols available in feed view and in dashboard block; make sure that it works ok for items relating to deleted nodes (showing enough info)
 
-. reset all calls to ez18n to use a single namespace: contentstating/etc...
+. reset all calls to ez18n to use a single namespace: "contentstating"
 
 . produce .dba file
 
 . in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
-. cli script that resets and initializes feeds. Also creates an onpublish event for all of content (same az efndexcontents)
+. cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
 
 . rework dashboard block so that it lists nodes instead of sync events?
   note that we will have problems with deleted objects not being shown there
@@ -57,13 +62,11 @@
   - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
   - details of complex cases (where this logic is not straight)
 
-. add confirmation dliagos when deleting events / resetting feeds
+. add confirmation dialogs when deleting events / resetting feeds
 
 . allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
 
-. rename classes for target server to be prefixed with "eZ" ?
-
-. use the same classe to encode/decode objects on both source and target
+. use the same classe to encode/decode objects on both source and target; same for attributes
 
 . fix bug: when using auto_auth filter, eZ sends 2 session cookies
 

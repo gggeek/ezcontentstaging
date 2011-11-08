@@ -36,7 +36,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Location'] = (array) new eZContentStagingLocation( $node );
+        $result->variables = (array) new eZContentStagingLocation( $node );
         return $result;
 
     }
@@ -63,7 +63,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "hide" parameter is missing' );
         }
 
-        if ( ( $result = eZcontentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] ) ) !== 0 )
+        if ( ( $result = eZContentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] ) ) !== 0 )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
         }
@@ -92,7 +92,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
-            if ( ( $result = eZcontentStagingLocation::updateSort(
+            if ( ( $result = eZContentStagingLocation::updateSort(
                       $node,
                       $this->request->inputVariables['sortField'],
                       $this->request->inputVariables['sortOrder']
@@ -105,7 +105,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
 
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
-            if ( ( $result = eZcontentStagingLocation::updatePriority(
+            if ( ( $result = eZContentStagingLocation::updatePriority(
                        $node,
                       (int)$this->request->inputVariables['priority']
                       )
@@ -117,7 +117,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            if ( ( $result = eZcontentStagingLocation::updateRemoteId(
+            if ( ( $result = eZContentStagingLocation::updateRemoteId(
                        $node,
                        $this->request->inputVariables['remoteId']
                        )
@@ -128,7 +128,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Location'] = (array) new eZcontentStagingLocation( $node );
+        $result->variables = (array) new eZContentStagingLocation( $node );
         return $result;
     }
 
@@ -178,7 +178,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         );
 
         $newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
-        $result->variables['Location'] = (array) new eZcontentStagingLocation( $newNode );
+        $result->variables = (array) new eZcontentStagingLocation( $newNode );
         return $result;
 
     }
