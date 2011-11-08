@@ -36,7 +36,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables['Location'] = (array) new eZcontentStagingLocation( $node );
+        $result->variables['Location'] = (array) new eZContentStagingLocation( $node );
         return $result;
 
     }
@@ -47,6 +47,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
      * Requests:
      * - POST /content/locations/remote/<remoteId>?hide=<status>
      * - POST /content/locations/<Id>?hide=<status>
+     *
      * @return ezpRestMvcResult
      */
     public function doHideUnhide()
@@ -57,17 +58,17 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
-        $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['hide'] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "hide" parameter is missing'
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "hide" parameter is missing' );
         }
-        eZcontentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] );
 
+        if ( ( $result = eZcontentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] ) ) !== 0 )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+        }
+
+        $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
@@ -88,34 +89,45 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
-        $result = new ezpRestMvcResult();
-
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
-            eZcontentStagingLocation::updateSort(
-                $node,
-                $this->request->inputVariables['sortField'],
-                $this->request->inputVariables['sortOrder']
-            );
+            if ( ( $result = eZcontentStagingLocation::updateSort(
+                      $node,
+                      $this->request->inputVariables['sortField'],
+                      $this->request->inputVariables['sortOrder']
+                      )
+                 ) !== 0 )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+            }
         }
 
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
-            eZcontentStagingLocation::updatePriority(
-                $node,
-                (int)$this->request->inputVariables['priority']
-            );
+            if ( ( $result = eZcontentStagingLocation::updatePriority(
+                       $node,
+                      (int)$this->request->inputVariables['priority']
+                      )
+                ) !== 0 )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+            }
         }
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
-            eZcontentStagingLocation::updateRemoteId(
-                $node,
-                $this->request->inputVariables['remoteId']
-            );
+            if ( ( $result = eZcontentStagingLocation::updateRemoteId(
+                       $node,
+                       $this->request->inputVariables['remoteId']
+                       )
+                ) !== 0 )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+            }
         }
 
+        $result = new ezpRestMvcResult();
         $result->variables['Location'] = (array) new eZcontentStagingLocation( $node );
         return $result;
     }

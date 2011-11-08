@@ -8,11 +8,11 @@
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *
- * @todo finish moving all content-mofication-actions to the model
+ * @todo finish moving all content-modification-actions to the model
  * @todo decide how much typecast we do on parameters passed to calls of model's methods
  */
 
-class eZContentStagingStagingRestContentController extends eZContentStagingRestBaseController
+class eZContentStagingRestContentController extends eZContentStagingRestBaseController
 {
 
     // *** rest actions ***
@@ -112,24 +112,27 @@ class eZContentStagingStagingRestContentController extends eZContentStagingRestB
             }
         }
 
-        $result = new ezpRestMvcResult();
-
         $sectionId = null;
         if ( isset( $this->request->get['sectionId'] ) )
         {
             $sectionId = (int) $this->request->get['sectionId'];
         }
+
         // workaround bug #0xxx to be able to publish
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        /// @todo we should support creation failure here
-        $content = eZContentStagingContent::createContent( $node, $this->request->inputVariables, $sectionId );
+        $object = eZContentStagingContent::createContent( $node, $this->request->inputVariables, $sectionId );
+        if ( !$object instanceof eZContentObject )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
+        }
 
         // generate a 201 response
+        $result = new ezpRestMvcResult();
         $result->status = new eZContentStagingCreatedHttpResponse(
             array(
-                'Content' => '/content/objects/' . $content->attribute( 'id' )
+                'Content' => '/content/objects/' . $object->attribute( 'id' )
             )
         );
         return $result;
@@ -142,7 +145,9 @@ class eZContentStagingStagingRestContentController extends eZContentStagingRestB
      * Request:
      * - PUT /content/objects/remote/<remoteId>
      * - PUT /content/objects/<Id>
+     *
      * @return ezpRestMvcResult
+     * @todo move logic to model
      */
     public function doUpdate()
     {
@@ -151,8 +156,6 @@ class eZContentStagingStagingRestContentController extends eZContentStagingRestB
         {
             return $object;
         }
-
-        $result = new ezpRestMvcResult();
 
         if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
         {
@@ -194,8 +197,13 @@ class eZContentStagingStagingRestContentController extends eZContentStagingRestB
             eZModule::setGlobalPathList( $moduleRepositories );
 
             $object = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
+            if ( !$object instanceof eZContentObject )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
+            }
         }
 
+        $result = new ezpRestMvcResult();
         $result->variables['Content'] = (array) new eZContentStagingContent( $object );
         return $result;
     }
@@ -322,6 +330,10 @@ class eZContentStagingStagingRestContentController extends eZContentStagingRestB
             $this->request->inputVariables['sortField'],
             $this->request->inputVariables['sortOrder']
         );
+        if ( !$newNode instanceof eZContentObjectTreeNode )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $newNode );
+        }
 
         $result = new ezpRestMvcResult();
         $result->variables['Location'] = (array) new eZContentStagingLocation( $newNode );

@@ -15,7 +15,7 @@
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
 
-class contentStagingLocation extends contentStagingBase
+class eZContentStagingLocation extends contentStagingBase
 {
     public $pathString;
     public $pathIdentificationString;
@@ -78,15 +78,22 @@ class contentStagingLocation extends contentStagingBase
         $sortField = self::getSortField( $sortField );
         $sortOrder = self:: getSortOrder( $sortOrder);
 
-        //$db = eZDB::instance();
-        //$db->begin();
-        $node->setAttribute( 'sort_field', $sortField );
-        $node->setAttribute( 'sort_order', $sortOrder );
-        $node->store();
-        //$db->commit();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
+        $db = eZDB::instance();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        try
+        {
+            $node->setAttribute( 'sort_field', $sortField );
+            $node->setAttribute( 'sort_order', $sortOrder );
+            $node->store();
+            eZContentCacheManager::clearContentCache(
+                $node->attribute( 'contentobject_id' )
+            );
+            return 0;
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -97,14 +104,21 @@ class contentStagingLocation extends contentStagingBase
      */
     static function updatePriority( eZContentObjectTreeNode $node, $priority )
     {
-        //$db = eZDB::instance();
-        //$db->begin();
-        $node->setAttribute( 'priority', $priority );
-        $node->store();
-        //$db->commit();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
+        $db = eZDB::instance();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        try
+        {
+            $node->setAttribute( 'priority', $priority );
+            $node->store();
+            eZContentCacheManager::clearContentCache(
+                $node->attribute( 'contentobject_id' )
+            );
+            return 0;
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -115,11 +129,21 @@ class contentStagingLocation extends contentStagingBase
      */
     static function updateRemoteId( eZContentObjectTreeNode $node, $remoteId )
     {
-        $node->setAttribute( 'remote_id', $remoteId );
-        $node->store();
-        eZContentCacheManager::clearContentCache(
-            $node->attribute( 'contentobject_id' )
-        );
+        $db = eZDB::instance();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        try
+        {
+            $node->setAttribute( 'remote_id', $remoteId );
+            $node->store();
+            eZContentCacheManager::clearContentCache(
+                $node->attribute( 'contentobject_id' )
+            );
+            return 0;
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
     /**

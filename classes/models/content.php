@@ -16,7 +16,7 @@
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  */
 
-class contentStagingContent extends contentStagingBase
+class eZContentStagingContent extends contentStagingBase
 {
     public $contentType;
     public $name;
@@ -90,31 +90,41 @@ class contentStagingContent extends contentStagingBase
     * Updates the $object with the provided fields in the request
     *
     * @param eZContentObject $object
-    * @return eZContentObject
+    * @return eZContentObject|string
     */
     static function updateContent( eZContentObject $object, $input )
     {
-        //$input = $this->request->inputVariables;
         $db = eZDB::instance();
-        $db->begin();
-        $version = $object->createNewVersionIn( $input['localeCode'] );
-        $version->setAttribute( 'modified', time() );
-        $version->store();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        try
+        {
+            $db->begin();
+            $version = $object->createNewVersionIn( $input['localeCode'] );
+            $version->setAttribute( 'modified', time() );
+            $version->store();
 
-        self::updateAttributesList(
-            $version->attribute( 'contentobject_attributes' ),
-            $input['fields']
-        );
-        $db->commit();
+            self::updateAttributesList(
+                $version->attribute( 'contentobject_attributes' ),
+                $input['fields']
+            );
 
-        $operationResult = eZOperationHandler::execute(
-        'content', 'publish',
-        array(
-            'object_id' => $object->attribute( 'id' ),
-            'version' => $version->attribute( 'version' )
-         )
-        );
-        return eZContentObject::fetch( $object->attribute( 'id' ) );
+            /// @todo q: shall we commit here or after publication?
+            $db->commit();
+
+            $operationResult = eZOperationHandler::execute(
+                'content', 'publish',
+                array(
+                    'object_id' => $object->attribute( 'id' ),
+                    'version' => $version->attribute( 'version' )
+                )
+            );
+
+            return eZContentObject::fetch( $object->attribute( 'id' ) );
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -123,6 +133,9 @@ class contentStagingContent extends contentStagingBase
      *
      * @param array $attributes array of eZContentObjectAttribute to update
      * @param array $fields
+     *
+     * @todo using fromstring applies no attribute validation at all... we should provide some
+     * @todo add de-enocing of remote identifiers for known datatypes
      */
     protected static function updateAttributesList( array $attributes, array $fields )
     {
@@ -139,14 +152,13 @@ class contentStagingContent extends contentStagingBase
                 case 'ezimage':
                 case 'ezbinaryfile':
                 case 'ezmedia':
-                {
+                    /// @todo use the original filename and other metadata
                     $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
-                    // todo use the origin filename when it'll be available
                     $fileName = uniqid();
-
+                    /// @todo test if base64 decoding fails
                     eZFile::create( $fileName, $tmpDir, base64_decode( $field['value'] ) );
                     $field['value'] = $tmpDir . '/' . $fileName;
-                }
+                    break;
                 default:
             }
             $attribute->fromString( $field['value'] );
@@ -163,7 +175,7 @@ class contentStagingContent extends contentStagingBase
      * Create a content under $parent with the input variables
      *
      * @param eZContentObjectTreeNode $parent
-     * @return eZContentObject
+     * @return eZContentObject|string
      */
     static function createContent( eZContentObjectTreeNode $parent, $input, $sectionId=null )
     {
@@ -171,45 +183,62 @@ class contentStagingContent extends contentStagingBase
         $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
         if ( !$class instanceof eZContentClass )
         {
-            throw new RuntimeException(
-                'Unable to load the class with identifier ' . $input['contentType']
-            );
+           return 'Unable to load the class with identifier ' . $input['contentType'];
         }
         $db = eZDB::instance();
-        $db->begin();
-        $content = $class->instantiateIn( $input['initialLanguage'] );
-        $content->setAttribute( 'remote_id', $input['remoteId'] );
-        $content->store();
+        try
+        {
+            $db->begin();
 
-        $nodeAssignment = eZNodeAssignment::create(
-        array(
-            'contentobject_id' => $content->attribute( 'id' ),
-            'contentobject_version' => $content->attribute( 'current_version' ),
-            'parent_node' => $parent->attribute( 'node_id' ),
-            'is_main' => 1,
-            'sort_field' => $class->attribute( 'sort_field' ),
-            'sort_order' => $class->attribute( 'sort_order' )
-        )
-        );
-        $nodeAssignment->store();
+            $content = $class->instantiateIn( $input['initialLanguage'] );
+            $content->setAttribute( 'remote_id', $input['remoteId'] );
+            $content->store();
 
-        $version = $content->version( 1 );
-        $version->setAttribute( 'modified', time() );
-        $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
-        $version->store();
+            $nodeAssignment = eZNodeAssignment::create(
+                array(
+                    'contentobject_id' => $content->attribute( 'id' ),
+                    'contentobject_version' => $content->attribute( 'current_version' ),
+                    'parent_node' => $parent->attribute( 'node_id' ),
+                    'is_main' => 1,
+                    'sort_field' => $class->attribute( 'sort_field' ),
+                    'sort_order' => $class->attribute( 'sort_order' )
+                )
+            );
+            $nodeAssignment->store();
 
-        $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
-        self::updateAttributesList( $attributes, $input['fields'] );
-        $db->commit();
+            $version = $content->version( 1 );
+            /// @todo log an error and maybe abort instead of continuing if bad date format?
+            if ( isset( $input['modified'] ) && ( $time = self::makeTime( $input['modified'] ) ) != 0 )
+            {
+                $version->setAttribute( 'modified', $time );
+            }
+            else
+            {
+                $version->setAttribute( 'modified', time() );
+            }
+            $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
+            $version->store();
 
-        $operationResult = eZOperationHandler::execute(
-        'content', 'publish',
-        array(
-            'object_id' => $content->attribute( 'id' ),
-            'version' => 1
-         )
-        );
-        return $content;
+            $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
+            self::updateAttributesList( $attributes, $input['fields'] );
+
+            /// @todo q: shall we commit here or after publication?
+            $db->commit();
+
+            $operationResult = eZOperationHandler::execute(
+                'content', 'publish',
+                array(
+                    'object_id' => $content->attribute( 'id' ),
+                    'version' => 1
+                )
+            );
+
+            return $content;
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -221,7 +250,7 @@ class contentStagingContent extends contentStagingBase
      * @param int $priority
      * @param int $sortField
      * @param int $sortOrder
-     * @return eZContentObjectTreeNode
+     * @return eZContentObjectTreeNode|string
      */
     static function addAssignment( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
     {
@@ -230,19 +259,28 @@ class contentStagingContent extends contentStagingBase
 
         /// @todo do we need a transaction here?
         $db = eZDB::instance();
-        $db->begin();
-        $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
-        $newNode->setAttribute( 'contentobject_is_published', 1 );
-        $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
-        $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
-        $newNode->setAttribute( 'priority', $priority );
-        $newNode->setAttribute( 'sort_field', $sortField );
-        $newNode->setAttribute( 'sort_order', $sortOrder );
-        // Make sure the url alias is set updated.
-        $newNode->updateSubTreePath();
-        $newNode->sync();
-        $db->commit();
-        return $newNode;
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        try
+        {
+            $db->begin();
+            $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
+            $newNode->setAttribute( 'contentobject_is_published', 1 );
+            $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
+            $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
+            $newNode->setAttribute( 'priority', $priority );
+            $newNode->setAttribute( 'sort_field', $sortField );
+            $newNode->setAttribute( 'sort_order', $sortOrder );
+            // Make sure the url alias is set updated.
+            $newNode->updateSubTreePath();
+            $newNode->sync();
+            $db->commit();
+            return $newNode;
+            /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
+        }
+        catch ( exception $e )
+        {
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -250,23 +288,20 @@ class contentStagingContent extends contentStagingBase
      *
      * @param eZContentObjectTreeNode $node
      * @param string $remoteId
+     * @return 0|string
      */
     static function updateRemoteId( eZContentObject $object, $remoteId )
     {
         $db = eZDB::instance();
         $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-        //echo $db->transactionCounter();
-        //echo $remoteId;
         try
         {
             $object->setAttribute( 'remote_id', $remoteId );
             $object->store();
-            //echo $db->transactionCounter();
             eZContentCacheManager::clearContentCache(
                 $object->attribute( 'id' )
             );
             return 0;
-            //echo $db->transactionCounter();
             /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
         }
         catch ( exception $e )
