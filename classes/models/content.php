@@ -99,8 +99,17 @@ class eZContentStagingContent extends contentStagingBase
         try
         {
             $db->begin();
+
             $version = $object->createNewVersionIn( $input['localeCode'] );
-            $version->setAttribute( 'modified', time() );
+            /// @todo log an error and maybe abort instead of continuing if bad date format?
+            if ( isset( $input['modified'] ) && ( $time = self::getDatetIme( $input['modified'] ) ) != 0 )
+            {
+                $version->setAttribute( 'modified', $time );
+            }
+            else
+            {
+                $version->setAttribute( 'modified', time() );
+            }
             $version->store();
 
             self::updateAttributesList(
@@ -176,6 +185,9 @@ class eZContentStagingContent extends contentStagingBase
      *
      * @param eZContentObjectTreeNode $parent
      * @return eZContentObject|string
+     *
+     * @todo fix object publication date if the parameter is received
+     * @todo change user id if the parameter is received
      */
     static function createContent( eZContentObjectTreeNode $parent, $input, $sectionId=null )
     {
@@ -185,6 +197,7 @@ class eZContentStagingContent extends contentStagingBase
         {
            return 'Unable to load the class with identifier ' . $input['contentType'];
         }
+
         $db = eZDB::instance();
         try
         {
@@ -208,7 +221,7 @@ class eZContentStagingContent extends contentStagingBase
 
             $version = $content->version( 1 );
             /// @todo log an error and maybe abort instead of continuing if bad date format?
-            if ( isset( $input['modified'] ) && ( $time = self::makeTime( $input['modified'] ) ) != 0 )
+            if ( isset( $input['modified'] ) && ( $time = self::getDatetIme( $input['modified'] ) ) != 0 )
             {
                 $version->setAttribute( 'modified', $time );
             }
