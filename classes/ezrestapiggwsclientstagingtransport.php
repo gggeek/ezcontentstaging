@@ -149,7 +149,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
                     $method = 'PUT';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
+                    $url = "/content/objects/remote/$RemoteObjRemoteID";
                     $payload = array( 'alwaysAvailable' => self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
@@ -157,7 +157,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE:
                     $method = 'PUT';
                     $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID";
+                    $url = "/content/objects/remote/$RemoteObjRemoteID";
                     $payload = array( 'initialLanguage' => self::encodeLanguageId( $data['initialLanguage'] ) );
                     $out = $this->restCall( $method, $url, $payload );
                     break;
@@ -386,6 +386,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
     static protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
     {
         return $sourceRemoteId;
+        //return "feed:$sourceId";
     }
 }
 
