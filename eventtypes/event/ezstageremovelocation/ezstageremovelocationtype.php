@@ -29,11 +29,11 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
     {
         $parameters = $process->attribute( 'parameter_list' );
         $removedNodeList = $parameters['node_list'];
-        $trash = isset( $parameters['move_to_trash'] ) ? : true;
+        $trash = isset( $parameters['move_to_trash'] ) ? $parameters['move_to_trash'] : true;
 
         // sanity checks
 
-        if( count( $removedNodeList ) == 0 )
+        if ( count( $removedNodeList ) == 0 )
         {
             return eZWorkflowType::STATUS_ACCEPTED;
         }
