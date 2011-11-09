@@ -97,7 +97,24 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
-
+            'stagingContentUpdateSection' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/:Id/section',
+                    'eZContentStagingRestContentController',
+                    'updateSection',
+                    'http-put'
+                ),
+                1
+            ),
+            'stagingContentAddLocationRemote' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId/section',
+                    'eZContentStagingRestContentController',
+                    'updateSection',
+                    'http-put'
+                ),
+                1
+            ),
             // 'locations'
             'stagingLocationLoad' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(

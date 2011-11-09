@@ -1,4 +1,6 @@
-. fix: sending hide event sends an empty array encoded as json. can we avoid this?
+. fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
+
+. fix ggws: do not try to parse response bodyes for http 204 ressponses
 
 . look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
