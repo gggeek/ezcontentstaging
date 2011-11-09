@@ -353,7 +353,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             {
                 return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Content with remote id '{$this->remoteId}' not found" );
             }
-            return $node;
+            return $object;
         }
         if ( isset( $this->Id ) )
         {

@@ -100,7 +100,9 @@ class eZContentStagingContent extends contentStagingBase
         {
             $db->begin();
 
-            $version = $object->createNewVersionIn( $input['localeCode'] );
+            /// @todo test if initialLanguage is set
+            $version = $object->createNewVersionIn( $input['initialLanguage'] );
+
             /// @todo log an error and maybe abort instead of continuing if bad date format?
             if ( isset( $input['modified'] ) && ( $time = self::getDatetIme( $input['modified'] ) ) != 0 )
             {

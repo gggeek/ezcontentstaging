@@ -30,9 +30,9 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             switch( $event->attribute( 'to_sync' ) )
             {
                 case eZContentStagingEvent::ACTION_ADDLOCATION:
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] );
                     /// @todo !important test that $RemoteObjRemoteID is not null
                     $method = 'PUT';
                     $url = "/content/objects/remote/$RemoteObjRemoteID/locations?parentRemoteId=$RemoteParentNodeRemoteID";
@@ -47,14 +47,14 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_DELETE:
                     $method = 'DELETE';
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID?trash={$data['trash']}";
                     $out = $this->restCall( $method, $url );
                     break;
 
                 case eZContentStagingEvent::ACTION_HIDEUNHIDE:
                     $method = 'POST';
-                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $url = "/content/locations/remote/$RemoteNodeRemoteID&hide=" . $data['hide'];
                     //$payload = array(
                     //    'hide' => $data['hide'],
@@ -64,8 +64,8 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_MOVE:
                     $method = 'PUT';
-                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
                     $url = "/content/locations/remote/$RemoteNodeRemoteID/parent?destParentRemoteId=$RemoteParentNodeRemoteID";
                     $out = $this->restCall( $method, $url );
                     break;
@@ -73,11 +73,11 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_PUBLISH:
                     // this can be either a content creation or update
                     /// @todo what if we create many drafts and we discard them? Is the first version created still 1? test it!
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     if ( $data['version'] == 1 )
                     {
                         $method = 'POST';
-                        $RemoteParentNodeRemoteID = self::buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
+                        $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
                         $url = "/content/objects?parentRemoteId=$RemoteParentNodeRemoteID";
                         $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], false, $RemoteObjRemoteID );
                     }
@@ -91,6 +91,10 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     if ( $payload )
                     {
                         $out = $this->restCall( $method, $url, $payload );
+                        if ( $data['version'] == 1 && is_array( $out ) && isset( $out['Content'] ) )
+                        {
+                            $out = 0;
+                        }
                     }
                     else
                     {
@@ -100,14 +104,14 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
-                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $url = "/content/locations/remote/$RemoteNodeRemoteID&trash=" . self::encodeTrash( $data['trash'] );
                     $out = $this->restCall( $method, $url );
                     break;
 
                 case eZContentStagingEvent::ACTION_REMOVETRANSLATION:
                     $method = 'DELETE';
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $baseurl = "/content/objects/remote/$RemoteObjRemoteID/translations/";
                     foreach ( $data['translations'] as $translation )
                     {
@@ -123,14 +127,14 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_UPDATESECTION:
                     $method = 'PUT';
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}";
                     $out = $this->restCall( $method, $url );
                     break;
 
                 case eZContentStagingEvent::ACTION_SORT:
                     $method = 'PUT';
-                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
                     $url = "/content/locations/remote/$RemoteNodeRemoteID";
                     $payload = array(
                         // @todo can we omit safely to send priority?
@@ -148,7 +152,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
                     $method = 'PUT';
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID";
                     $payload = array( 'alwaysAvailable' => self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) );
                     $out = $this->restCall( $method, $url, $payload );
@@ -156,7 +160,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE:
                     $method = 'PUT';
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $url = "/content/objects/remote/$RemoteObjRemoteID";
                     $payload = array( 'initialLanguage' => self::encodeLanguageId( $data['initialLanguage'] ) );
                     $out = $this->restCall( $method, $url, $payload );
@@ -171,7 +175,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $method = 'PUT';
                     foreach ( $data['priorities'] as $priority )
                     {
-                        $RemoteNodeRemoteID = self::buildRemoteId( $priority['nodeID'], $priority['nodeRemoteID'] );
+                        $RemoteNodeRemoteID = $this->buildRemoteId( $priority['nodeID'], $priority['nodeRemoteID'] );
                         $url = "/content/locations/remote/$RemoteNodeRemoteID";
                         $payload = array(
                             'priority' => $priority['priority']
@@ -187,7 +191,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 case eZContentStagingEvent::ACTION_INITIALIZEFEED:
                     // set remote id on remote node and remote object
-                    $RemoteNodeRemoteID = self::buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
 
                     $method = 'GET';
                     /// @todo switch from rest api v1 (content/node) to v2 (content/location)
@@ -226,7 +230,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     // nb: this is a non-transactional API: we might succeed in updating
                     // node remote id but not object remote id. In such case
                     // we do NOT rollback our changes
-                    $RemoteObjRemoteID = self::buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                     $method = 'PUT';
                     $url = "/content/objects/$remoteObjID";
                     $payload = array(
@@ -321,7 +325,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
         if ( $isupdate )
         {
-            $out['initialLanguage'] = $locale; // language initial de la nouvelle version
+            $out['initialLanguage'] = $locale; // initial language of new version
         }
         else
         {
@@ -383,9 +387,24 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
     /**
     * @todo this function should possibly be calling a handler for greater flexibility
     */
-    static protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
+    protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
     {
-        return $sourceRemoteId;
+        $ini = eZINI::instance( 'contentsatging.ini' );
+        $targetId = $this->target->attribute( 'id' );
+        if ( $ini->hasVariable( "Target_" . $targetId,  'RemoteIdGeneratorClass' ) )
+        {
+            $class = $ini->variable( "Target_" . $targetId,  'RemoteIdGeneratorClass' );
+        }
+        else
+        {
+            $class = 'eZContentStagingLocalAsRemoteIdGenerator';
+        }
+        if ( !class_exists( $class ) )
+        {
+            eZDebug::writeError( "Cannot generate remote id for object/node for target feed $feedId: class $class not found", __METHOD__ );
+        }
+        $generator = new $class();
+        return $generator->buildRemoteId( $sourceId, $sourceRemoteId, $targetId, $type );
         //return "feed:$sourceId";
     }
 }
