@@ -16,10 +16,10 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-
         $objectID = $parameters['object_id'];
 
         // sanity checks
+
         $object = eZContentObject::fetch( $objectID );
         if ( !is_object( $object ) )
         {

@@ -53,8 +53,8 @@ class eZStagePublishType extends eZWorkflowEventType
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array(
             'version' => $versionID,
-            "locale" => $initialLanguage->attribute( 'locale' ),
-            "objectRemoteID" => $object->attribute( 'remote_id' ),
+            'locale' => $initialLanguage->attribute( 'locale' ),
+            'objectRemoteID' => $object->attribute( 'remote_id' ),
             'parentNodeID' => $parentNode->attribute( 'node_id' ),
             'parentNodeRemoteID' => $parentNode->attribute( 'remote_id' ) );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
