@@ -105,7 +105,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_REMOVELOCATION:
                     $method = 'DELETE';
                     $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations/remote/$RemoteNodeRemoteID&trash=" . self::encodeTrash( $data['trash'] );
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID?trash=" . self::encodeTrash( $data['trash'] );
                     $out = $this->restCall( $method, $url );
                     break;
 
