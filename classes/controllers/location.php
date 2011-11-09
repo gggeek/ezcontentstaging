@@ -63,7 +63,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "hide" parameter is missing' );
         }
 
-        if ( ( $result = eZContentStagingLocation::updateVisibility( (bool) $this->request->get['hide'] ) ) !== 0 )
+        if ( ( $result = eZContentStagingLocation::updateVisibility( $node, ( $this->request->get['hide'] == 'true' ) )  )!== 0 )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
         }
