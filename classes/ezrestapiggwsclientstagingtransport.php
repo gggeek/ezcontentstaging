@@ -171,6 +171,14 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $out = -666;
                     break;
 
+                case eZContentStagingEvent::ACTION_UPDATEOBJECSTATE:
+                    $method = 'PUT';
+                    $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                    $url = "/content/objects/remote/$RemoteObjRemoteID/states";
+                    $payload = $data['stateList'];
+                    $out = $this->restCall( $method, $url, $payload );
+                    break;
+
                 case eZContentStagingEvent::ACTION_UPDATEPRIORITY:
                     $method = 'PUT';
                     foreach ( $data['priorities'] as $priority )

@@ -1,4 +1,4 @@
-. fix ggws: do not try to parse response bodies for http 204 ressponses
+1 - DATA MANAGEMENT
 
 . look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
@@ -10,33 +10,34 @@
 . add support for sending in object creation/modification requests the original timestamp and remote_id of creator user;
   - add support for importing that data into target system
 
+
+2 - EVENTS
+
+. source server: finish missing events:
+  - swap
+  - move (test it)
+  - assign object state
+  - change main node (test it)
+
 . source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
 
 . source server: logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them it anymore
-  => warn editor (on delete or on sync?), remove pending events, what? ...
+  => warn editor (on delete or on sync?), remove pending events, or... ?
 
-. source server: test: setsection event on a draft is registered or ignored?
 
-. source server: test: setting a different main location not registered? also setting a different main language
+3 - REST API
 
-. implement REST api (target-server side): realign POST/PUT usage to latest cba specs
+. target server: implement missing routes/actions:
+  - set object state(s)
+  - ...
 
-. test delete event: how is it triggered? (a: it can be triggered even when obj still has more than 1 node attached)
+. target server: realign POST/PUT usage to latest cba specs
+  - fix consequently on source server
 
-. source server: finish missing events: swap, move (both source and target sides), assign object state
+. target server: make sure content creation triggers are used on target server too, to make server chaining possible
 
-. source server: check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
-  - removelocation: checked
-  - addlocation: ok
-  - hide: ok
-  - sort: ok
-  - set section:  ok
-  - update priority: ok
-  - delete: ok
-  - removetranslation: ok
-  - updatealwaysavailable
-  - updatemainassignment
-  - updateinitiallanguage
+
+4 - INTERFACE
 
 . source server: finish js code used by ajax calls for ezwt (it misses checking of return value, alert, changing icon state)
 
@@ -48,28 +49,31 @@
 
 . settle on list of cols available in feed view and in dashboard block; make sure that it works ok for items relating to deleted nodes (showing enough info)
 
-. source server: source server: reset all calls to ez18n to use a single namespace: "contentstating"
+. source server: reset all calls to ez18n to use a single namespace: "contentstating"
 
 . source server: in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
 . source server: rework dashboard block so that it lists nodes instead of sync events?
   note that we will have problems with deleted objects not being shown there
 
+. source server: allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
+
+
+5 - MISC
+
 . create some documentation: a table of all events, and for each one:
   - the nodes affected (in terms of feeds that will have to be notified)
   - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
   - details of complex cases (where this logic is not straight)
 
-. source server: allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
-
 . use the same classe to encode/decode objects on both source and target; same for attributes
-
-. rest server: test ezp 4.6 using the 4.5 patch for ezpRestHttpRequestParser
-
-. rest server: avoid php wwarnings generated while executing action to hit page output (use custom error handler, or what else? ... )
 
 
 Phase 2 (?)
+
+. rest server: test ezp 4.6 using the 4.5 patch for ezpRestHttpRequestParser
+
+. rest server: avoid php warnings generated while executing action to hit page output (use custom error handler, or what else? ... )
 
 . fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
 
@@ -98,6 +102,19 @@ Phase 2 (?)
 
 . rest protocol: have source server use the "Fields" param in query string to limit data returned by target server and reduce bandwidth usage
 
+. source server: check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
+  - removelocation: checked
+  - addlocation: ok
+  - hide: ok
+  - sort: ok
+  - set section:  ok
+  - update priority: ok
+  - delete: ok
+  - removetranslation: ok
+  - updatealwaysavailable
+  - updatemainassignment
+  - updateinitiallanguage
+
 
 Phase 2:
 
@@ -112,7 +129,6 @@ Phase 2:
 . source server: use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expeted more evident
 . for ezp 4.6, add also to the media gallery (and to users?) the new subtab added to object view for admin2 design
   - also maybe add extra items to context menus?
-
+. source server: finish case where a move event becomes a create for a target server (create all versions, all languages)
 
 Phase 3:
-
