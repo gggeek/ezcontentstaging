@@ -53,7 +53,7 @@ class eZContentStagingEvent extends eZPersistentObject
         2048 => 'main language updated',
         4096 => 'main location changed',
         8192 => 'content state changed',
-        16384 => 'child(?) priority changed',
+        16384 => 'child priority changed',
         32768 => 'section changed',
         65536 => 'feed initialization'
     );
