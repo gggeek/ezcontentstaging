@@ -1,6 +1,4 @@
-. fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
-
-. fix ggws: do not try to parse response bodyes for http 204 ressponses
+. fix ggws: do not try to parse response bodies for http 204 ressponses
 
 . look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
@@ -52,11 +50,7 @@
 
 . source server: source server: reset all calls to ez18n to use a single namespace: "contentstating"
 
-. produce .dba file
-
 . source server: in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
-
-. source server: cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
 
 . source server: rework dashboard block so that it lists nodes instead of sync events?
   note that we will have problems with deleted objects not being shown there
@@ -66,25 +60,30 @@
   - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
   - details of complex cases (where this logic is not straight)
 
-. source server: add confirmation dialogs when deleting events / resetting feeds
-
 . source server: allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
 
 . use the same classe to encode/decode objects on both source and target; same for attributes
-
-. rest server: inish moving content-manipulation logic from controllers to models
 
 . rest server: test ezp 4.6 using the 4.5 patch for ezpRestHttpRequestParser
 
 . rest server: avoid php wwarnings generated while executing action to hit page output (use custom error handler, or what else? ... )
 
-. rest server: fix bug: when using auto_auth filter, eZ sends 2 session cookies
-
 
 Phase 2 (?)
 
-. for ezp 4.6, add also to the media gallery (and to users?) the new subtab added to object view for admin2 design
-  - also maybe add extra items to context menus?
+. fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
+
+. produce .dba file
+
+. source server: cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
+
+. source server: add confirmation dialogs when deleting events / resetting feeds
+
+. rest server: finish moving content-manipulation logic from controllers to models
+
+. source server: add an extra per-feed ini parameter that decides whether content creation/modification dates on targets are kept in sync with source or sync event execution date is used instead
+
+. refactor error condition management so that we get both a number and a string across the whole chain from the transport layer to the templates
 
 . dependency tracking:
   - all events should not have a pending create event for any of their parents (or they cannot be synced)
@@ -97,16 +96,23 @@ Phase 2 (?)
   1. before action events sets up the sync-event in an "unconfirmed" state
   2. after action event moves the sync-event to "confirmed" state
 
-. use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expeted more evident
+. rest protocol: have source server use the "Fields" param in query string to limit data returned by target server and reduce bandwidth usage
 
 
 Phase 2:
 
-. allow sync items that fail 3 consecutive sync attempts to be set to "suspended" state
-. allow finer grained permissions (sync per feed)
-. cronjob that passes and removes/resets sync items that have been in sync status for too long
-. coalescing of sync events
+. rest server: fix bug: when using auto_auth filter, eZ sends 2 session cookies
+. source server: allow sync items that fail 3 consecutive sync attempts to be set to "suspended" state
+. source server: allow finer grained permissions (sync per feed)
+. source server: cronjob that passes and removes/resets sync items that have been in sync status for too long
+. source server: coalescing of sync events
 . add a sync-to-localhost transport class, that copies data to separate content trees without going through rest calls
-. graceful degradation: allow wt button to sync with no js available by posting to contentstaging/syncnode
-. add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and
-. add an extra per-feed ini parameter that decides whether content creation/modification dates on targets are kept in sync with source or sync event execution date is used instead
+. source server: graceful degradation: allow wt button to sync with no js available by posting to contentstaging/syncnode
+. source server: add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and
+. source server: use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expeted more evident
+. for ezp 4.6, add also to the media gallery (and to users?) the new subtab added to object view for admin2 design
+  - also maybe add extra items to context menus?
+
+
+Phase 3:
+
