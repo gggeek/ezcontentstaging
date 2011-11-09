@@ -55,7 +55,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_HIDEUNHIDE:
                     $method = 'POST';
                     $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $url = "/content/locations/remote/$RemoteNodeRemoteID&hide=" . $data['hide'];
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID?hide=" . $data['hide'];
                     //$payload = array(
                     //    'hide' => $data['hide'],
                     //    );
