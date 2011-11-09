@@ -38,7 +38,7 @@ class eZStageSortType extends eZWorkflowEventType
                 $objectID,
                 eZContentStagingEvent::ACTION_SORT,
                 $sortedNodeData,
-                $affeceteNodes );
+                $affectedNodes );
         }
 
         return eZWorkflowType::STATUS_ACCEPTED;
