@@ -20,13 +20,13 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
         // sanity checks
 
         $mainNode = eZContentObjectTreeNode::fetch( $mainNodeID );
-        if ( !is_object( $MainAssignment ) )
+        if ( !is_object( $mainNode ) )
         {
             eZDebug::writeError( 'Unable to fetch node ' . $mainNodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $object = eZContentObject::fetch( $ObjectID );
+        $object = eZContentObject::fetch( $objectID );
         if ( !is_object( $object ) )
         {
             eZDebug::writeError( 'Unable to fetch object ' . $objectID, __METHOD__ );
@@ -48,6 +48,7 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $affectedNodes ) );
             if ( count( $affectedFeedNodes ) )
             {
+                /// @todo what if new main node is not in target feed?
                 eZContentStagingEvent::addEvent(
                     $target_id,
                     $objectID,
