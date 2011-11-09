@@ -43,7 +43,7 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array(
             "objectRemoteID" => $object->attribute( 'remote_id' ),
-            "nodeId" => $mainNodeID,
+            "nodeID" => $mainNodeID,
             "nodeRemoteID" => $mainNode->attribute( 'remote_id' ) );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
