@@ -55,11 +55,11 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
         foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
             eZContentStagingEvent::addEvent(
-            $target_id,
-            $objectId,
-            eZContentStagingEvent::ACTION_UPDATEPRIORITY,
-            $prioritizedNodesData,
-            $affectedNodes );
+                $target_id,
+                $objectId,
+                eZContentStagingEvent::ACTION_UPDATEPRIORITY,
+                $prioritizedNodesData,
+                $affectedNodes );
         }
 
         return eZWorkflowType::STATUS_ACCEPTED;
