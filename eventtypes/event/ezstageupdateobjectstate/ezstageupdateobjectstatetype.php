@@ -12,34 +12,55 @@ class eZStageUpdateObjectStateType extends eZWorkflowEventType
 
     function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute( 'parameter_list' );
+        $objectID = $parameters['object_id'];
 
-        $nodeID = $parameters['node_id'];
+        // sanity checks
 
-        $node = eZContentObjectTreeNode::fetch( $nodeID );
-
-        if ( !is_object( $node ) )
+        $object = eZContentObject::fetch( $objectID );
+        if ( !is_object( $object ) )
         {
-            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, 'eZStageSectionType::execute' );
+            eZDebug::writeError( 'Unable to fetch object ' . $objectID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
-
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
-
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        // format of what we get: an array with an int value (state) for every state group)
+        // format of what we produce: an array with key = gourp identifier and value = state identifier
+        $states = array();
+        foreach ( $parameters['state_id_list'] as $stateId )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_UPDATE_SECTION,
-                'options' => serialize( array( 'selected_section_id' => $parameters['selected_section_id'] ) ) ) );
+            $state = eZContentObjectState::fetchById( $stateId );
+            if ( !is_object( $state ) )
+            {
+                eZDebug::writeError( 'Unable to fetch object state ' . $stateId, __METHOD__ );
+                continue;
+            }
+            $group = $state->attribute( 'group' );
+            $states[$group->attribute( 'identifier')] = $state->attribute( 'identifier' );
+        }
 
-            $log->store();
-        }*/
+        $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
+        $affectedObjectData = array(
+            "objectRemoteID" => $object->attribute( 'remote_id' ),
+            "stateList" => $states );
+        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        {
+            $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
+            if ( count( $affectedFeedNodes ) )
+            {
+                eZContentStagingEvent::addEvent(
+                    $target_id,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_UPDATEOBJECSTATE,
+                    $affectedObjectData,
+                    // We always mark every node as affected, even though
+                    // in practice a given node might not be part of any feed.
+                    // This way we insure that when looking at the node via ezwt
+                    // it is marked as for-sync even though to be synced are in
+                    // reality the other nodes of the same object
+                    array_keys( $objectNodes )
+                );
+            }
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }
