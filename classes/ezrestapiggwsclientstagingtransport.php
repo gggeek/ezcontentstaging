@@ -43,6 +43,15 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'sortOrder' => self::encodeSortOrder( $data['sortOrder'] )
                         );
                     $out = $this->restCall( $method, $url, $payload );
+                    if ( is_array( $out ) && isset( $out['remoteId'] ) && $out['remoteId'] == $RemoteNodeRemoteID )
+                    {
+                        $out = 0;
+                    }
+                    else
+                    {
+                        /// @todo !important use a specific error code
+                        $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
+                    }
                     break;
 
                 case eZContentStagingEvent::ACTION_DELETE:
@@ -83,17 +92,24 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     }
                     else
                     {
-                        $method = 'PUT';
-                        $url = "/content/objects/remote/$RemoteObjRemoteID";
+                        $method = 'POST';
+                        $url = "/content/objects/remote/$RemoteObjRemoteID/versions";
                         $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], true );
                     }
 
                     if ( $payload )
                     {
                         $out = $this->restCall( $method, $url, $payload );
-                        if ( $data['version'] == 1 && is_array( $out ) && isset( $out['Content'] ) )
+                        if ( is_array( $out ) && isset( $out['Location'] ) )
                         {
-                            $out = 0;
+                            $versionNr = end( explode( '/', $out['Location'] ) );
+                            $method = 'POST';
+                            $url = "/content/objects/remote/$RemoteObjRemoteID/versions/$versionNr";
+                            $out = $this->restCall( $method, $url );
+                        }
+                        else
+                        {
+                            $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
                         }
                     }
                     else
@@ -112,14 +128,14 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 case eZContentStagingEvent::ACTION_REMOVETRANSLATION:
                     $method = 'DELETE';
                     $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID/translations/";
+                    $baseurl = "/content/objects/remote/$RemoteObjRemoteID/languages/";
                     foreach ( $data['translations'] as $translation )
                     {
                         $url = $baseurl . self::encodeLanguageId( $translation );
                         $out = $this->restCall( $method, $url );
                         if ( $out != 0 )
                         {
-                            /// @todo shall we break here or what? we only updated a few priorities, not all of them...
+                            /// @todo shall we break here or what? we only removed a few languages, not all of them...
                             break;
                         }
                     }
@@ -143,6 +159,15 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'sortOrder' => self::encodeSortOrder( $data['sortOrder'] )
                         );
                     $out = $this->restCall( $method, $url, $payload );
+                    if ( is_array( $out ) && isset( $out['sortField'] ) && $out['sortField'] == self::encodeSortField( $data['sortField'] ) )
+                    {
+                        $out = 0;
+                    }
+                    else
+                    {
+                        /// @todo !important use a specific error code
+                        $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
+                    }
                     break;
 
                 case 'swap':
@@ -156,6 +181,15 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $url = "/content/objects/remote/$RemoteObjRemoteID";
                     $payload = array( 'alwaysAvailable' => self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) );
                     $out = $this->restCall( $method, $url, $payload );
+                    if ( is_array( $out ) && isset( $out['alwaysAvailable'] ) && $out['alwaysAvailable'] == self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) )
+                    {
+                        $out = 0;
+                    }
+                    else
+                    {
+                        /// @todo !important use a specific error code
+                        $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
+                    }
                     break;
 
                 case eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE:
@@ -164,11 +198,35 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $url = "/content/objects/remote/$RemoteObjRemoteID";
                     $payload = array( 'initialLanguage' => self::encodeLanguageId( $data['initialLanguage'] ) );
                     $out = $this->restCall( $method, $url, $payload );
+                    if ( is_array( $out ) && isset( $out['initialLanguage'] ) && $out['initialLanguage'] == self::encodeLanguageId( $data['initialLanguage'] ) )
+                    {
+                        $out = 0;
+                    }
+                    else
+                    {
+                        /// @todo !important use a specific error code
+                        $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
+                    }
                     break;
 
                 case eZContentStagingEvent::ACTION_UPDATEMAINASSIGNMENT:
-                    // not supported yet, as we have to figure out how to translate this into a set of REST API calls
-                    $out = -666;
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $method = 'PUT';
+                    $url = "/content/locations/remote/$RemoteNodeRemoteID";
+                    $payload = array(
+                        'mainLocationRemoteId' => $RemoteNodeRemoteID
+                        );
+                    $out = $this->restCall( $method, $url, $payload );
+                    if ( is_array( $out ) && isset( $out['mainLocationId'] ) &&
+                        isset( $out['Id'] ) && $out['mainLocationId'] == $out['Id'] )
+                    {
+                        $out = 0;
+                    }
+                    else
+                    {
+                        /// @todo !important use a specific error code
+                       $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
+                    }
                     break;
 
                 case eZContentStagingEvent::ACTION_UPDATEOBJECSTATE:
@@ -189,6 +247,15 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                             'priority' => $priority['priority']
                         );
                         $out = $this->restCall( $method, $url, $payload );
+                        if ( is_array( $out ) && isset( $out['priority'] ) && $out['priority'] == $priority['priority'] )
+                        {
+                            $out = 0;
+                        }
+                        else
+                        {
+                            /// @todo !important use a specific error code
+                            $out = ( is_array( $out ) || $out == 0 ) ? eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR : $out;
+                        }
                         if ( $out != 0 )
                         {
                             /// @todo shall we break here or what? we only updated a few priorities, not all of them...
@@ -224,7 +291,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'remoteId' => $RemoteNodeRemoteID
                     );
                     $out = $this->restCall( $method, $url, $payload );
-                    if ( !is_array( $out ) )
+                    if ( !is_array( $out ) && $out != 0 )
                     {
                         break;
                     }
@@ -245,7 +312,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         'remoteId' => $RemoteObjRemoteID
                     );
                     $out = $this->restCall( $method, $url, $payload );
-                    if ( is_array( $out ) )
+                    if ( is_array( $out ) || $out == 0 )
                     {
                         if ( !isset( $out['remoteId'] ) || $out['remoteId'] != $RemoteObjRemoteID )
                         {
@@ -287,6 +354,14 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             return $response->faultCode();
         }
 
+        /*if ( $response->statusCode() == "201" )
+        {
+            $headers = $response->headers();
+            if ( isset( $headers[''] ) )
+            {
+
+            }
+        }*/
         return $response->value();
     }
 

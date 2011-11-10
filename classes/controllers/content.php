@@ -42,7 +42,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
     }
 
     /**
-     * Handle DELETE request for a content object from its remote id
+     * Handle DELETE request for a content object from its [remote] id
      *
      * Request:
      * - DELETE /api/contentstaging/content/objects/remote/<remoteId>[?trash=true|false]
@@ -59,12 +59,13 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return $object;
         }
 
-        $result = new ezpRestMvcResult();
         $moveToTrash = true;
         if ( isset( $this->request->get['trash'] ) )
         {
-            $moveToTrash = ( $this->request->get['trash'] === 'true' );
+            $moveToTrash = ( $this->request->get['trash'] !== 'false' );
         }
+
+        /// @todo add perms checking
 
         $nodeIDs = array();
         foreach( $object->attribute( 'assigned_nodes' ) as $node )
@@ -74,6 +75,35 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         // @todo handle Content object without nodes ?
         eZContentObjectTreeNode::removeSubtrees( $nodeIDs, $moveToTrash );
 
+        $result = new ezpRestMvcResult();
+        $result->status = new ezpRestHttpResponse( 204 );
+        return $result;
+    }
+
+    /**
+     * Handle DELETE request for a content object from its [remote] id
+     *
+     * Request:
+     * - DELETE /api/contentstaging/content/objects/remote/<remoteId>/languages/<language>
+     * - DELETE /api/contentstaging/content/objects/<Id>/languages/<language>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doRemoveLanguage()
+    {
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        /// @todo add perms checking
+
+        /// @todo return error if lang is not there ?
+
+        eZContentStagingContent::removeLanguage( $object, $this->request->language );
+
+        $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
@@ -131,16 +161,13 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         // generate a 201 response
         $result = new ezpRestMvcResult();
         $result->status = new eZContentStagingCreatedHttpResponse(
-            array(
-                'Content' => '/content/objects/' . $object->attribute( 'id' )
-            )
+            '/content/objects/' . $object->attribute( 'id' ) . 'versions/1'
         );
         return $result;
     }
 
     /**
      * Handle update of the always available flag or the initial language id
-     * or the whole content from its remote id
      *
      * Request:
      * - PUT /content/objects/remote/<remoteId>
@@ -187,7 +214,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             //$result->status = new ezpRestHttpResponse( 204 );
         }
 
-        if ( isset( $this->request->inputVariables['fields'] )
+        /*if ( isset( $this->request->inputVariables['fields'] )
                 && count( $this->request->inputVariables['fields'] ) > 0 )
         {
             // whole update
@@ -201,10 +228,91 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
             }
-        }
+        }*/
 
         $result = new ezpRestMvcResult();
         $result->variables = (array) new eZContentStagingContent( $object );
+        return $result;
+    }
+
+    /**
+     * Handle creation of a new version for an existing object
+     *
+     * Request:
+     * - PUT /content/objects/remote/<remoteId>/versions
+     * - PUT /content/objects/<Id>/versions
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doAddVersion()
+    {
+        if ( !isset(  $this->request->inputVariables['fields'] ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "fields" parameters is missing' );
+        }
+
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        if ( isset( $this->request->inputVariables['fields'] )
+            && count( $this->request->inputVariables['fields'] ) > 0 )
+        {
+            // whole update
+
+            // workaround to be able to publish (bug #018337)
+            $moduleRepositories = eZModule::activeModuleRepositories();
+            eZModule::setGlobalPathList( $moduleRepositories );
+
+            $version = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
+            if ( !$version instanceof eZContentObjectVersion )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
+            }
+        }
+
+        $result = new ezpRestMvcResult();
+        $result->status = new eZContentStagingCreatedHttpResponse(
+            '/content/objects/' . $object->attribute( 'id' ) . 'versions/' . $version->attribute( 'version' )
+        );
+        return $result;
+    }
+
+    public function doPublishVersion()
+    {
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        /// @ todo ...
+        $version = $object->version( $this->versionNr );
+        if ( !$version instanceof eZContentObjectVersion )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Version {$this->versionNr} not found" );
+        }
+
+        $status = $version->attribute( 'status' );
+        if ( $status != eZContentObjectVersion::STATUS_DRAFT )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Version {$this->versionNr} not in DRAFT status" );
+        }
+
+        $operationResult = eZOperationHandler::execute(
+                'content', 'publish',
+                array(
+                    'object_id' => $object->attribute( 'id' ),
+                    'version' => $version->attribute( 'version' )
+                )
+            );
+
+        $result = new ezpRestMvcResult();
+        /*$result->status = new eZContentStagingCreatedHttpResponse(
+            '/content/objects/' . $object->attribute( 'id' ) . 'versions/' . $version->attribute( 'version' )
+        );*/
         return $result;
     }
 
@@ -272,10 +380,37 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Section with Id '$sectionId' not found" );
         }
 
+        /// @todo perms checking
+
         eZContentObjectTreeNode::assignSectionToSubTree(
             $object->attribute( 'main_node_id' ),
             $sectionId
         );
+
+        $result = new ezpRestMvcResult();
+        $result->status = new ezpRestHttpResponse( 204 );
+        return $result;
+    }
+
+    /**
+     * Handle change section for a content object from its remote id
+     *
+     * Request:
+     * - PUT /content/objects/remote/<remoteId>/states
+     * - PUT /content/objects/<Id>/states
+     *
+     * @return ezpRestMvcResult
+     * @todo move logic to model
+     */
+    public function doUpdateStates()
+    {
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        /// @ todo...
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -291,6 +426,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - PUT /content/objects/:Id/locations?parentRemoteId=<parentNodeRemoteID>
      *
      * @return ezpRestMvcResult
+     *
+     * @todo add support for parentId besides parentRemoteId
      */
     public function doAddLocation()
     {
@@ -312,16 +449,19 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$parentRemoteId}'" );
         }
 
-        /// @todo are we sure we want to do this? PUT requests are supposed to be idempotent,
-        /// that means we should say OK and just not add a location again
         $nodes = $object->attribute( 'assigned_nodes' );
         foreach( $nodes as $node )
         {
             if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
             {
-                return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$this->remoteId}' already has a location under of location '{$parentRemoteId}'" );
+                //return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$this->remoteId}' already has a location under of location '{$parentRemoteId}'" );
+                $result = new ezpRestMvcResult();
+                $result->status = new ezpRestHttpResponse( 403 );
+                return $result;
             }
         }
+
+        /// @todo validate location input received: are priority, sortField, sortOrder mandatory?
 
         $newNode = eZContentStagingContent::addAssignment(
             $object, $parentNode,
@@ -330,6 +470,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             $this->request->inputVariables['sortField'],
             $this->request->inputVariables['sortOrder']
         );
+        /// @todo return a 401 in case of permission problems!
         if ( !$newNode instanceof eZContentObjectTreeNode )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $newNode );

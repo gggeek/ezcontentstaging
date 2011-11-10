@@ -43,6 +43,42 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
+            'stagingContentAddVersion' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/:Id/versions',
+                    'eZContentStagingRestContentController',
+                    'addVersion',
+                    'http-post'
+                ),
+                1
+            ),
+            'stagingContentAddVersionRemote' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId/versions',
+                    'eZContentStagingRestContentController',
+                    'addVersion',
+                    'http-post'
+                ),
+                1
+            ),
+            'stagingContentPublishVersion' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/:Id/versions/:versionNr',
+                    'eZContentStagingRestContentController',
+                    'publishVersion',
+                    'http-post'
+                ),
+                1
+            ),
+            'stagingContentPublishVersionRemote' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId/versions/:versionNr',
+                    'eZContentStagingRestContentController',
+                    'publishVersion',
+                    'http-post'
+                ),
+                1
+            ),
             'stagingContentUpdate' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
                     '/content/objects/:Id',
@@ -133,7 +169,24 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                 ),
                 1
             ),
-
+            'stagingContentRemoveLanguage' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/:Id/languages/:Language',
+                    'eZContentStagingRestContentController',
+                    'removeLanguage',
+                    'http-delete'
+                ),
+                1
+            ),
+            'stagingContentRemoveLanguageRemote' => new ezpRestVersionedRoute(
+                new ezpMvcRailsRoute(
+                    '/content/objects/remote/:remoteId/languages/:language',
+                    'eZContentStagingRestContentController',
+                    'removeLanguage',
+                    'http-delete'
+                ),
+                1
+            ),
             // 'locations'
             'stagingLocationLoad' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(

@@ -63,6 +63,8 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "hide" parameter is missing' );
         }
 
+        /// @todo add perms checking
+
         if ( ( $result = eZContentStagingLocation::updateVisibility( $node, ( $this->request->get['hide'] == 'true' ) )  )!== 0 )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
@@ -106,9 +108,8 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
             if ( ( $result = eZContentStagingLocation::updatePriority(
-                       $node,
-                      (int)$this->request->inputVariables['priority']
-                      )
+                    $node,
+                    (int)$this->request->inputVariables['priority'] )
                 ) !== 0 )
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
@@ -118,9 +119,24 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( isset( $this->request->inputVariables['remoteId'] ) )
         {
             if ( ( $result = eZContentStagingLocation::updateRemoteId(
-                       $node,
-                       $this->request->inputVariables['remoteId']
-                       )
+                    $node,
+                    $this->request->inputVariables['remoteId'] )
+                ) !== 0 )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+            }
+        }
+
+        if ( isset( $this->request->inputVariables['mainLocationRemoteId'] ) )
+        {
+            $newMainLocation = eZContentObjectTreeNode::fetchByRemoteID( $this->request->inputVariables['mainLocationRemoteId'] );
+            if ( !$newMainLocation instanceof eZContentObjectTreeNode )
+            {
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with remote id '{$this->request->inputVariables['mainLocationRemoteId']}' not found" );
+            }
+            if ( ( $result = eZContentStagingLocation::updateMainLocation(
+                    $node,
+                    $newMainLocation )
                 ) !== 0 )
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
@@ -152,33 +168,29 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
-        $result = new ezpRestMvcResult();
         if ( !isset( $this->request->get['destParentRemoteId'] ) )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::BAD_REQUEST,
-                'The "destParentRemoteId" parameter is missing'
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "destParentRemoteId" parameter is missing' );
         }
         $destParentRemoteId = $this->request->get['destParentRemoteId'];
+
         $dest = eZContentObjectTreeNode::fetchByRemoteID( $destParentRemoteId );
         if ( !$dest instanceof eZContentObjectTreeNode )
         {
-            $result->status = new ezpRestHttpResponse(
-                ezpHttpResponseCodes::NOT_FOUND,
-                "Cannot find the location with remote id '{$destParentRemoteId}'"
-            );
-            return $result;
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$destParentRemoteId}'" );
         }
+
+        /// @todo perms checking
+
         eZContentOperationCollection::moveNode(
             $node->attribute( 'node_id' ),
             $node->attribute( 'contentobject_id' ),
             $dest->attribute( 'node_id' )
         );
 
-        $newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
-        $result->variables = (array) new eZcontentStagingLocation( $newNode );
+        $result = new ezpRestMvcResult();
+        //$newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
+        //$result->variables = (array) new eZcontentStagingLocation( $newNode );
         return $result;
 
     }
@@ -201,18 +213,21 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
-        $result = new ezpRestMvcResult();
         $moveToTrash = true;
         if ( isset( $this->request->get['trash'] ) )
         {
-            /// @tood move to common code: trim, strtolower
-            $moveToTrash = ( $this->request->get['trash'] === 'true' );
+            /// @todo move to common code: trim, strtolower
+            $moveToTrash = ( $this->request->get['trash'] !== 'false' );
         }
+
+        /// @todo add perms checking
+
         eZContentObjectTreeNode::removeSubtrees(
             array( $node->attribute( 'node_id' ) ),
             $moveToTrash
         );
 
+        $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }

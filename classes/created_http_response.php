@@ -4,11 +4,11 @@ class eZContentStagingCreatedHttpResponse extends ezpRestHttpResponse
 {
     public $uris;
 
-    public function __construct( array $uris )
+    public function __construct( $uri )
     {
         $this->code = 201;
         $this->message = null;
-        $this->uris = $uris;
+        $this->uri = $uri;
     }
 
     public function process( ezcMvcResponseWriter $writer )
@@ -19,8 +19,8 @@ class eZContentStagingCreatedHttpResponse extends ezpRestHttpResponse
         }
 
         $writer->headers['Content-Type'] = 'application/json; charset=UTF-8';
-        $writer->headers['Location'] = current( $this->uris );
-        $writer->response->body = json_encode( $this->uris );
+        $writer->headers['Location'] = $this->uri;
+        $writer->response->body = json_encode( array( 'Location' => $this->uri ) );
     }
 
 

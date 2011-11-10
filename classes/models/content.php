@@ -85,9 +85,16 @@ class eZContentStagingContent extends contentStagingBase
         }
     }
 
+    /**
+    * @todo ...
+    */
+    static function removeLanguage( $object, $anguage )
+    {
+
+    }
 
     /**
-    * Updates the $object with the provided fields in the request
+    * Updates the $object with the provided fields in the request - ie. it creates a new version
     *
     * @param eZContentObject $object
     * @return eZContentObject|string
@@ -119,18 +126,17 @@ class eZContentStagingContent extends contentStagingBase
                 $input['fields']
             );
 
-            /// @todo q: shall we commit here or after publication?
             $db->commit();
 
-            $operationResult = eZOperationHandler::execute(
+            /*$operationResult = eZOperationHandler::execute(
                 'content', 'publish',
                 array(
                     'object_id' => $object->attribute( 'id' ),
                     'version' => $version->attribute( 'version' )
                 )
-            );
+            );*/
 
-            return eZContentObject::fetch( $object->attribute( 'id' ) );
+            return $version; //eZContentObject::fetch( $object->attribute( 'id' ) );
         }
         catch ( exception $e )
         {
@@ -237,16 +243,15 @@ class eZContentStagingContent extends contentStagingBase
             $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
             self::updateAttributesList( $attributes, $input['fields'] );
 
-            /// @todo q: shall we commit here or after publication?
             $db->commit();
 
-            $operationResult = eZOperationHandler::execute(
+            /*$operationResult = eZOperationHandler::execute(
                 'content', 'publish',
                 array(
                     'object_id' => $content->attribute( 'id' ),
                     'version' => 1
                 )
-            );
+            );*/
 
             return $content;
         }
