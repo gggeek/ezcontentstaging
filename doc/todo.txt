@@ -44,6 +44,10 @@
 
 . target server: make sure content creation triggers are used on target server too, to make server chaining possible
 
+. target server: make sure php warnings do not break output even when display_warnings is on
+
+. target server: it seems when there is a fatal error in creation of new content, content object is left in the db and not rolled back...
+
 
 4 - INTERFACE
 

@@ -168,6 +168,8 @@ class eZContentStagingField
     }
 
     /**
+    * NB: we assume that someone else has checked for proper type matching betweena attr. and value
+    *
     * @todo implement all missing validation that happens when we go via fromString...
     *
     * @todo decide: shall we throw an exception if data does not validate or just emit a warning?
@@ -177,7 +179,8 @@ class eZContentStagingField
     */
     static function decodeValue( $attribute, $value )
     {
-        switch( $value['fieldDef'] )
+        $type = $attribute->attribute( 'data_type_string' );
+        switch( $type )
         {
             case 'ezobjectrelation':
                 if ( is_array( $value ) && isset( $value['remoteId'] ) )
@@ -251,13 +254,13 @@ class eZContentStagingField
                 eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
 
                 $path = "$tmpDir/$fileName";
-                if ( $value['fieldDef'] == 'image' )
+                if ( $type == 'image' )
                 {
                     $path .= "|{$value['alternativeText']}";
                 }
                 $ok = $attribute->fromString( $path );
 
-                if ( $ok && $value['fieldDef'] == 'ezmedia' )
+                if ( $ok && $type == 'ezmedia' )
                 {
                     $mediaFile = $attribute->attribute( 'content' );
                     $mediaFile->setAttribute( 'width', $value['width'] );

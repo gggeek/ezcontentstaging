@@ -102,7 +102,8 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                         $out = $this->restCall( $method, $url, $payload );
                         if ( is_array( $out ) && isset( $out['Location'] ) )
                         {
-                            $versionNr = end( explode( '/', $out['Location'] ) );
+                            $array = explode( '/', $out['Location'] );
+                            $versionNr = end( $array );
                             $method = 'POST';
                             $url = "/content/objects/remote/$RemoteObjRemoteID/versions/$versionNr";
                             $out = $this->restCall( $method, $url );

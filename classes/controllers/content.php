@@ -161,7 +161,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         // generate a 201 response
         $result = new ezpRestMvcResult();
         $result->status = new eZContentStagingCreatedHttpResponse(
-            '/content/objects/' . $object->attribute( 'id' ) . 'versions/1'
+            '/content/objects/' . $object->attribute( 'id' ) . '/versions/1'
         );
         return $result;
     }
@@ -288,7 +288,6 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return $object;
         }
 
-        /// @ todo ...
         $version = $object->version( $this->versionNr );
         if ( !$version instanceof eZContentObjectVersion )
         {
@@ -301,6 +300,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Version {$this->versionNr} not in DRAFT status" );
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         $operationResult = eZOperationHandler::execute(
                 'content', 'publish',
                 array(
@@ -308,11 +311,18 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
                     'version' => $version->attribute( 'version' )
                 )
             );
+        // hand-tested: when publication goes ok, that's what we get
+        /// @todo test: is it always 1 or is it the version nr?
+        if ( !is_array( $operationResult ) || @$operationResult['status'] != 1 )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Error while publishing version" );
+        }
 
         $result = new ezpRestMvcResult();
         /*$result->status = new eZContentStagingCreatedHttpResponse(
             '/content/objects/' . $object->attribute( 'id' ) . 'versions/' . $version->attribute( 'version' )
         );*/
+        $result->status = new ezpRestHttpResponse( 204 );
         return $result;
     }
 
