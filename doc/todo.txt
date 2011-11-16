@@ -1,18 +1,19 @@
-1 - DATA MANAGEMENT
+1 - DATATYPE MANAGEMENT
 
 . look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
   - binary datatypes -> we need better support than fromstring/tostring do natively
   - ezpage: ???
+  - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format
 
-  status:
-  - export+import ok of object relations(s) and binary files (to be tested)
+. status:
+  - export+import of object relations(s) and binary files: ok with remote ids, use json arrays for non-remote ids too
   - export+import to be done for xml block
   - export+import to be done for ezauthor
   - export+import to be done for ezuser
   - export+import to be done for ezenum ?
   - ezstarrating, ezgmaplocation, ezpage ?
-  - other types that store ids internally ???
+  - all other types that do not serialize to a single scalar value
 
 . add support for sending in object creation/modification requests the original timestamp and remote_id of creator user;
   - add support for importing that data into target system
@@ -40,13 +41,7 @@
 
 . test all actions
 
-. source server does not yet send section id in query string when creating an object
-
 . target server: make sure content creation triggers are used on target server too, to make server chaining possible
-
-. target server: make sure php warnings do not break output even when display_warnings is on
-
-. target server: it seems when there is a fatal error in creation of new content, content object is left in the db and not rolled back...
 
 
 4 - INTERFACE
@@ -78,20 +73,18 @@
   - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
   - details of complex cases (where this logic is not straight)
 
-. use the same classe to encode/decode objects on both source and target; same for attributes
+. use the same class to encode/decode objects on both source and target
 
 
 Phase 2 (?)
 
-. rest server: test ezp 4.6 using the 4.5 patch for ezpRestHttpRequestParser
+. source server: cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
 
-. rest server: avoid php warnings generated while executing action to hit page output (use custom error handler, or what else? ... )
+. rest server: produce patches for ezp 4.6
 
 . fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
 
 . produce .dba file
-
-. source server: cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
 
 . source server: add confirmation dialogs when deleting events / resetting feeds
 
@@ -138,7 +131,7 @@ Phase 2:
 . add a sync-to-localhost transport class, that copies data to separate content trees without going through rest calls
 . source server: graceful degradation: allow wt button to sync with no js available by posting to contentstaging/syncnode
 . source server: add extended attr. filter: given target feed id, get for every node the sync events pending by using aggregate sql function bit_and
-. source server: use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expeted more evident
+. source server: use some "struct" classes to hold data for every type of stagingevent instead of plain arrays, to make the kind of data expected more evident
 . for ezp 4.6, add also to the media gallery (and to users?) the new subtab added to object view for admin2 design
   - also maybe add extra items to context menus?
 . source server: finish case where a move event becomes a create for a target server (create all versions, all languages)
