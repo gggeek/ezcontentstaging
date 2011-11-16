@@ -86,6 +86,10 @@ class eZContentStagingLocation extends contentStagingBase
         }
         catch ( exception $e )
         {
+            if ( $db->transactionCounter() )
+            {
+                $db->rollback();
+            }
             return $e->getMessage();
         }
     }
@@ -111,6 +115,10 @@ class eZContentStagingLocation extends contentStagingBase
         }
         catch ( exception $e )
         {
+            if ( $db->transactionCounter() )
+            {
+                $db->rollback();
+            }
             return $e->getMessage();
         }
     }
@@ -136,6 +144,10 @@ class eZContentStagingLocation extends contentStagingBase
         }
         catch ( exception $e )
         {
+            if ( $db->transactionCounter() )
+            {
+                $db->rollback();
+            }
             return $e->getMessage();
         }
     }

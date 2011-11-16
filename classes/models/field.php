@@ -169,6 +169,9 @@ class eZContentStagingField
 
     /**
     * @todo implement all missing validation that happens when we go via fromString...
+    *
+    * @todo decide: shall we throw an exception if data does not validate or just emit a warning?
+    *
     * @see eZDataType::unserializeContentObjectAttribute
     * @see eZDataType::fromstring
     */
@@ -235,6 +238,13 @@ class eZContentStagingField
             case 'ezbinaryfile':
             case 'ezmedia':
             case 'ezimage':
+                if ( !is_array( $value ) || !isset( $value['fileName'] ) || !isset( $value['content'] ) )
+                {
+                    eZDebug::writeWarning( "Can not create binary file because fileName or content is missing", __METHOD__ );
+                    $ok = false;
+                    break;
+                }
+
                 $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid() . '-' . microtime( true );
                 $fileName = $value['fileName'];
                 /// @todo test if base64 decoding fails and if decoded img filesize is ok

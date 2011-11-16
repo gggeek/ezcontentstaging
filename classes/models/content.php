@@ -145,6 +145,7 @@ class eZContentStagingContent extends contentStagingBase
         }
         catch ( exception $e )
         {
+            $db->rollback();
             return $e->getMessage();
         }
     }
@@ -174,7 +175,7 @@ class eZContentStagingContent extends contentStagingBase
             {
                  throw new Exception( "Attribute '$identifier' should be of type $type, not '{$fields[$identifier]['fieldDef']}'" );
             }
-            eZContentStagingField::decodeValue( $attribute, $fields[$identifier] );
+            eZContentStagingField::decodeValue( $attribute, $fields[$identifier]['value'] );
         }
     }
 
@@ -189,7 +190,6 @@ class eZContentStagingContent extends contentStagingBase
      */
     static function createContent( eZContentObjectTreeNode $parent, $input, $sectionId=null )
     {
-        //$input = $this->request->post; // shouldn't it be inputVariables ? but it's empty ?
         $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
         if ( !$class instanceof eZContentClass )
         {
@@ -248,6 +248,7 @@ class eZContentStagingContent extends contentStagingBase
         }
         catch ( exception $e )
         {
+            $db->rollback();
             return $e->getMessage();
         }
     }
@@ -290,6 +291,7 @@ class eZContentStagingContent extends contentStagingBase
         }
         catch ( exception $e )
         {
+            $db->rollback();
             return $e->getMessage();
         }
     }
