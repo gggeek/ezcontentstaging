@@ -46,7 +46,7 @@ class eZContentStagingLocation extends contentStagingBase
         $this->depth = (int)$node->attribute( 'depth' );
         $this->invisible = (bool)$node->attribute( 'invisible' );
         $this->remoteId = $node->attribute( 'remote_id' );
-        $this->modifiedSubLocation = self::formatDatetIme( $node->attribute( 'modified_subnode' ) );
+        $this->modifiedSubLocation = self::encodeDatetIme( $node->attribute( 'modified_subnode' ) );
 
         $this->children = array();
         /// @todo optimize: do not load all children just to get their ids
@@ -55,15 +55,9 @@ class eZContentStagingLocation extends contentStagingBase
             $this->children[] = (int)$child->attribute( 'node_id' );
         }
 
-        $this->sortOrder = 'ASC';
-        if ( $node->attribute( 'sort_order' ) == eZContentObjectTreeNode::SORT_ORDER_DESC )
-            $this->sortOrder = 'DESC';
+        $this->sortOrder = self::encodeSortOrder( $node->attribute( 'sort_order' ) );
 
-        $this->sortField = strtoupper(
-            eZContentObjectTreeNode::sortFieldName( $node->attribute( 'sort_field' ) )
-        );
-        if ( $this->sortField === null )
-            $this->sortField = 'PATH';
+        $this->sortField = self::encodeSortField( $node->attribute( 'sort_field' ) );
     }
 
     /**
@@ -75,8 +69,8 @@ class eZContentStagingLocation extends contentStagingBase
      */
     static function updateSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
     {
-        $sortField = self::getSortField( $sortField );
-        $sortOrder = self:: getSortOrder( $sortOrder);
+        $sortField = self::decodeSortField( $sortField );
+        $sortOrder = self::decodeSortOrder( $sortOrder);
 
         $db = eZDB::instance();
         $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );

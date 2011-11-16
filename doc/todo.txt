@@ -5,7 +5,14 @@
   - binary datatypes -> we need better support than fromstring/tostring do natively
   - ezpage: ???
 
-  status: export ok of object relations(s) and binary files (to be tested), import to be done for all
+  status:
+  - export+import ok of object relations(s) and binary files (to be tested)
+  - export+import to be done for xml block
+  - export+import to be done for ezauthor
+  - export+import to be done for ezuser
+  - export+import to be done for ezenum ?
+  - ezstarrating, ezgmaplocation, ezpage ?
+  - other types that store ids internally ???
 
 . add support for sending in object creation/modification requests the original timestamp and remote_id of creator user;
   - add support for importing that data into target system
@@ -16,7 +23,6 @@
 . source server: finish missing events:
   - swap
   - move (test it)
-  - assign object state
   - change main node (test it)
 
 . source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
@@ -27,12 +33,14 @@
 
 3 - REST API
 
-. target server: implement missing routes/actions:
-  - set object state(s)
-  - ...
+. target server: finish actions
+  - remove language
+  - set obj state
+  - set main location
 
-. target server: realign POST/PUT usage to latest cba specs
-  - fix consequently on source server
+. test all actions
+
+. source server does not yet send section id in query string when creating an object
 
 . target server: make sure content creation triggers are used on target server too, to make server chaining possible
 

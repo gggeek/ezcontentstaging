@@ -1,6 +1,9 @@
 <?php
 /**
- * The contentStagingBase class is used to provide common methods to other models
+ * The contentStagingBase class is used to provide common methods to other models.
+ *
+ * Methods named encodeSomething go from php raw values to json values
+ * Methods named decodeSomething go from json values to php raw values
  *
  * @package ezcontentstaging
  *
@@ -9,19 +12,18 @@
  * @author
  * @copyright
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
- *
- * @todo refactor methods names: use prefixes meaning fromstruct / tostruct
  */
 
 class contentStagingBase
 {
-    protected static function formatDatetIme( $time )
+    protected static function encodeDatetIme( $time )
     {
         return gmdate( DATE_ISO8601, $time );
     }
 
-    protected static function getDatetIme( $timestring )
+    protected static function decodeDatetIme( $timestring )
     {
+        // @todo throw an exception / log a warning ?
         return strtotime( $timestring );
     }
 
@@ -32,7 +34,7 @@ class contentStagingBase
      * @param string $stringSortOrder
      * @return int
      */
-    protected static function getSortOrder( $stringSortOrder )
+    protected static function decodeSortOrder( $stringSortOrder )
     {
         // @todo throw an exception if $stringSortOrder is not ASC or DESC ?
         $sortOrder = eZContentObjectTreeNode::SORT_ORDER_ASC;
@@ -50,7 +52,7 @@ class contentStagingBase
      * @param string $stringSortField
      * @return int
      */
-    protected static function getSortField( $stringSortField )
+    protected static function decodeSortField( $stringSortField )
     {
         $field = eZContentObjectTreeNode::sortFieldID( strtolower( $stringSortField ) );
         if ( $field === null )
@@ -63,4 +65,14 @@ class contentStagingBase
         return $field;
     }
 
+    static protected function encodeSortOrder( $value )
+    {
+        return $value == eZContentObjectTreeNode::SORT_ORDER_DESC ? "DESC" : "ASC";
+    }
+
+    static protected function encodeSortField( $value )
+    {
+        $value = strtoupper( eZContentObjectTreeNode::sortFieldName( $value ) );
+        return $value;
+    }
 }

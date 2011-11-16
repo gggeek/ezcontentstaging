@@ -39,8 +39,8 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $payload = array(
                         'remoteId' => $RemoteNodeRemoteID,
                         'priority' => $data['priority'],
-                        'sortField' => self::encodeSortField( $data['sortField'] ),
-                        'sortOrder' => self::encodeSortOrder( $data['sortOrder'] )
+                        'sortField' => eZContentStagingLocation::encodeSortField( $data['sortField'] ),
+                        'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
                         );
                     $out = $this->restCall( $method, $url, $payload );
                     if ( is_array( $out ) && isset( $out['remoteId'] ) && $out['remoteId'] == $RemoteNodeRemoteID )
@@ -155,11 +155,11 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     $payload = array(
                         // @todo can we omit safely to send priority?
                         //'priority' => $data['priority'],
-                        'sortField' => self::encodeSortField( $data['sortField'] ),
-                        'sortOrder' => self::encodeSortOrder( $data['sortOrder'] )
+                        'sortField' => eZContentStagingLocation::encodeSortField( $data['sortField'] ),
+                        'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
                         );
                     $out = $this->restCall( $method, $url, $payload );
-                    if ( is_array( $out ) && isset( $out['sortField'] ) && $out['sortField'] == self::encodeSortField( $data['sortField'] ) )
+                    if ( is_array( $out ) && isset( $out['sortField'] ) && $out['sortField'] == eZContentStagingLocation::encodeSortField( $data['sortField'] ) )
                     {
                         $out = 0;
                     }
@@ -395,6 +395,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             'fields' => array()
             );
 
+        $ridGenerator = $this->getRemoteIdGenerator();
         foreach( $version->contentObjectAttributes( $locale ) as $attribute )
         {
             if ( !$attribute->attribute( 'has_content' ) )
@@ -403,7 +404,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             }
 
             $name = $attribute->attribute( 'contentclass_attribute_identifier' );
-            $out['fields'][$name] = (array) new eZContentStagingField( $attribute, $locale );
+            $out['fields'][$name] = (array) new eZContentStagingField( $attribute, $locale, $ridGenerator );
         }
 
         if ( $isupdate )
@@ -420,35 +421,6 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         }
 
         return $out;
-    }
-
-    /// @todo finish
-    static protected function encodeSortField( $value )
-    {
-            /*return "PATHSTRING";
-            return "CREATED";
-            return "SECTIONIDENTIFIER";
-            return "FIELD";*/
-        $fields = array(
-            eZContentObjectTreeNode::SORT_FIELD_PATH => "PATH",
-            eZContentObjectTreeNode::SORT_FIELD_PUBLISHED => 2,
-            eZContentObjectTreeNode::SORT_FIELD_MODIFIED => "MODIFIED",
-            eZContentObjectTreeNode::SORT_FIELD_SECTION => "SECTIONID",
-            eZContentObjectTreeNode::SORT_FIELD_DEPTH => 5,
-            eZContentObjectTreeNode::SORT_FIELD_CLASS_IDENTIFIER => 6,
-            eZContentObjectTreeNode::SORT_FIELD_CLASS_NAME => 7,
-            eZContentObjectTreeNode::SORT_FIELD_PRIORITY => "PRIORITY",
-            eZContentObjectTreeNode::SORT_FIELD_NAME => "NAME",
-            eZContentObjectTreeNode::SORT_FIELD_MODIFIED_SUBNODE => 10,
-            eZContentObjectTreeNode::SORT_FIELD_NODE_ID => 11,
-            eZContentObjectTreeNode::SORT_FIELD_CONTENTOBJECT_ID => 12
-        );
-        return $fields[$value];
-    }
-
-    static protected function encodeSortOrder( $value )
-    {
-        return $value ? "ASC" : "DESC";
     }
 
     static protected function encodeAlwaysAvailable( $value )
@@ -468,9 +440,18 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
     }
 
     /**
-    * @todo this function should possibly be calling a handler for greater flexibility
+    * @todo !important implement factory pattern - store $generator for speed
     */
     protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
+    {
+        $generator = $this->getRemoteIdGenerator();
+        return $generator ? $generator->buildRemoteId( $sourceId, $sourceRemoteId, $type ) : $sourceRemoteId ;
+    }
+
+    /**
+     * @todo !important this function should possibly be calling a handler for greater flexibility
+     */
+    protected function getRemoteIdGenerator()
     {
         $ini = eZINI::instance( 'contentsatging.ini' );
         $targetId = $this->target->attribute( 'id' );
@@ -485,10 +466,9 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         if ( !class_exists( $class ) )
         {
             eZDebug::writeError( "Cannot generate remote id for object/node for target feed $feedId: class $class not found", __METHOD__ );
+            return null;
         }
-        $generator = new $class();
-        return $generator->buildRemoteId( $sourceId, $sourceRemoteId, $targetId, $type );
-        //return "feed:$sourceId";
+        return new $class( $targetId );
     }
 }
 

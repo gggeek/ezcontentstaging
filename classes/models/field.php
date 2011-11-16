@@ -23,25 +23,37 @@ class eZContentStagingField
     public $language;
 
     /**
-    * the constructor is where most of the magic happens
+    * The constructor is where most of the magic happens.
+    * NB: if passed a $ridGenerator, all local obj/node ids are substituted with remote ones, otherwise not
+    *
+    * NB: we assume that attributes are not empty here - we leave the test for .has_content to the caller
+    *
+    * @param eZContentStagingRemoteIdGenerator $ridGenerator (or null)
     * @see serializeContentObjectAttribute and toString in different datatypes
     *      for datatypes that need special treatment
-    *
     * @todo implement this conversion within the datatypes themselves:
     *       it is a much better idea...
     */
-    function __construct( eZContentObjectAttribute $attribute, $locale )
+    function __construct( eZContentObjectAttribute $attribute, $locale, $ridGenerator )
     {
-        $this->datatype = $attribute->attribute( 'data_type_string' );
+        $this->fieldDef = $attribute->attribute( 'data_type_string' );
         $this->language = $locale;
-        switch( $this->datatype )
+        switch( $this->fieldDef )
         {
             case 'ezobjectrelation':
-                $relatedObjectID = $attribute->attribute( 'content' );
+                // slightly more intelligent than base "toString" method: we always check for presence of related object
+                $relatedObjectID = $attribute->attribute( 'data_int' );
                 $relatedObject = eZContentObject::fetch( $relatedObjectID );
                 if ( $relatedObject )
                 {
-                    $this->value = array( 'remoteId' => self::buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' ) );
+                    if ( $ridGenerator )
+                    {
+                        $this->value = array( 'remoteId' => $ridGenerator->buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' ) );
+                    }
+                    else
+                    {
+                        $this->value = $relatedObjectID;
+                    }
                 }
                 else
                 {
@@ -51,21 +63,28 @@ class eZContentStagingField
                 break;
 
             case 'ezobjectrelationlist':
-                $relation_list = $attribute->attribute( 'content' );
-                $relation_list = $relation_list['relation_list'];
-                $values = array();
-                foreach ( $relation_list as $relatedObjectInfo )
+                if ( $ridGenerator )
                 {
-                    // nb: for the object relation we check for objects that have disappeared we do it here too. Even though it is bad for perfs...
-                    $relatedObject = eZContentObject::fetch( $relatedObjectInfo['contentobject_id'] );
-                    if ( !$relatedObject )
+                    $relation_list = $attribute->attribute( 'content' );
+                    $relation_list = $relation_list['relation_list'];
+                    $values = array();
+                    foreach ( $relation_list as $relatedObjectInfo )
                     {
-                        eZDebug::writeError( "Cannot encode attribute for push to staging server: related object {$relatedObjectInfo['contentobject_id']} not found for attribute in lang $locale", __METHOD__ );
-                        continue;
+                        // nb: for the object relation we check for objects that have disappeared we do it here too. Even though it is bad for perfs...
+                        $relatedObject = eZContentObject::fetch( $relatedObjectInfo['contentobject_id'] );
+                        if ( !$relatedObject )
+                        {
+                            eZDebug::writeError( "Cannot encode attribute for push to staging server: related object {$relatedObjectInfo['contentobject_id']} not found for attribute in lang $locale", __METHOD__ );
+                            continue;
+                        }
+                        $values[] = array( 'remoteId' => $ridGenerator->buildRemoteId( $relatedObjectInfo['contentobject_id'], $relatedObjectInfo['contentobject_remote_id'], 'object' ) );
                     }
-                    $values[] = array( 'remoteId' => self::buildRemoteId( $relatedObjectInfo['contentobject_id'], $relatedObjectInfo['contentobject_remote_id'], 'object' ) );
+                    $this->value = $values;
                 }
-                $this->value = $values;
+                else
+                {
+                    $this->value = $attribute->toString();
+                }
                 break;
 
                 /// @todo shall we check for datatype->isRegularFileInsertionSupported() instead of hardcoding here known datatypes?
@@ -117,7 +136,7 @@ class eZContentStagingField
             case 'ezbinaryfile':
                 $content = $attribute->attribute( 'content' );
                 $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
-                /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
                 $this->value = array(
                     'fileSize' => (int)$content->attribute( 'filesize' ),
                     'fileName' => $content->attribute( 'original_filename' ),
@@ -129,7 +148,7 @@ class eZContentStagingField
                 $content = $attribute->attribute( 'content' );
                 $original = $content->attribute( 'original' );
                 $file = eZClusterFileHandler::instance( $original['url'] );
-                /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
                 $this->value = array(
                     'fileSize' => (int)$original['filesize'],
                     'fileName' => $original['original_filename'],
@@ -146,6 +165,131 @@ class eZContentStagingField
             default:
                 $this->value = $attribute->toString();
         }
+    }
+
+    /**
+    * @todo implement all missing validation that happens when we go via fromString...
+    * @see eZDataType::unserializeContentObjectAttribute
+    * @see eZDataType::fromstring
+    */
+    static function decodeValue( $attribute, $value )
+    {
+        switch( $value['fieldDef'] )
+        {
+            case 'ezobjectrelation':
+                if ( is_array( $value ) && isset( $value['remoteId'] ) )
+                {
+                    $object = eZContentObject::fetchByRemoteId( $value['remoteId'] );
+                    if ( $object )
+                    {
+                        // avoid going via fromstring for a small speed gain
+                        $attribute->setAttribute( 'data_int', $object->attribute( 'id' ) );
+                        $ok = true;
+                    }
+                    else
+                    {
+                        eZDebug::writeWarning( "Can not create relation because object with remote id {$value['remoteId']} is missing", __METHOD__ );
+                        $ok = false;
+                    }
+                }
+                else
+                {
+                    $ok = $attribute->fromString( $value );
+                }
+                break;
+
+            case 'ezobjectrelationlist':
+                $localIds = array();
+                foreach( $value as $key => $item )
+                {
+                    if ( is_array( $item ) && isset( $item['remoteId'] ) )
+                    {
+                        $object = eZContentObject::fetchByRemoteId( $item['remoteId'] );
+                        if ( $object )
+                        {
+                            $localIds[] = $object->attribute( 'id' );
+                        }
+                        else
+                        {
+                            eZDebug::writeWarning( "Can not create relation because object with remote id {$item['remoteId']} is missing", __METHOD__ );
+                        }
+                    }
+                    else
+                    {
+                        $localIds[] = $item;
+                    }
+                }
+                /// @todo we only catch one error type here, but we should catch more
+                if ( count( $localIds ) == 0 && count( $value ) > 0 )
+                {
+                    $ok = false;
+                }
+                else
+                {
+                    $ok = $attribute->fromString( implode( '-', $localIds ) );
+                }
+                break;
+
+
+
+            case 'ezbinaryfile':
+            case 'ezmedia':
+            case 'ezimage':
+                $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid() . '-' . microtime( true );
+                $fileName = $value['fileName'];
+                /// @todo test if base64 decoding fails and if decoded img filesize is ok
+                eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
+
+                $path = "$tmpDir/$fileName";
+                if ( $value['fieldDef'] == 'image' )
+                {
+                    $path .= "|{$value['alternativeText']}";
+                }
+                $ok = $attribute->fromString( $path );
+
+                if ( $ok && $value['fieldDef'] == 'ezmedia' )
+                {
+                    $mediaFile = $attribute->attribute( 'content' );
+                    $mediaFile->setAttribute( 'width', $value['width'] );
+                    $mediaFile->setAttribute( 'height', $value['height'] );
+                    $mediaFile->setAttribute( 'has_controller', $value['hasController'] );
+                    $mediaFile->setAttribute( 'controls', $value['controls'] );
+                    $mediaFile->setAttribute( 'is_autoplay', $value['isAutoplay'] );
+                    $mediaFile->setAttribute( 'pluginspage', $value['pluginsPage'] );
+                    $mediaFile->setAttribute( 'quality', $value['quality'] );
+                    $mediaFile->setAttribute( 'is_loop', $value['isLoop'] );
+                    $mediaFile->store();
+                }
+
+                eZDir::recursiveDelete( $tmpDir, false );
+                break;
+
+            /*case 'ezimage':
+                /// @todo use a timestamp added to process pid for temp dir to avoid race conds
+                $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
+                $fileName = $value['fileName'];
+                /// @todo test if base64 decoding fails and if decoded img filesize is ok
+                eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
+
+                $ok = $attribute->fromString( "$tmpDir/$fileName|{$value['alternativeText']}" );
+                /*$content = $attribute->attribute( 'content' );
+                $content->initializeFromFile( "$tmpDir/$fileName" );
+                $content->setAttribute( 'alternative_text',  $value['alternativeText'] );
+                $content->store( $attribute );* /
+
+                eZDir::recursiveDelete( $tmpDir, false );
+                break;*/
+
+            default:
+                $ok = $attribute->fromString( $value );
+
+        }
+
+        if ( $ok )
+        {
+            $attribute->store();
+        }
+        return $ok;
     }
 
 }

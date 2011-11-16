@@ -55,8 +55,8 @@ class eZContentStagingContent extends contentStagingBase
 
         $this->versionNo = (int)$object->attribute( 'current_version' );
         $this->creatorId = (int)$object->attribute( 'current' )->attribute( 'creator_id' );
-        $this->created = self::formatDatetIme( $object->attribute( 'published' ) );
-        $this->modified = self::formatDatetIme( $object->attribute( 'modified' ) );
+        $this->created = self::encodeDatetIme( $object->attribute( 'published' ) );
+        $this->modified = self::encodeDatetIme( $object->attribute( 'modified' ) );
         $this->alwaysAvailable = (bool)$object->attribute( 'always_available' );
         $this->remoteId = $object->attribute( 'remote_id' );
 
@@ -70,18 +70,23 @@ class eZContentStagingContent extends contentStagingBase
         $this->fields = array();
         foreach ( $object->attribute( 'data_map' ) as $identifier => $attr )
         {
-            $type = $attr->attribute( 'data_type_string' );
-            switch( $type )
+            if ( $attr->attribute( 'has_content' ) )
             {
-                default:
-                    $value = $attr->toString();
+                //$type = $attr->attribute( 'data_type_string' );
+                //$name = $attribute->attribute( 'contentclass_attribute_identifier' );
+                $this->fields[$identifier] = (array) new eZContentStagingField( $attr, $attr->attribute( 'language_code' ), null );
+                /*switch( $type )
+                {
+                    default:
+                        $value = $attr->toString();
+                }
+                $this->fields[$identifier] = array(
+                    'fieldDef' => $type,
+                    'id' => (int)$attr->attribute( 'id' ),
+                    'value' => $value,
+                    'language' => $attr->attribute( 'language_code' )
+                );*/
             }
-            $this->fields[$identifier] = array(
-                'fieldDef' => $type,
-                'id' => (int)$attr->attribute( 'id' ),
-                'value' => $value,
-                'language' => $attr->attribute( 'language_code' )
-            );
         }
     }
 
@@ -111,7 +116,7 @@ class eZContentStagingContent extends contentStagingBase
             $version = $object->createNewVersionIn( $input['initialLanguage'] );
 
             /// @todo log an error and maybe abort instead of continuing if bad date format?
-            if ( isset( $input['modified'] ) && ( $time = self::getDatetIme( $input['modified'] ) ) != 0 )
+            if ( isset( $input['modified'] ) && ( $time = self::decodeDatetIme( $input['modified'] ) ) != 0 )
             {
                 $version->setAttribute( 'modified', $time );
             }
@@ -150,9 +155,6 @@ class eZContentStagingContent extends contentStagingBase
      *
      * @param array $attributes array of eZContentObjectAttribute to update
      * @param array $fields
-     *
-     * @todo using fromstring applies no attribute validation at all... we should provide some
-     * @todo add de-enocing of remote identifiers for known datatypes
      */
     protected static function updateAttributesList( array $attributes, array $fields )
     {
@@ -161,30 +163,18 @@ class eZContentStagingContent extends contentStagingBase
             $identifier = $attribute->attribute( 'contentclass_attribute_identifier' );
             if ( !isset( $fields[$identifier] ) )
             {
+                if ( $attribute->attribute( 'is_required') )
+                {
+                    throw new Exception( "Missing required attribute '$identifier'" );
+                }
                 continue;
             }
-            $field = $fields[$identifier];
-            switch( $field['fieldDef'] )
+            $type = $attribute->attribute( 'data_type_string' );
+            if ( $type != $fields[$identifier]['fieldDef'] )
             {
-                case 'ezimage':
-                case 'ezbinaryfile':
-                case 'ezmedia':
-                    /// @todo use the original filename and other metadata
-                    $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
-                    $fileName = uniqid();
-                    /// @todo test if base64 decoding fails
-                    eZFile::create( $fileName, $tmpDir, base64_decode( $field['value'] ) );
-                    $field['value'] = $tmpDir . '/' . $fileName;
-                    break;
-                default:
+                 throw new Exception( "Attribute '$identifier' should be of type $type, not '{$fields[$identifier]['fieldDef']}'" );
             }
-            $attribute->fromString( $field['value'] );
-            $attribute->store();
-            if ( isset( $tmpDir ) )
-            {
-                eZDir::recursiveDelete( $tmpDir, false );
-                unset( $tmpDir );
-            }
+            eZContentStagingField::decodeValue( $attribute, $fields[$identifier] );
         }
     }
 
@@ -207,6 +197,7 @@ class eZContentStagingContent extends contentStagingBase
         }
 
         $db = eZDB::instance();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             $db->begin();
@@ -229,7 +220,7 @@ class eZContentStagingContent extends contentStagingBase
 
             $version = $content->version( 1 );
             /// @todo log an error and maybe abort instead of continuing if bad date format?
-            if ( isset( $input['modified'] ) && ( $time = self::getDatetIme( $input['modified'] ) ) != 0 )
+            if ( isset( $input['modified'] ) && ( $time = self::decodeDatetIme( $input['modified'] ) ) != 0 )
             {
                 $version->setAttribute( 'modified', $time );
             }
@@ -274,8 +265,8 @@ class eZContentStagingContent extends contentStagingBase
      */
     static function addAssignment( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
     {
-        $sortField = self::getSortField( $sortField );
-        $sortOrder = self:: getSortOrder( $sortOrder);
+        $sortField = self::decodeSortField( $sortField );
+        $sortOrder = self::decodeSortOrder( $sortOrder);
 
         /// @todo do we need a transaction here?
         $db = eZDB::instance();

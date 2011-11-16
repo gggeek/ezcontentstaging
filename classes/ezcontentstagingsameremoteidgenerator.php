@@ -13,10 +13,14 @@
 
 class eZContentStagingSameRemoteIdGenerator implements eZContentStagingRemoteIdGenerator
 {
+    function __construct( $target )
+    {
+    }
+
     /**
     * Uses the same remote id on source and on target server
     */
-    function buildRemoteId( $sourceId, $sourceRemoteId, $target, $type='node' )
+    function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
     {
         return $sourceRemoteId;
     }
