@@ -454,7 +454,7 @@ class eZContentStagingEvent extends eZPersistentObject
     * @todo figure out if we can be faster by batching events in calls to $transport::syncEvents
     *       while still maintaining correct ordering
     */
-    static function syncEvents( array $events )
+    static function syncEvents( array $events, $iterator=null )
     {
         $results = array();
 
@@ -490,7 +490,7 @@ class eZContentStagingEvent extends eZPersistentObject
         // coalescing events allows to send fewer of them
         self::coalesceEvents( $events, $results );
 
-        foreach( $events as $id => $event )
+        foreach( $events as $event )
         {
             if ( $event->Status != self::STATUS_TOSYNC )
             {
@@ -540,6 +540,11 @@ class eZContentStagingEvent extends eZPersistentObject
                     eZDebug::writeDebug( "Synced event " . $event->ID, __METHOD__ );
                     $results[$event->ID] = 0;
                 }
+            }
+
+            if ( is_callable( $iterator ) )
+            {
+                call_user_func( $iterator );
             }
         }
 

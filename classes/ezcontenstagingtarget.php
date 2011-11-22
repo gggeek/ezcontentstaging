@@ -230,11 +230,12 @@ class eZContentStagingTarget
 
     /**
     * Checks sync status
+    * @param callable $iterator
     * @return array key = noode_id, value = integer
     *
     * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
     */
-    function checkTarget()
+    function checkTarget( $iterator=null )
     {
         $out = array();
 
@@ -266,19 +267,20 @@ class eZContentStagingTarget
             }
 
             // nb: using integer-indexed arrays: must not use array_merge
-            $out = $out + $this->checkNode( $node, true, $transport );
+            $out = $out + $this->checkNode( $node, true, $transport, $iterator );
         }
 
         return $out;
     }
 
     /**
+    * @param callable $iterator
     * @todo implement a 'checked object' cache to avoid checaking same obj many times
     * @todo clear object cache after every N objects
     * @todo prevent loops
     * @todo smarter checking: if node x is not there all its children can not be there either
     */
-    protected function checkNode( $node, $recursive=true, $transport )
+    protected function checkNode( $node, $recursive=true, $transport, $iterator )
     {
         //static $testedobjects;
         //$objectID = $object->attribute( 'id' );
@@ -313,12 +315,17 @@ class eZContentStagingTarget
                 foreach ( $subtree as $child )
                 {
                     // nb: using integer-indexed arrays: must not use array_merge
-                    $out = $out + $this->checkNode( $child, false, $transport );
+                    $out = $out + $this->checkNode( $child, false, $transport, $iterator );
                 }
                 $offset += $limit;
 
                 /// @todo clear obj cache ?
             }
+        }
+
+        if ( is_callable( $iterator ) )
+        {
+            call_user_func( $iterator );
         }
 
         return $out;
