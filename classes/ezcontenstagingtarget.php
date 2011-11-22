@@ -127,7 +127,7 @@ class eZContentStagingTarget
     }
 
     /**
-    * Given an array on nodes, returns the list of those which are part of the feed
+    * Given an array of nodes, returns the list of those which are part of the feed
     * @param array $nodepathsarray node_id => node_path
     * @return array fileterd, in same format: node_id => node_path
     */
@@ -160,8 +160,8 @@ class eZContentStagingTarget
 
     /**
     * Initializes a target by creating the necessary events and optionally syncing them:
-    * - for all top level nodes, we need to sync in remote server the object-id
-    *   (and node-id ???)
+    * - for all top level nodes, we need to sync in remote server the object-remote-id
+    *   and node-remote-id
     * @return array for every source node, 0 for ok, or an error code
     */
     function initializeRootItems( $doexecute=true )
@@ -173,7 +173,7 @@ class eZContentStagingTarget
         {
             if ( !isset( $remotenodes[$key] ) )
             {
-                eZDebug::writeError( "Remote root node not specified for feed " . $this->_attrs['Name'], __METHOD__ );
+                eZDebug::writeError( "Remote root node not specified for feed " . $this->_attrs['name'], __METHOD__ );
                 $out[] = eZContentStagingEvent::ERROR_NOREMOUTESOURCE;
                 continue;
             }
@@ -182,7 +182,7 @@ class eZContentStagingTarget
             $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
-                eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['Name'] . " does not exist", __METHOD__ );
+                eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['name'] . " does not exist", __METHOD__ );
                 $out[] = eZContentStagingEvent::ERROR_NOSOURCENODE;
                 continue;
             }
@@ -200,7 +200,7 @@ class eZContentStagingTarget
                 eZContentStagingEvent::ACTION_INITIALIZEFEED,
                 $initData,
                 array( $nodeID )
-                );
+            );
 
             if ( $doexecute )
             {
@@ -227,6 +227,103 @@ class eZContentStagingTarget
         }
         return new $class( $this );
     }*/
+
+    /**
+    * Checks sync status
+    * @return array key = noode_id, value = integer
+    *
+    * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
+    */
+    function checkTarget()
+    {
+        $out = array();
+
+        $class = $this->attribute( 'transport_class' );
+        if ( !class_exists( $class ) )
+        {
+            eZDebug::writeError( "Can not create transport, class $class not found", __METHOD__ );
+            return array();
+        }
+        $transport = new $class( $this );
+
+        $remotenodes = $this->_attrs['remote_subtrees'];
+        foreach( $this->_attrs['subtrees'] as $key => $nodeID )
+        {
+            /*if ( !isset( $remotenodes[$key] ) )
+            {
+                eZDebug::writeError( "Remote root node not specified for feed " . $this->_attrs['Name'], __METHOD__ );
+                $out[] = -2; //eZContentStagingEvent::ERROR_NOREMOUTESOURCE;
+                continue;
+            }*/
+            //$remoteNodeID = $remotenodes[$key];
+
+            $node = eZContentObjectTreeNode::fetch( $nodeID );
+            if ( !$node )
+            {
+                eZDebug::writeError( "Node $nodeID specified as root of feed " . $this->_attrs['name'] . " does not exist", __METHOD__ );
+                $out[$nodeID] = -1; //eZContentStagingEvent::ERROR_NOSOURCENODE;
+                continue;
+            }
+
+            // nb: using integer-indexed arrays: must not use array_merge
+            $out = $out + $this->checkNode( $node, true, $transport );
+        }
+
+        return $out;
+    }
+
+    /**
+    * @todo implement a 'checked object' cache to avoid checaking same obj many times
+    * @todo clear object cache after every N objects
+    * @todo prevent loops
+    * @todo smarter checking: if node x is not there all its children can not be there either
+    */
+    protected function checkNode( $node, $recursive=true, $transport )
+    {
+        //static $testedobjects;
+        //$objectID = $object->attribute( 'id' );
+        //if ( !isset( $testedobjects[$objectID] ) )
+        //{
+        //    $objectok = $transport->checkObject( $object );
+        //    $testedobjects[$objectID] = $objectok;
+        //}
+        //else
+        //{
+        //    $objectok = $testedobjects[$objectId];
+        //}
+
+        $nodeok = $transport->checkNode( $node );
+        $object = $node->attribute( 'object' );
+        $objectok = $transport->checkObject( $object );
+        $out[$node->attribute( 'node_id' )] = $nodeok | $objectok;
+
+        if ( $recursive )
+        {
+            $limit = 10;
+            $offset = 0;
+
+            // seems like using $node->children is not a good idea here, while
+            // subtree() gives us all nodes, regardless of anon user
+            while( $subtree = $node->subTree( array(
+                'Offset' => $offset,
+                'Limit' => $limit,
+                'Limitation' => array(),
+                'MainNodeOnly' => false ) ) )
+            {
+                foreach ( $subtree as $child )
+                {
+                    // nb: using integer-indexed arrays: must not use array_merge
+                    $out = $out + $this->checkNode( $child, false, $transport );
+                }
+                $offset += $limit;
+
+                /// @todo clear obj cache ?
+            }
+        }
+
+        return $out;
+    }
+
 }
 
 ?>

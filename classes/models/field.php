@@ -24,15 +24,15 @@ class eZContentStagingField
 
     /**
     * The constructor is where most of the magic happens.
+    * It is called for encoding fields.
     * NB: if passed a $ridGenerator, all local obj/node ids are substituted with remote ones, otherwise not
-    *
-    * NB: we assume that attributes are not empty here - we leave the test for .has_content to the caller
     *
     * @param eZContentStagingRemoteIdGenerator $ridGenerator (or null)
     * @see serializeContentObjectAttribute and toString in different datatypes
     *      for datatypes that need special treatment
+    * @see http://issues.ez.no/IssueList.php?Search=tostring&SearchIn=1
     * @todo implement this conversion within the datatypes themselves:
-    *       it is a much better idea...
+    *       it is a much better idea... (check datatypes that support a fromHash method, use it)
     */
     function __construct( eZContentObjectAttribute $attribute, $locale, $ridGenerator )
     {
@@ -40,6 +40,7 @@ class eZContentStagingField
         $this->language = $locale;
         switch( $this->fieldDef )
         {
+            // serialized as a single string of either local or remote id
             case 'ezobjectrelation':
                 // slightly more intelligent than base "toString" method: we always check for presence of related object
                 $relatedObjectID = $attribute->attribute( 'data_int' );
@@ -62,6 +63,7 @@ class eZContentStagingField
                 }
                 break;
 
+            // serialized as an array of local/remote ids
             case 'ezobjectrelationlist':
                 if ( $ridGenerator )
                 {
@@ -83,37 +85,12 @@ class eZContentStagingField
                 }
                 else
                 {
-                    $this->value = $attribute->toString();
+                    $this->value = explode( '-', $attribute->toString() );
                 }
                 break;
 
-                /// @todo shall we check for datatype->isRegularFileInsertionSupported() instead of hardcoding here known datatypes?
-                /*case 'ezimage':
-                   case 'ezbinaryfile':
-                   case 'ezmedia':
-                   /// is this check redundant with the above has_content?
-                   if ( !$attribute->hasStoredFileInformation( $bject, $version, $locale ) )
-                   {
-                   continue;
-                   }
-                   $fileInfo = $attribute->storedFileInformation( $bject, $version, $locale );
-                   if ( !$fileInfo )
-                   {
-                   eZDebug::writeError( "Cannot encode attribute of object $objectID for push to staging server: version $versionNr - binary not found for attribute in lang $locale for field $name", __METHOD__ );
-                   continue;
-                   }
-
-                   $fileName = $fileInfo['filepath'];
-                   $file = eZClusterFileHandler::instance( $fileName );
-                   if ( ! $file->exists() )
-                   {
-                   eZDebug::writeError( "Cannot encode file for object $objectID for push to staging server: version $versionNr - binary not found for attribute in lang $locale for field $name", __METHOD__ );
-                   continue;
-                   }
-                   /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
-                   $value = base64_encode( $file->fetchContents() );*/
-
-                // nb: this datatype has, as of eZ 4.5, a broken toString method
+            // serialized as a struct
+            // nb: this datatype has, as of eZ 4.5, a broken toString method
             case 'ezmedia':
                 $content = $attribute->attribute( 'content' );
                 $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
@@ -133,6 +110,7 @@ class eZContentStagingField
                     );
                 break;
 
+            // serialized as a struct
             case 'ezbinaryfile':
                 $content = $attribute->attribute( 'content' );
                 $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
@@ -144,6 +122,7 @@ class eZContentStagingField
                     );
                 break;
 
+            // serialized as a struct
             case 'ezimage':
                 $content = $attribute->attribute( 'content' );
                 $original = $content->attribute( 'original' );
@@ -157,25 +136,67 @@ class eZContentStagingField
                     );
                 break;
 
+            case 'ezxmltext':
+                if ( $ridGenerator )
+                {
+                    // code taken from eZXMLTextType::serializeContentObjectAttribute
+                    $xmlString = $attribute->attribute( 'data_text' );
+                    $doc = new DOMDocument( '1.0', 'utf-8' );
+                    /// @todo !important suppress errors in the loadXML call?
+                    if ( $xmlString != '' && $doc->loadXML( $xmlString ) )
+                    {
+                        /* For all links found in the XML, do the following:
+                           * - add "href" attribute fetching it from ezurl table.
+                           * - remove "id" attribute.
+                        */
+                        $links = $doc->getElementsByTagName( 'link' );
+                        $embeds = $doc->getElementsByTagName( 'embed' );
+                        $objects = $doc->getElementsByTagName( 'object' );
+                        $embedsInline = $doc->getElementsByTagName( 'embed-inline' );
+
+                        self::transformLinksToRemoteLinks( $links, $ridGenerator );
+                        self::transformLinksToRemoteLinks( $embeds, $ridGenerator );
+                        self::transformLinksToRemoteLinks( $objects, $ridGenerator );
+                        self::transformLinksToRemoteLinks( $embedsInline, $ridGenerator );
+
+                        /*$DOMNode = $datatype->createContentObjectAttributeDOMNode( $attribute );
+                        $importedRootNode = $DOMNode->ownerDocument->importNode( $doc->documentElement, true );
+                        $DOMNode->appendChild( $importedRootNode );*/
+                    }
+                    else
+                    {
+                        /// @todo log a warning
+                        $parser = new eZXMLInputParser();
+                        $doc = $parser->createRootNode();
+                        //$xmlText = eZXMLTextType::domString( $doc );
+                    }
+                    $this->value = $doc->saveXML();
+                }
+                else
+                {
+                    $this->value = $attribute->toString();
+                }
+                break;
+
                 // known bug in ezuser serialization: #018609
             case 'ezuser':
 
-            // see also http://issues.ez.no/IssueList.php?Search=fromstring&SearchIn=1
-            // see also http://issues.ez.no/IssueList.php?Search=tostring&SearchIn=1
             default:
                 $this->value = $attribute->toString();
         }
     }
 
     /**
-    * NB: we assume that someone else has checked for proper type matching betweena attr. and value
+    * NB: we assume that someone else has checked for proper type matching between attr. and value
+    * NB: we assume that attributes are not empty here - we leave the test for .has_content to the caller
     *
-    * @todo implement all missing validation that happens when we go via fromString...
-    *
+    * @todo implement all missing validation that does not happen when we go via fromString...
     * @todo decide: shall we throw an exception if data does not validate or just emit a warning?
+    * @todo check datatypes that support a fromHash method, use it instead of hard-coded conversion here
     *
     * @see eZDataType::unserializeContentObjectAttribute
     * @see eZDataType::fromstring
+    * @see http://issues.ez.no/IssueList.php?Search=fromstring
     */
     static function decodeValue( $attribute, $value )
     {
@@ -194,7 +215,8 @@ class eZContentStagingField
                     }
                     else
                     {
-                        eZDebug::writeWarning( "Can not create relation because object with remote id {$value['remoteId']} is missing", __METHOD__ );
+                        $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                        eZDebug::writeWarning( "Can not create relation because object with remote id {$value['remoteId']} is missing in attribute $attrname", __METHOD__ );
                         $ok = false;
                     }
                 }
@@ -217,7 +239,8 @@ class eZContentStagingField
                         }
                         else
                         {
-                            eZDebug::writeWarning( "Can not create relation because object with remote id {$item['remoteId']} is missing", __METHOD__ );
+                            $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                            eZDebug::writeWarning( "Can not create relation because object with remote id {$item['remoteId']} is missing in attribute $attrname", __METHOD__ );
                         }
                     }
                     else
@@ -236,14 +259,13 @@ class eZContentStagingField
                 }
                 break;
 
-
-
             case 'ezbinaryfile':
             case 'ezmedia':
             case 'ezimage':
                 if ( !is_array( $value ) || !isset( $value['fileName'] ) || !isset( $value['content'] ) )
                 {
-                    eZDebug::writeWarning( "Can not create binary file because fileName or content is missing", __METHOD__ );
+                    $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                    eZDebug::writeWarning( "Can not create binary file because fileName or content is missing in attribute $attrname", __METHOD__ );
                     $ok = false;
                     break;
                 }
@@ -277,32 +299,113 @@ class eZContentStagingField
                 eZDir::recursiveDelete( $tmpDir, false );
                 break;
 
-            /*case 'ezimage':
-                /// @todo use a timestamp added to process pid for temp dir to avoid race conds
-                $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid();
-                $fileName = $value['fileName'];
-                /// @todo test if base64 decoding fails and if decoded img filesize is ok
-                eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
+            /// @see eZXMLTextType::unserializeContentObjectAttribute
+            case 'ezxmltext':
+                $doc = new DOMDocument( '1.0', 'utf-8' );
+                /// @todo !important suppress errors in the loadXML call?
+                if ( $doc->loadXML( $value ) )
+                {
+                    // we only need to fix links, as embeds, objects, embedsinline
+                    // are ok with a remote id instead of a source id
+                    $links = $doc->getElementsByTagName( 'link' );
+                    foreach ( $links as $linkNode )
+                    {
+                        $href = $linkNode->getAttribute( 'href' );
+                        if ( !$href )
+                            continue;
+                        $urlObj = eZURL::urlByURL( $href );
 
-                $ok = $attribute->fromString( "$tmpDir/$fileName|{$value['alternativeText']}" );
-                /*$content = $attribute->attribute( 'content' );
-                $content->initializeFromFile( "$tmpDir/$fileName" );
-                $content->setAttribute( 'alternative_text',  $value['alternativeText'] );
-                $content->store( $attribute );* /
+                        if ( !$urlObj )
+                        {
+                            $urlObj = eZURL::create( $href );
+                            $urlObj->store();
+                        }
 
-                eZDir::recursiveDelete( $tmpDir, false );
-                break;*/
+                        $linkNode->removeAttribute( 'href' );
+                        $linkNode->setAttribute( 'url_id', $urlObj->attribute( 'id' ) );
+                        $urlObjectLink = eZURLObjectLink::create( $urlObj->attribute( 'id' ),
+                                                                  $objectAttribute->attribute( 'id' ),
+                                                                  $objectAttribute->attribute( 'version' ) );
+                        $urlObjectLink->store();
+                    }
+                }
+                else
+                {
+                    $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                    eZDebug::writeWarning( "Can not import xml text because content is not valid xml in attribute $attrname", __METHOD__ );
+
+                    $parser = new eZXMLInputParser();
+                    $doc = $parser->createRootNode();
+                    //$xmlText = eZXMLTextType::domString( $doc );
+                }
+                $attribute->fromString( $doc->saveXML() );
+                break;
 
             default:
-                $ok = $attribute->fromString( $value );
+                $attribute->fromString( $value );
 
         }
 
-        if ( $ok )
+        // nb: most fromstring calls return null...
+        if ( $ok !== false )
         {
             $attribute->store();
         }
         return $ok;
+    }
+
+    /// Takan from eZXMLTextType::transformLinksToRemoteLinks
+    protected function transformLinksToRemoteLinks( DOMNodeList $nodeList, $ridGenerator )
+    {
+        foreach ( $nodeList as $node )
+        {
+            $linkID = $node->getAttribute( 'url_id' );
+            $isObject = ( $node->localName == 'object' );
+            $objectID = $isObject ? $node->getAttribute( 'id' ) : $node->getAttribute( 'object_id' );
+            $nodeID = $node->getAttribute( 'node_id' );
+
+            if ( $linkID )
+            {
+                $urlObj = eZURL::fetch( $linkID );
+                if ( !$urlObj ) // an error occured
+                {
+                    /// @todo log warning
+                    continue;
+                }
+                $url = $urlObj->attribute( 'url' );
+                $node->setAttribute( 'href', $url );
+                $node->removeAttribute( 'url_id' );
+            }
+            elseif ( $objectID )
+            {
+                $object = eZContentObject::fetch( $objectID, false );
+                if ( is_array( $object ) )
+                {
+                    $node->setAttribute( 'object_remote_id', $ridGenerator->buildRemoteId( $objectID, $object['remote_id'], 'object' ) );
+                }
+                /// @todo log warning if not found
+
+                if ( $isObject )
+                {
+                    $node->removeAttribute( 'id' );
+                }
+                else
+                {
+                    $node->removeAttribute( 'object_id' );
+                }
+            }
+            elseif ( $nodeID )
+            {
+                $nodeData = eZContentObjectTreeNode::fetch( $nodeID, false, false );
+                if ( is_array( $nodeData ) )
+                {
+                    $node->setAttribute( 'node_remote_id',  $ridGenerator->buildRemoteId( $nodeID, $nodeData['remote_id'], 'node' ) );
+                }
+                /// @todo log warning if not found
+
+                $node->removeAttribute( 'node_id' );
+            }
+        }
     }
 
 }

@@ -466,7 +466,8 @@ class eZContentStagingEvent extends eZPersistentObject
             if ( !$target )
             {
                 eZDebug::writeError( "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", target not found", __METHOD__ );
-                $results[$event->ID] = self::ERROR_NOTARGETDEFINED;
+                //$results[$event->ID] = self::ERROR_NOTARGETDEFINED;
+                $results[$event->ID] = "Can not sync event: its target feed is missing";
                 unset( $events[$id] );
                 continue;
             }
@@ -476,7 +477,8 @@ class eZContentStagingEvent extends eZPersistentObject
                 if ( !class_exists( $class ) )
                 {
                     eZDebug::writeError( "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", class $class not found", __METHOD__ );
-                    $results[$event->ID] = self::ERROR_NOTRANSPORTCLASS;
+                    //$results[$event->ID] = self::ERROR_NOTRANSPORTCLASS;
+                    $results[$event->ID] = "Can not sync event: its target feed transport class is missing";
                     unset( $events[$id] );
                     continue;
                 }
@@ -493,7 +495,7 @@ class eZContentStagingEvent extends eZPersistentObject
             if ( $event->Status != self::STATUS_TOSYNC )
             {
                 /// @todo !important check that status is an int beteen 1 and 9...
-                $results[$event->ID] = $event->Status * -1;
+                $results[$event->ID] = "Can not sync event: not in pending status. Status: " . $event->Status;
             }
             else
             {
@@ -510,13 +512,14 @@ class eZContentStagingEvent extends eZPersistentObject
                     $result = $transport->syncEvents( array( $event ) );
                     $result = $result[0];
                 }
-                catch( exception $e)
+                catch( exception $e )
                 {
                     /// @todo !important use exception error code ?
-                    $result = self::ERROR_TRANSPORTEXCEPTION;
+                    //$result = self::ERROR_TRANSPORTEXCEPTION;
+                    $result = $e->getMessage();
                 }
 
-                if ( $result != 0 )
+                if ( $result !== 0 )
                 {
                     eZDebug::writeError( "Failed syncing event " . $event->ID . ", transport error code: $result", __METHOD__ );
                     $event->Status = self::STATUS_TOSYNC;

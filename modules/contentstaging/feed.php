@@ -57,11 +57,11 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
             $event = $tosync[$id];
             if ( $resultCode !== 0 )
             {
-                $actionErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
+                $actionErrors[] = " Event to be synchronised to feed \"" . $event->attribute( 'target_id' ) . "\": failure ($resultCode) [Object id: " . $event->attribute( 'object_id' ) . ", Event id: $id]";
             }
             else
             {
-                $actionResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
+                $actionResults[] = "Event succesfully synchronised to feed \"" . $event->attribute( 'target_id' ) . "\" [Object id: " . $event->attribute( 'object_id' ) . ", Event id: $id]";
             }
         }
 

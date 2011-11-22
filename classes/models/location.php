@@ -169,5 +169,32 @@ class eZContentStagingLocation extends contentStagingBase
             eZContentObjectTreeNode::unhideSubTree( $node );
         }
     }
+
+    /**
+    * Checks differences between the current node and another one
+    * @return integer a bitmask of differences
+    * /
+    function checkDifferences( array $otherNode )
+    {
+        $out = 0;
+
+        $selfNode = (array) $this;
+        if ( $selfNode['hidden'] != $otherNode['hidden'] )
+        {
+            $out = $out & self::DIFF_VISIBILITY;
+        }
+
+        if ( $selfNode['sortField'] != $otherNode['sortField'] )
+        {
+            $out = $out & self::DIFF_SORTFIELD;
+        }
+
+        if ( $selfNode['sortField'] != $otherNode['sortOrder'] )
+        {
+            $out = $out & self::DIFF_SORTORDER;
+        }
+
+        $out = 0;
+    }*/
 }
 

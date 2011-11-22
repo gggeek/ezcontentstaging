@@ -25,6 +25,16 @@ class eZNullStagingTransport implements eZContentStagingTransport
     {
         return 0;
     }
+
+    function checkNode( eZContentObjectTreeNode $node )
+    {
+        return 0;
+    }
+
+    function checkObject( eZContentObject $object )
+    {
+        return 0;
+    }
 }
 
 ?>
