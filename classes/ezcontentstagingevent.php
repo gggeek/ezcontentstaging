@@ -55,7 +55,7 @@ class eZContentStagingEvent extends eZPersistentObject
         8192 => 'content state changed',
         16384 => 'child priority changed',
         32768 => 'section changed',
-        65536 => 'feed initialization'
+        65536 => 'node initialization'
     );
 
     const STATUS_TOSYNC = 0;

@@ -78,7 +78,7 @@
 
 Phase 2 (?)
 
-. source server: cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
+. source server: finish cli script that resets and initializes feeds. Also creates a publish event for all of content (same az efindexcontents)
 
 . rest server: produce patches for ezp 4.6
 
@@ -107,19 +107,6 @@ Phase 2 (?)
 
 . rest protocol: have source server use the "Fields" param in query string to limit data returned by target server and reduce bandwidth usage
 
-. source server: check changes in events definitions (either operation definition or invocation) from ezp 4.1 to 4.5
-  - removelocation: checked
-  - addlocation: ok
-  - hide: ok
-  - sort: ok
-  - set section:  ok
-  - update priority: ok
-  - delete: ok
-  - removetranslation: ok
-  - updatealwaysavailable
-  - updatemainassignment
-  - updateinitiallanguage
-
 . source server: refactor diffing of content in separate classes
 
 
@@ -139,3 +126,6 @@ Phase 2:
 . source server: finish case where a move event becomes a create for a target server (create all versions, all languages)
 
 Phase 3:
+
+. add opportunity to add custom filters on outgoing events (pre-queueing, at-sending, more?)
+. add script that inits a feed with a non-empty target server (creates init-node events based eg. on node paths)
