@@ -3,9 +3,9 @@
  * File containing the ezpRestRequest class
  *
  * @copyright Copyright (C) 1999-2011 eZ Systems AS. All rights reserved.
- * @license http://ez.no/software/proprietary_license_options/ez_proprietary_use_license_v1_0 eZ Proprietary Use License v1.0
+ * @license http://ez.no/eZPublish/Licenses/eZ-Business-Use-License-Agreement-eZ-BUL-Version-2.0 eZ Business Use License Agreement Version 2.0
+ * @version 4.6.0
  * @package rest
- *
  */
 
 /**
@@ -82,7 +82,10 @@ class ezpRestRequest extends ezcMvcRequest
      * @param ezcMvcRawRequest $raw
      * @param array(ezcMvcRequestCookie) $cookies
      * @param bool $isFatal
+     * @param string|null $originalProtocol Uses $protocol if null
      * @param array $inputVariables The PUT & DELETE input variables that are available in the request
+     * @return ezpRestRequest
+     *
      */
     public function __construct( $date = null, $protocol = '',
         $host = '', $uri = '', $requestId = '', $referrer = '',
@@ -140,6 +143,7 @@ class ezpRestRequest extends ezcMvcRequest
 
     /**
      * Returns base URI with protocol and host (e.g. http://myhost.com/foo/bar)
+     *
      * @return string
      */
     public function getBaseURI()
@@ -155,6 +159,7 @@ class ezpRestRequest extends ezcMvcRequest
 
     /**
      * Returns the host with the protocol
+     *
      * @return string
      */
     public function getHostURI()
@@ -168,6 +173,7 @@ class ezpRestRequest extends ezcMvcRequest
 
     /**
      * Returns current content variables as a regular query string (e.g. "foo=bar&this=that")
+     *
      * @param bool $withQuestionMark If true, the question mark ("?") will be added
      * @return string
      */
@@ -187,6 +193,20 @@ class ezpRestRequest extends ezcMvcRequest
             $queryString .= implode( '&', $aParams );
         }
         return $queryString;
+    }
+
+    /**
+     * Get parsed request body based on content type as a php hash.
+     *
+     * In PUT / POST currently only supports application/x-www-form-urlencoded and application/json,
+     * for anything else use ->body atm. If POST then ->post is returned.
+     *
+     * @todo Add some sort of configurable lazy loaded request body handler for parsing misc content type.
+     * @return array|null Null on unsupported protocol or content type.
+     */
+    public function getParsedBody()
+    {
+        return $this->inputVariables;
     }
 }
 ?>
