@@ -302,11 +302,25 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Error while publishing version" );
         }
 
+        /*var_dump( $refresh );
+        var_dump( $version );
+        var_dump( $object );
+        die();*/
+
+        // in case version created is the 1st, return location address
         $result = new ezpRestMvcResult();
-        /*$result->status = new eZContentStagingCreatedHttpResponse(
-            '/content/objects/' . $object->attribute( 'id' ) . 'versions/' . $version->attribute( 'version' )
-        );*/
-        $result->status = new ezpRestHttpResponse( 204 );
+        if ( $version->attribute( 'version' ) == 1 )
+        {
+            $refresh = eZContentObject::fetch( $object->attribute( 'id' ) );
+            $node = $refresh->attribute( 'main_node' );
+            $result->status = new eZContentStagingCreatedHttpResponse(
+                '/content/locations/' . $node->attribute( 'node_id' )
+            );
+        }
+        else
+        {
+            $result->status = new ezpRestHttpResponse( 204 );
+        }
         return $result;
     }
 

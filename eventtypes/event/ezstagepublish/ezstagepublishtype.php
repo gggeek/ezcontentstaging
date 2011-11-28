@@ -44,10 +44,6 @@ class eZStagePublishType extends eZWorkflowEventType
         $initialLanguageID = $version->attribute( 'initial_language_id' );
         $initialLanguage = eZContentLanguage::fetch( $initialLanguageID );
 
-        /*echo '<pre>';
-        var_dump( $version );
-        die();*/
-
         // if this is a 1st version, we need to identify parent node and store its ids too
 
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
@@ -57,6 +53,15 @@ class eZStagePublishType extends eZWorkflowEventType
             'objectRemoteID' => $object->attribute( 'remote_id' ),
             'parentNodeID' => $parentNode->attribute( 'node_id' ),
             'parentNodeRemoteID' => $parentNode->attribute( 'remote_id' ) );
+
+        // in case of a new version, save new node id + remote id too
+        if ( $versionID == 1 )
+        {
+            $node = $object->attribute( 'main_node' );
+            $affectedObjectData['nodeID'] = $node->attribute( 'node_id' );
+            $affectedObjectData['nodeRemoteID'] = $node->attribute( 'remote_id' );
+        }
+
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
