@@ -20,13 +20,14 @@ Installation
 ------------
 
 Target server:
+. unzip the extension, enable it (make sure to regenerate autoloads)
 . enable rewrite rules to make the rest api accessible
 . disable oauth authentication
 
 Source server:
 . unzip the extension, enable it (make sure to regenerate autoloads)
-. create the new db table: either go to setup/Upgrade check/DB Upgrade check in the admin interface, or use sql script in the sql/ folder
-. copy the files from the pat hes directory over the original eZ Publish kernel files (back up original first)
+. create the new db tables: either go to setup/Upgrade check/DB Upgrade check in the admin interface, or use sql script in the sql/ folder
+. copy the files from the patches directory over the original eZ Publish kernel files (back up originals first)
 . enable all the needed workflow events:
   - create one workflow per trigger for all content-related triggers:
   - add to each workflow one event of type "stage <xxx>"
@@ -39,11 +40,43 @@ Source server:
   . make sure all content classes, sections, languages, object states, are defined the same on source and target server
     (this has to be done by hand)
   . in contenstaging.ini.append.php:
-    ...
-  . in wsproviders.ini.append.php
-    ...
-. in the Administration interface, click on the "init feed" button and sync the generated event
+    define every target server feed to sync to content to: ...
+	
+    [GeneralSettings]
+    TargetList[]=<feedname>
 
+    [Target_<feedname>]
+    Name=<Name shown to editors>
+    TransportClass=eZRestApiGGWSClientStagingTransport
+    Server=<webservicename>
+	RemoteIdGeneratorClass=eZContentStagingLocalAsRemoteIdGenerator
+    Subtrees[]=<nodeid_on_source_server>
+    RemoteSubtrees[]=<nodeid_on_remote_server>
+
+    (add as many Subtrees and RemoteSubtrees values as needed, eg. one for Media/Files, one for Media/Images and one for Media/Multimedias folders)
+  . in wsproviders.ini.append.php
+    for every target server, define a corresponding webservices server:
+
+	[<webservicename>]
+	providerType=REST
+	providerUri=http://<url>/api/contentstaging/v1
+    Options[]
+
+. in the Administration interface, click on the "init feed" button and sync the generated event(s)
+  - it is a good idea to have an empty content tree in the target server to sync content to
+  - existing content in the content tree in the source server is currently not supported: only
+    content created after the feed has been defined will be synced succesfully
 
 Troubleshooting
 ---------------
+
+. after defining the target feed in wsproviders.ini.append.php, use the webservices debugger
+  in the admin interface to troubleshoot connection problems:
+  - the target server should be listed on the left-hand column, at the bottom
+  - click on it to preload its url in the debugger
+  - click on "Execute method"
+  - insert "content/locations/2" as method name
+  - set "show debug info" to "More"
+  - click on Execute
+  - if all is well, the response panel at the bottom should include a "REST call OK" line
+
