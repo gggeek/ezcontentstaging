@@ -21,6 +21,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id',
                     'eZContentStagingRestContentController',
                     'load',
+                    array(),
                     'http-get'
                 ),
                 1
@@ -30,6 +31,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId',
                     'eZContentStagingRestContentController',
                     'load',
+                    array(),
                     'http-get'
                 ),
                 1
@@ -39,6 +41,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects',
                     'eZContentStagingRestContentController',
                     'create',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -48,6 +51,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id/versions',
                     'eZContentStagingRestContentController',
                     'addVersion',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -57,6 +61,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId/versions',
                     'eZContentStagingRestContentController',
                     'addVersion',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -66,6 +71,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id/versions/:versionNr',
                     'eZContentStagingRestContentController',
                     'publishVersion',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -75,6 +81,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId/versions/:versionNr',
                     'eZContentStagingRestContentController',
                     'publishVersion',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -84,6 +91,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id',
                     'eZContentStagingRestContentController',
                     'update',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -93,6 +101,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId',
                     'eZContentStagingRestContentController',
                     'update',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -102,6 +111,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id',
                     'eZContentStagingRestContentController',
                     'remove',
+                    array(),
                     'http-delete'
                 ),
                 1
@@ -111,6 +121,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId',
                     'eZContentStagingRestContentController',
                     'remove',
+                    array(),
                     'http-delete'
                 ),
                 1
@@ -120,6 +131,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id/locations',
                     'eZContentStagingRestContentController',
                     'addLocation',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -129,6 +141,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId/locations',
                     'eZContentStagingRestContentController',
                     'addLocation',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -138,6 +151,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id/section',
                     'eZContentStagingRestContentController',
                     'updateSection',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -147,6 +161,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId/section',
                     'eZContentStagingRestContentController',
                     'updateSection',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -156,6 +171,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id/states',
                     'eZContentStagingRestContentController',
                     'updateStates',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -165,6 +181,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId/states',
                     'eZContentStagingRestContentController',
                     'updateStates',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -174,6 +191,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/:Id/languages/:Language',
                     'eZContentStagingRestContentController',
                     'removeLanguage',
+                    array(),
                     'http-delete'
                 ),
                 1
@@ -183,6 +201,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/objects/remote/:remoteId/languages/:language',
                     'eZContentStagingRestContentController',
                     'removeLanguage',
+                    array(),
                     'http-delete'
                 ),
                 1
@@ -193,6 +212,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/:Id',
                     'eZContentStagingRestLocationController',
                     'load',
+                    array(),
                     'http-get'
                 ),
                 1
@@ -202,6 +222,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/remote/:remoteId',
                     'eZContentStagingRestLocationController',
                     'load',
+                    array(),
                     'http-get'
                 ),
                 1
@@ -211,6 +232,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/:Id',
                     'eZContentStagingRestLocationController',
                     'hideUnhide',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -220,6 +242,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/remote/:remoteId',
                     'eZContentStagingRestLocationController',
                     'hideUnhide',
+                    array(),
                     'http-post'
                 ),
                 1
@@ -231,6 +254,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/:Id',
                     'eZContentStagingRestLocationController',
                     'update',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -240,6 +264,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/remote/:remoteId',
                     'eZContentStagingRestLocationController',
                     'update',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -249,6 +274,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/:Id/parent',
                     'eZContentStagingRestLocationController',
                     'move',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -258,6 +284,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/remote/:remoteId/parent',
                     'eZContentStagingRestLocationController',
                     'move',
+                    array(),
                     'http-put'
                 ),
                 1
@@ -267,6 +294,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/:Id',
                     'eZContentStagingRestLocationController',
                     'remove',
+                    array(),
                     'http-delete'
                 ),
                 1
@@ -276,6 +304,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                     '/content/locations/remote/:remoteId',
                     'eZContentStagingRestLocationController',
                     'remove',
+                    array(),
                     'http-delete'
                 ),
                 1

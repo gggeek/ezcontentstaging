@@ -10,7 +10,7 @@ class ezpMvcRailsRoute extends ezcMvcRailsRoute
     /**
      * Holds protocol string.
      *
-     * @var string
+     * @var string|null
      */
     protected $protocol;
 
@@ -23,10 +23,10 @@ class ezpMvcRailsRoute extends ezcMvcRailsRoute
      * @param string $pattern
      * @param string $controllerClassName
      * @param string $action
-     * @param string $protocol
      * @param array $defaultValues
+     * @param null|string $protocol Match specific protocol if string value, eg: 'http-get'
      */
-    public function __construct( $pattern, $controllerClassName, $action = null, $protocol = 'http-get', array $defaultValues = array() )
+    public function __construct( $pattern, $controllerClassName, $action = null, array $defaultValues = array(), $protocol = 'http-get' )
     {
         $this->protocol = $protocol;
         parent::__construct( $pattern, $controllerClassName, $action, $defaultValues );
@@ -40,7 +40,7 @@ class ezpMvcRailsRoute extends ezcMvcRailsRoute
      */
     public function matches( ezcMvcRequest $request )
     {
-        if ( $request->protocol == $this->protocol )
+        if ( $this->protocol === null || $request->protocol == $this->protocol )
             return parent::matches( $request );
 
         return null;
