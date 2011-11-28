@@ -134,6 +134,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             {
                 return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with remote id '{$this->request->inputVariables['mainLocationRemoteId']}' not found" );
             }
+            /// @todo check if new main location is same as current
             if ( ( $result = eZContentStagingLocation::updateMainLocation(
                     $node,
                     $newMainLocation )
@@ -158,7 +159,6 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
      * @return ezpRestMvcResult
      *
      * @todo add support for parentId also besides parentRemoteId
-     * @todo move logic to model
      */
     public function doMove()
     {
@@ -180,13 +180,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$destParentRemoteId}'" );
         }
 
-        /// @todo perms checking
-
-        eZContentOperationCollection::moveNode(
-            $node->attribute( 'node_id' ),
-            $node->attribute( 'contentobject_id' ),
-            $dest->attribute( 'node_id' )
-        );
+        eZContentStagingLocation::move( $node, $dest );
 
         $result = new ezpRestMvcResult();
         //$newNode = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
@@ -203,7 +197,6 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
      * - DELETE /content/locations/<Id>?trash=true|false
      *
      * @return ezpRestMvcResult
-     * @todo move logic to model
      */
     public function doRemove()
     {
@@ -220,12 +213,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             $moveToTrash = ( $this->request->get['trash'] !== 'false' );
         }
 
-        /// @todo add perms checking
-
-        eZContentObjectTreeNode::removeSubtrees(
-            array( $node->attribute( 'node_id' ) ),
-            $moveToTrash
-        );
+        eZContentStagingLocation::remove( $node, $moveToTrash );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );

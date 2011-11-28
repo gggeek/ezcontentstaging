@@ -254,6 +254,30 @@ class eZContentStagingContent extends contentStagingBase
     }
 
     /**
+    * @return int 0 on sucess
+    * @todo use exceptions / return more meaningful errors
+    */
+    static function publishVersion( eZContentObject $object, eZContentObjectVersion $version )
+    {
+        // we assume that this operation always exists ;-)
+        $operationResult = eZOperationHandler::execute(
+            'content',
+            'publish',
+            array(
+                'object_id' => $object->attribute( 'id' ),
+                'version' => $version->attribute( 'version' )
+            )
+        );
+        // hand-tested: when publication goes ok, that's what we get
+        /// @todo test: is it always 1 or is it the version nr?
+        if ( !is_array( $operationResult ) || @$operationResult['status'] != 1 )
+        {
+            return -1;
+        }
+        return 0;
+    }
+
+    /**
      * Create a new location for the $object under the $parent node.
      *
      * @param eZContentObject $object
@@ -263,36 +287,191 @@ class eZContentStagingContent extends contentStagingBase
      * @param int $sortField
      * @param int $sortOrder
      * @return eZContentObjectTreeNode|string
+     *
+     * @todo return an ok/ko value
+     * @todo add a try/catch block for transactions?
+     * @todo perms checking
      */
-    static function addAssignment( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
+    static function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
     {
         $sortField = self::decodeSortField( $sortField );
         $sortOrder = self::decodeSortOrder( $sortOrder);
 
-        /// @todo do we need a transaction here?
-        $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-        try
+        $selectedNodeIDArray = array();
+
+        if ( eZOperationHandler::operationIsAvailable( 'content_addlocation' ) )
         {
-            $db->begin();
-            $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
-            $newNode->setAttribute( 'contentobject_is_published', 1 );
-            $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
-            $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
-            $newNode->setAttribute( 'priority', $priority );
-            $newNode->setAttribute( 'sort_field', $sortField );
-            $newNode->setAttribute( 'sort_order', $sortOrder );
-            // Make sure the url alias is set updated.
-            $newNode->updateSubTreePath();
-            $newNode->sync();
-            $db->commit();
-            return $newNode;
-            /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'addlocation',
+                array(
+                    'node_id' => $object->attribute( 'main_node_id' ),
+                    'object_id' => $object->attribute( 'id' ),
+                    'select_node_id_array' => $selectedNodeIDArray ),
+                null,
+                true );
         }
-        catch ( exception $e )
+        else
         {
-            $db->rollback();
-            return $e->getMessage();
+            eZContentOperationCollection::addAssignment( $object->attribute( 'main_node_id' ), $object->attribute( 'id' ), $selectedNodeIDArray );
+
+            /* manual creation
+            /// @todo do we need a transaction here?
+            $db = eZDB::instance();
+            $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+            try
+            {
+                $db->begin();
+                $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
+                $newNode->setAttribute( 'contentobject_is_published', 1 );
+                $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
+                $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
+                $newNode->setAttribute( 'priority', $priority );
+                $newNode->setAttribute( 'sort_field', $sortField );
+                $newNode->setAttribute( 'sort_order', $sortOrder );
+                // Make sure the url alias is set updated.
+                $newNode->updateSubTreePath();
+                $newNode->sync();
+                $db->commit();
+                return $newNode;
+                /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
+            }
+            catch ( exception $e )
+            {
+                $db->rollback();
+                return $e->getMessage();
+            }*/
+        }
+    }
+
+    /**
+     * @todo return an ok/ko value
+     * @todo add a try/catch block for transactions?
+     * @todo perms checking
+     */
+    static function updateSection( eZContentObject $object, $sectionId )
+    {
+        if ( eZOperationHandler::operationIsAvailable( 'content_updatesection' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'updatesection',
+                    array(
+                        'node_id' => $object->attribute( 'main_node_id' ),
+                       'selected_section_id' => $sectionId ),
+                null,
+                true );
+
+        }
+        else
+        {
+            eZContentOperationCollection::updateSection( $object->attribute( 'main_node_id' ), $sectionId );
+            /* manual update
+            eZContentObjectTreeNode::assignSectionToSubTree(
+                $object->attribute( 'main_node_id' ),
+                $sectionId
+            );
+            */
+        }
+    }
+
+    /**
+    * @todo
+    */
+    static function updateStates( eZContentObject $object, $states )
+    {
+        if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+        {
+            $operationResult = eZOperationHandler::execute( 'content', 'updateobjectstate',
+            array( 'object_id'     => $objectID,
+                   'state_id_list' => $selectedStateIDList ) );
+        }
+        else
+        {
+            eZContentOperationCollection::updateObjectState( $objectID, $selectedStateIDList );
+        }
+    }
+
+    /**
+     * @param bool $moveToTrash
+     *
+     * @todo return an ok/ko value
+     * @todo add a try/catch block for transactions?
+     * @todo perms checking
+     * @todo handle Content object without nodes ?
+     */
+    static function remove( eZContentObject $object, $moveToTrash )
+    {
+        $nodeIDs = array();
+        foreach( $object->attribute( 'assigned_nodes' ) as $node )
+        {
+            $nodeIDs[] = $node->attribute( 'node_id' );
+        }
+
+        if ( eZOperationHandler::operationIsAvailable( 'content_delete' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'delete',
+                array(
+                    'node_id_list' => $nodeIDs,
+                    'move_to_trash' => $moveToTrash ),
+                null, true );
+        }
+        else
+        {
+            eZContentOperationCollection::deleteObject( $nodeIDs, $moveToTrash );
+        }
+    }
+
+    /**
+     * @todo return an ok/ko value
+     * @todo add a try/catch block for transactions?
+     * @todo perms checking
+     */
+    static function updateInitialLanguage( eZContentObject $object, $initialLanguage )
+    {
+        if ( eZOperationHandler::operationIsAvailable( 'content_updateinitiallanguage' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'updateinitiallanguage',
+                array(
+                    'object_id' => $object->attribute( 'id' ),
+                    'new_initial_language_id' => $initialLanguage,
+                    // note : the $nodeID parameter is ignored here but is
+                    // provided for events that need it
+                    'node_id' => $object->attribute( 'main_node_id' ) ) );
+        }
+        else
+        {
+            eZContentOperationCollection::updateInitialLanguage( $object->attribute( 'id' ), $initialLanguage );
+        }
+    }
+
+    /**
+     * @param bool $alwaysAvailable
+     * @todo return an ok/ko value
+     * @todo add a try/catch block for transactions?
+     * @todo perms checking
+     */
+    static function updateAlwaysAvailable( eZContentObject $object, $alwaysAvailable )
+    {
+        if ( eZOperationHandler::operationIsAvailable( 'content_updatealwaysavailable' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'updatealwaysavailable',
+                array(
+                    'object_id' => $object->attribute( 'id' ),
+                    'new_always_available' => $alwaysAvailable,
+                    // note : the $nodeID parameter is ignored here but is
+                    // provided for events that need it
+                    'node_id' => $object->attribute( 'main_node_id' ) ) );
+        }
+        else
+        {
+            eZContentOperationCollection::updateAlwaysAvailable( $objectID, $alwaysAvailable );
         }
     }
 
@@ -323,5 +502,29 @@ class eZContentStagingContent extends contentStagingBase
         }
     }
 
+    /**
+    * @todo return an ok/ko value
+    * @todo add a try/catch block for transactions?
+    * @todo perms checking
+    */
+    static function removeTranslations( eZContentObject $object, $translations )
+    {
+        if ( eZOperationHandler::operationIsAvailable( 'content_removetranslation' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'removetranslation',
+                array(
+                    'object_id' => $object->attribute( 'id' ),
+                    'language_id_list' => $translations,
+                    // note : the $nodeID parameter is ignored here but is
+                    // provided for events that need it
+                    'node_id' => $object->attribute( 'main_node_id' ) ) );
+        }
+        else
+        {
+            eZContentOperationCollection::removeTranslation( $object->attribute( 'id' ), $translations );
+        }
+    }
 }
 

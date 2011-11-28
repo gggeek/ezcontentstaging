@@ -72,25 +72,45 @@ class eZContentStagingLocation extends contentStagingBase
         $sortField = self::decodeSortField( $sortField );
         $sortOrder = self::decodeSortOrder( $sortOrder);
 
-        $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-        try
+        if ( eZOperationHandler::operationIsAvailable( 'content_sort' ) )
         {
-            $node->setAttribute( 'sort_field', $sortField );
-            $node->setAttribute( 'sort_order', $sortOrder );
-            $node->store();
-            eZContentCacheManager::clearContentCache(
-                $node->attribute( 'contentobject_id' )
-            );
+            $operationResult = eZOperationHandler::execute(
+            'content',
+            'sort',
+            array( 'node_id' => $node->attribute( 'node_id' ),
+                   'sorting_field' => $sortField,
+                   'sorting_order' => $sortOrder ),
+            null, true );
+            /// @todo test if any errors occurred
             return 0;
+
         }
-        catch ( exception $e )
+        else
         {
-            if ( $db->transactionCounter() )
-            {
-                $db->rollback();
-            }
-            return $e->getMessage();
+            $result = eZContentOperationCollection::changeSortOrder( $node->attribute( 'node_id' ), $sortField, $sortOrder );
+            return ( $result['status'] == true ) ? 0 : -1;
+
+            /* manual update
+               $db = eZDB::instance();
+               $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+               try
+               {
+                   $node->setAttribute( 'sort_field', $sortField );
+                   $node->setAttribute( 'sort_order', $sortOrder );
+                   $node->store();
+                   eZContentCacheManager::clearContentCache(
+                       $node->attribute( 'contentobject_id' )
+                   );
+                   return 0;
+               }
+               catch ( exception $e )
+               {
+                   if ( $db->transactionCounter() )
+                   {
+                       $db->rollback();
+                   }
+                   return $e->getMessage();
+               }*/
         }
     }
 
@@ -99,27 +119,50 @@ class eZContentStagingLocation extends contentStagingBase
      *
      * @param eZContentObjectTreeNode $node
      * @param int $priority
+     *
+     * @todo shall we fix priorities of other nodes too if there is a conflict?
      */
     static function updatePriority( eZContentObjectTreeNode $node, $priority )
     {
-        $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-        try
+        // note: the eZ API for this is mind-bending to say the least...
+        $priorityArray = array( $priority );
+        $priorityIDArray = array( $node->attribute( 'node_id') );
+
+        if ( eZOperationHandler::operationIsAvailable( 'content_updatepriority' ) )
         {
-            $node->setAttribute( 'priority', $priority );
-            $node->store();
-            eZContentCacheManager::clearContentCache(
-                $node->attribute( 'contentobject_id' )
-            );
-            return 0;
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'updatepriority',
+                array(
+                    'node_id' => $node->attribute( 'node_id' ),
+                    'priority' => $priorityArray,
+                    'priority_id' => $priorityIDArray ),
+                null, true );
         }
-        catch ( exception $e )
+        else
         {
-            if ( $db->transactionCounter() )
-            {
-                $db->rollback();
-            }
-            return $e->getMessage();
+            eZContentOperationCollection::updatePriority( $node->attribute( 'node_id'), $priorityArray, $priorityIDArray );
+
+            /* manual update
+               $db = eZDB::instance();
+               $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+               try
+               {
+                   $node->setAttribute( 'priority', $priority );
+                   $node->store();
+                   eZContentCacheManager::clearContentCache(
+                       $node->attribute( 'contentobject_id' )
+                   );
+                   return 0;
+               }
+               catch ( exception $e )
+               {
+                   if ( $db->transactionCounter() )
+                   {
+                       $db->rollback();
+                   }
+                   return $e->getMessage();
+               }*/
         }
     }
 
@@ -160,13 +203,106 @@ class eZContentStagingLocation extends contentStagingBase
      */
     static function updateVisibility( eZContentObjectTreeNode $node, $hide )
     {
-        if ( $hide )
+        if ( $node->attribute( 'is_hidden' ) != $hide )
         {
-            eZContentObjectTreeNode::hideSubTree( $node );
+            if ( eZOperationHandler::operationIsAvailable( 'content_hide' ) )
+            {
+                $operationResult = eZOperationHandler::execute( 'content',
+                                                                'hide',
+                                                                 array( 'node_id' => $node->attribute( 'node_id' ) ),
+                                                                 null, true );
+            }
+            else
+            {
+                eZContentOperationCollection::changeHideStatus( $node->attribute( 'node_id' ) );
+                /* manual update
+                if ( $hide )
+                {
+                    eZContentObjectTreeNode::hideSubTree( $node );
+                }
+                else
+                {
+                    eZContentObjectTreeNode::unhideSubTree( $node );
+                }*/
+            }
+        }
+    }
+
+    static function updateMainLocation( eZContentObjectTreeNode $node, eZContentObjectTreeNode $newMainLocation )
+    {
+        $mainAssignmentID = $node->attribute( 'object' )->attribute( 'main_node' )->attribute( 'node_id' );
+        if ( eZOperationHandler::operationIsAvailable( 'content_updatemainassignment' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'updatemainassignment',
+                array(
+                    'main_assignment_id' => $mainAssignmentID,
+                    'object_id' => $node->attribute( 'contentobject_id' ),
+                    'main_assignment_parent_id' => $newMainLocation->attribute( 'parent_node_id' ) ),
+                null,
+                true );
         }
         else
         {
-            eZContentObjectTreeNode::unhideSubTree( $node );
+            eZContentOperationCollection::UpdateMainAssignment(
+                $mainAssignmentID,
+                $node->attribute( 'contentobject_id' ),
+                $newMainLocation->attribute( 'parent_node_id' ) );
+        }
+    }
+
+    /**
+    * @todo return false on errors
+    * @todo add perms checking
+    */
+    static function move( eZContentObjectTreeNode $node, eZContentObjectTreeNode $dest )
+    {
+        if ( eZOperationHandler::operationIsAvailable( 'content_move' ) )
+        {
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'move',
+                array( 'node_id' => $node->attribute( 'node_id' ),
+                    'object_id' => $node->attribute( 'contentobject_id' ),
+                    $dest->attribute( 'node_id' ) ),
+                null,
+                true );
+        }
+        else
+        {
+            eZContentOperationCollection::moveNode(
+                $node->attribute( 'node_id' ),
+                $node->attribute( 'contentobject_id' ),
+                $dest->attribute( 'node_id' )
+            );
+        }
+    }
+
+    /**
+    * @param bool $totrash
+    * @todo add perms checking
+    */
+    static function remove( eZContentObjectTreeNode $node, $moveToTrash )
+    {
+        $removeList = array( $node->attribute( 'node_id' ) );
+
+        if ( eZOperationHandler::operationIsAvailable( 'content_removelocation' ) )
+        {
+            $operationResult = eZOperationHandler::execute( 'content',
+                                                            'removelocation', array( 'node_list' => $removeList ),
+                                                            null,
+                                                            true );
+        }
+        else
+        {
+            eZContentOperationCollection::removeNodes( $removeList );
+
+            /* manual update
+            eZContentObjectTreeNode::removeSubtrees(
+                array( $node->attribute( 'node_id' ) ),
+                $moveToTrash
+            );*/
         }
     }
 
