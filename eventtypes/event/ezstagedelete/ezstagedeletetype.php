@@ -54,7 +54,7 @@ class eZStageDeleteType extends eZWorkflowEventType
                 continue;
             }
 
-            $object = $node->attribute( 'contentobject' );
+            $object = $node->attribute( 'object' );
             $objectID = $object->attribute( 'id' );
             //$nodeRemoteID = $node->attribute( 'remote_id' );
             $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );

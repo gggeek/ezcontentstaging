@@ -42,8 +42,9 @@ class eZStageMoveType extends eZWorkflowEventType
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
+        $object = $node->attribute( 'object' );
         $nodePath = array( $node->attribute( 'path_string' ) );
-        $newParentNodePath = $newParentNode( $newParentNode->attribute( 'path_string' ) );
+        $newParentNodePath = $newParentNode->attribute( 'path_string' );
         $affectedNodes = array( $nodeID );
         $movedNodeData = array(
             'nodeID' => $nodeID,
