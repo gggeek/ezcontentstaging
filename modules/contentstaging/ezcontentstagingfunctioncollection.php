@@ -41,17 +41,13 @@ class eZContentStagingFunctionCollection
     /*static function fetchObjectSyncTargets( $object_id )
     {
         return array( 'result' => eZContentStagingEvent::fetchByObject( $object_id ) );
-    }
+    }*/
 
     static function fetchFeedsByNodeId( $node_id=false )
     {
         return array( 'result' => eZContentStagingTarget::fetchList() );
     }
 
-    static function fetchSyncSumUpEvents( $target_id=false, $offset=false, $limit=false, $group=true )
-    {
-        return array( 'result' => eZContentStagingEvent::fetchSumUpList( $target_id, true, $offset, $limit, $group ) );
-    }*/
 }
 
 ?>
