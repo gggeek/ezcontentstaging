@@ -1,3 +1,9 @@
+{*
+Template taken from ezwt extension 1.4.0 and patched.
+We could have used CustomTemplateSettings to add the buttons we want, but that
+would have forced us to post to content/action instead of contentstaging/<xxx>
+*}
+
 {def $current_node = fetch( 'content', 'node', hash( 'node_id', $current_node_id ) )
      $content_object = $current_node.object
      $can_edit_languages = $content_object.can_edit_languages
