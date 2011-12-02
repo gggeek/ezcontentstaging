@@ -1,19 +1,19 @@
 {**
-  Template for the dashboard block listing pending sync events
+  Template for the dashboard block listing pending sync events - grouped by object
   (nb: a sync event is neither an object nor a node)
 *}
 
 {* gg: cache-block to be reviewed - as content-altering operations might not expire it... *}
-{def $user_hash = concat( $user.role_id_list|implode( ',' ), ',', $user.limited_assignment_value_list|implode( ',' ) )}
-{cache-block keys=array( $user_hash )}
+{*def $user_hash = concat( $user.role_id_list|implode( ',' ), ',', $user.limited_assignment_value_list|implode( ',' ) )}
+{cache-block keys=array( $user_hash )*}
 
 {* gg: could avoid showing events that are in "syncing" state... *}
-{def $sync_events = fetch( 'contentstaging', 'sync_events', hash( 'limit', $block.number_of_items ) )
-     $sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )}
+{def $sync_event_objs = fetch( 'contentstaging', 'sync_events_by_object', hash( 'limit', $block.number_of_items ) )
+     $sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
+     $sync_events_obj = false()}
 
-<h2>{'Contents synchronization events'|i18n( 'design/admin/dashboard/sync' )}</h2>
-
-{if $sync_events}
+<h2>{'Content to be synchronized'|i18n( 'contentstaging' )}</h2>
+{if $sync_event_objs}
 
 <table class="list" cellpadding="0" cellspacing="0" border="0">
     <tr>
@@ -25,11 +25,12 @@
         <th>{'Author'|i18n( 'design/admin/dashboard/all_sync_content' )}</th>
         <th class="tight"></th>
     </tr>
-    {foreach $sync_events as $sync_event sequence array( 'bglight', 'bgdark' ) as $style}
+    {foreach $sync_event_objs as $object_id => $sync_events sequence array( 'bglight', 'bgdark' ) as $style}
+        {set $sync_events_obj = $sync_events.0.object}
         <tr class="{$style}">
             <td>
                 {* for deleted objects we have no link to node anymore *}
-                {set $sync_nodes = $sync_event.nodes}
+                {*{set $sync_nodes = $sync_event.nodes}
                 {if $sync_nodes|count()}
                     {foreach $sync_nodes as $sync_node}
                         <a href={$sync_node.url|ezurl()}>{$sync_node.name|shorten(30)|wash}</a>
@@ -37,28 +38,30 @@
                     {/foreach}
                 {else}
                     {$sync_event.data.name|shorten('30')|wash()}
-                {/if}
+                {/if}*}
+                {$sync_events.0.object_id} ...
             </td>
             <td>
                 {* for deleted objects we have no data anymore... *}
-                {$sync_event.object.class_name|wash()}
+                {$sync_events_obj.class_name|wash()}
             </td>
             <td>
                 {* for deleted objects we have no data anymore... *}
-                {$sync_event.object.published|l10n('shortdate')}
+                {$sync_events_obj.published|l10n('shortdate')}
             </td>
             <td>
                 {* @todo for deleted objects, owner is not available so easily: use owner_id *}
-                <a href={$sync_event.object.owner.main_node.url_alias|ezurl()} title="{$sync_event.object.owner.name|wash()}">
-                    {$sync_event.object.owner.name|shorten('13')|wash()}
+                <a href={$sync_events_obj.owner.main_node.url_alias|ezurl()} title="{$sync_events_obj.owner.name|wash()}">
+                    {$sync_events_obj.owner.name|shorten('13')|wash()}
                 </a>
             </td>
             <td>
             {if $sync_access}
                 {* @todo use a different icon for in-sync events *}
-                {if eq($sync_event.status, 0)}<a href="{concat( 'contentstaging/sync/', $sync_event.id )|ezurl('no')}">{/if}
+                {*{if eq($sync_event.status, 0)}<a href="{concat( 'contentstaging/sync/', $sync_event.id )|ezurl('no')}">{/if}
                     <img src={'sync.gif'|ezimage} width="16px" height="16px" alt="{'Edit...'|i18n( 'design/admin/dashboard/all_sync_content' )}" title="{'Sync <%child_name>.'|i18n( 'design/admin/dashboard/all_sync_content',, hash( '%child_name', '...') )|wash}" />
-                {if eq($sync_event.status, 0)}</a>{/if}
+                {if eq($sync_event.status, 0)}</a>{/if}*}
+                to do...
             {else}
                 <img src={'sync-disabled.gif'|ezimage} width="16px" height="16px" alt="{'Sync...'|i18n( 'design/admin/dashboard/all_sync_content' )}" title="{'You do not have permission to sync <%child_name>.'|i18n( 'design/admin/dashboard/all_sync_content',, hash( '%child_name', '...' ) )|wash}" />
             {/if}
@@ -68,11 +71,11 @@
 </table>
 
 {else}
-    <p>{'Content synchronisation list is empty.'|i18n( 'design/admin/dashboard/all_sync_content' )}</p>
+    <p>{'Content synchronisation list is empty.'|i18n( 'contentstaging' )}</p>
 {/if}
 
-{undef $sync_events $sync_access}
+{undef $sync_event_objs $sync_access $sync_events_obj}
 
-{/cache-block}
+{*/cache-block}
 
-{undef $user_hash}
+{undef $user_hash*}

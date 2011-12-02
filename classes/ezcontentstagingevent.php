@@ -369,6 +369,7 @@ class eZContentStagingEvent extends eZPersistentObject
             $custom_conds .= self::languagesSQLFilter( $language );
         }
         $out = array();
+        $conds = $conditions;
         foreach( self::fetchObjectList( self::definition(),
                                         array( 'object_id' ),
                                         $conditions,
@@ -380,10 +381,10 @@ class eZContentStagingEvent extends eZPersistentObject
                                         null,
                                         $custom_conds ) as $row )
         {
-            $conditions = array( 'target_id' => $target_id, 'object_id' => $row['object_id'] );
+            $conds['object_id'] = $row['object_id'];
             $out[$row['object_id']] = self::fetchObjectList( self::definition(),
                                                              null,
-                                                             $conditions,
+                                                             $conds,
                                                              null, /// @todo sort by id
                                                              null,
                                                              $asObject,
