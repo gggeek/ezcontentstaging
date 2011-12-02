@@ -163,7 +163,7 @@ class eZContentStagingEvent extends eZPersistentObject
         if ( !$return )
         {
             // obj has been deleted, and we should have some obj data stored within the event
-            $data = json_decode( $this->data );
+            $data = $this->getData();
             if ( isset( $data['object'] ) )
             {
                 $return = $data['object'];

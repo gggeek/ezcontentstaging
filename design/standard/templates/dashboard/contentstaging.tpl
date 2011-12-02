@@ -26,6 +26,7 @@
         <th class="tight"></th>
     </tr>
     {foreach $sync_event_objs as $object_id => $sync_events sequence array( 'bglight', 'bgdark' ) as $style}
+        {* @bug if there are many events and one is of type delete, we should pick that one for obj. name *}
         {set $sync_events_obj = $sync_events.0.object}
         <tr class="{$style}">
             <td>
@@ -39,7 +40,7 @@
                 {else}
                     {$sync_event.data.name|shorten('30')|wash()}
                 {/if}*}
-                {$sync_events.0.object_id} ...
+                {$sync_events_obj.name|wash()}
             </td>
             <td>
                 {* for deleted objects we have no data anymore... *}

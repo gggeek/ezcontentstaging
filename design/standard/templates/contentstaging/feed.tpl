@@ -143,7 +143,7 @@ function checkAll()
                     {delimiter}<br/>{/delimiter}
                 {/foreach}
             {else}
-                {$sync_item.data.name|wash()}
+                {$sync_item.object.name|wash()}
             {/if}
         </td>
         <td>
@@ -156,8 +156,6 @@ function checkAll()
             {* nb: for deleted objects we have no link to node anymore *}
             {if $sync_nodes|count()}
                 {$sync_item.language.locale}
-            {else}
-                {$sync_item.data.language|wash()|d18n('ezcontentstaging')}
             {/if}
         </td>
     </tr>

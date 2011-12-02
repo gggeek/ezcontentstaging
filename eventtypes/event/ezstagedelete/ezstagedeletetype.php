@@ -58,7 +58,17 @@ class eZStageDeleteType extends eZWorkflowEventType
             $objectID = $object->attribute( 'id' );
             //$nodeRemoteID = $node->attribute( 'remote_id' );
             $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
-            $deletObjectData = array( "objectRemoteID" => $object->attribute( 'remote_id' ), "trash" => $trash, "name" => $object->attribute('name'), "language" => "all"  );
+            /// @bug we should not store object name in a version which is localized with current language...
+            /// @todo decide which data we save inside the 'object' array
+            $deletObjectData = array(
+                "objectRemoteID" => $object->attribute( 'remote_id' ),
+                "trash" => $trash,
+                "object" => array(
+                    "name" => $object->attribute( 'name' ),
+                    "class_name" => $object->attribute( 'class_name' ),
+                    "published" => $object->attribute( 'published' ),
+                    "modified" => $object->attribute( 'modified' ),
+                    "owner_id" => $object->attribute( 'owner_id' ) ) );
             foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
             {
                 eZContentStagingEvent::addEvent(
