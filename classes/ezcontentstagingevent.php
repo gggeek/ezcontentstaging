@@ -55,7 +55,7 @@ class eZContentStagingEvent extends eZPersistentObject
         8192 => 'content state changed',
         16384 => 'child priority changed',
         32768 => 'section changed',
-        65536 => 'feed initialization'
+        65536 => 'node initialization'
     );
 
     const STATUS_TOSYNC = 0;
@@ -242,15 +242,19 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-     * Fetch all pending ecents for a given object, optionally filtered by feed.
-     * 2nd param is there for optimal resource usage
+     * Fetch all pending ecents for a given object, optionally filtered by feed and
+     * by event type.
      */
-    static function fetchByObject( $object_id, $target_id = null, $asObject = true )
+    static function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true )
     {
         $conds = array( 'object_id' => $objectId );
         if ( $target_id != null )
         {
             $conds['target_id'] = $target_id;
+        }
+        if ( $to_sync != null )
+        {
+            $conds['to_sync'] = $to_sync;
         }
         return self::fetchObjectList( self::definition(),
                                       null,
@@ -260,25 +264,6 @@ class eZContentStagingEvent extends eZPersistentObject
                                       $asObject );
     }
 
-	/**
-     * Fetch all pending events for a given object and a given event caterory, optionally filtered by feed.
-     * 2nd param is there for optimal resource usage
-     */
-    static function fetchRelatedEventByObjectIdAndEventType( $object_id, $to_sync_category_id, $target_id = null, $asObject = true )
-    {
-        $conds = array( 'object_id' => $object_id, 'to_sync' =>  $to_sync_category_id);
-        if ( $target_id != null )
-        {
-            $conds['target_id'] = $target_id;
-        }
-        return self::fetchObjectList( self::definition(),
-                                      null,
-                                      $conds,
-                                      null,
-                                      null,
-                                      $asObject );
-    }
-	
     /**
     * Fetch all pending events for a given node, optionally filtered by feed.
     * 2nd param is there for optimal resource usage
@@ -380,7 +365,7 @@ class eZContentStagingEvent extends eZPersistentObject
                                       $custom_conds );
     }
 
-	
+
 	/**
     * Fetch all items that need to be synced to a given server (or all of them)
 	* en send back only one event per ObjectId and event category
@@ -414,12 +399,12 @@ class eZContentStagingEvent extends eZPersistentObject
 			}else{
 				eZDebug::writeDebug('Event already exists for ObjectID = '.$syncItem->ObjectID.' & Syncing Event ID = '.$syncItem->ToSync, __METHOD__);
 			}
-			
+
 		}
 		return $cleanSyncItems;
     }
-		
-	
+
+
     /**
     * Returns count of events to sync to a given server
     * @return integer

@@ -37,28 +37,32 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
         $tosync = array();
         foreach ( $http->postVariable( 'syncArray' ) as $eventId )
         {
-			$event = eZContentStagingEvent::fetch( $eventId );
-			/// @todo with finer grained perms, we should check user can sync these items, one by one
-			if ( $event instanceof eZContentStagingEvent )
-			{
-				
-				//We collect all related event for a object and a event category
-				if ( $http->hasPostVariable( 'viewmode' ) && $http->postVariable( 'viewmode' ) === 'sum_up'){
-					$allEvents = eZContentStagingEvent::fetchRelatedEventByObjectIdAndEventType( $event->attribute( 'object_id' ), $event->attribute( 'to_sync' ), $targetId );
-					
-					foreach($allEvents as $event){
-						if ( $event instanceof eZContentStagingEvent ){
-							$tosync[$event->attribute( 'id' )] = $event;
-						}
-					}
-				}else{
-					$tosync[$event->attribute( 'id' )] = $event;
-				}
-			}
-			else
-			{
-				eZDebug::writeError( "Invalid event id received for syncing: $eventId", 'contentstaging/feed' );
-			}
+            $event = eZContentStagingEvent::fetch( $eventId );
+            /// @todo with finer grained perms, we should check user can sync these items, one by one
+            if ( $event instanceof eZContentStagingEvent )
+            {
+
+                //We collect all related event for a object and a event category
+                if ( $http->hasPostVariable( 'viewmode' ) && $http->postVariable( 'viewmode' ) === 'sum_up')
+                {
+                    $allEvents = eZContentStagingEvent::fetchByObject( $event->attribute( 'object_id' ), $targetId, $event->attribute( 'to_sync' ) );
+
+                    foreach($allEvents as $event){
+                        if ( $event instanceof eZContentStagingEvent )
+                        {
+                            $tosync[$event->attribute( 'id' )] = $event;
+                        }
+                    }
+                }
+                else
+                {
+                    $tosync[$event->attribute( 'id' )] = $event;
+                }
+            }
+            else
+            {
+                eZDebug::writeError( "Invalid event id received for syncing: $eventId", 'contentstaging/feed' );
+            }
         }
         // we sync by sorting based on event IDs to keep proper history
         ksort( $tosync );
