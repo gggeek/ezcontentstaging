@@ -49,7 +49,6 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - DELETE /api/contentstaging/content/objects/<Id>[?trash=true|false]
      *
      * @return ezpRestMvcResult
-     * @todo move logic to model
      */
     public function doRemove()
     {
@@ -65,15 +64,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             $moveToTrash = ( $this->request->get['trash'] !== 'false' );
         }
 
-        /// @todo add perms checking
-
-        $nodeIDs = array();
-        foreach( $object->attribute( 'assigned_nodes' ) as $node )
-        {
-            $nodeIDs[] = $node->attribute( 'node_id' );
-        }
-        // @todo handle Content object without nodes ?
-        eZContentObjectTreeNode::removeSubtrees( $nodeIDs, $moveToTrash );
+        eZContentStagingContent::remove( $object, $moveToTrash );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -174,7 +165,6 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - PUT /content/objects/<Id>
      *
      * @return ezpRestMvcResult
-     * @todo move logic to model
      */
     public function doUpdate()
     {
@@ -186,7 +176,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
         {
-            eZContentOperationCollection::updateAlwaysAvailable(
+            eZContentStagingContent::updateAlwaysAvailable(
                 $object->attribute( 'id' ),
                 (bool)$this->request->inputVariables['alwaysAvailable']
             );
@@ -195,7 +185,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         if ( isset( $this->request->inputVariables['initialLanguage'] ) )
         {
-            eZContentOperationCollection::updateInitialLanguage(
+            eZContentStagingContent::updateInitialLanguage(
                 $object->attribute( 'id' ),
                 $this->request->inputVariables['initialLanguage']
             );
@@ -280,6 +270,9 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         return $result;
     }
 
+    /**
+    * @todo move logic to model
+    */
     public function doPublishVersion()
     {
         $object = $this->object();
@@ -304,25 +297,30 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        $operationResult = eZOperationHandler::execute(
-                'content', 'publish',
-                array(
-                    'object_id' => $object->attribute( 'id' ),
-                    'version' => $version->attribute( 'version' )
-                )
-            );
-        // hand-tested: when publication goes ok, that's what we get
-        /// @todo test: is it always 1 or is it the version nr?
-        if ( !is_array( $operationResult ) || @$operationResult['status'] != 1 )
+        if ( eZContentStagingContent::publishVersion( $object, $version ) != 0 )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Error while publishing version" );
         }
 
+        /*var_dump( $refresh );
+        var_dump( $version );
+        var_dump( $object );
+        die();*/
+
+        // in case version created is the 1st, return location address
         $result = new ezpRestMvcResult();
-        /*$result->status = new eZContentStagingCreatedHttpResponse(
-            '/content/objects/' . $object->attribute( 'id' ) . 'versions/' . $version->attribute( 'version' )
-        );*/
-        $result->status = new ezpRestHttpResponse( 204 );
+        if ( $version->attribute( 'version' ) == 1 )
+        {
+            $refresh = eZContentObject::fetch( $object->attribute( 'id' ) );
+            $node = $refresh->attribute( 'main_node' );
+            $result->status = new eZContentStagingCreatedHttpResponse(
+                '/content/locations/' . $node->attribute( 'node_id' )
+            );
+        }
+        else
+        {
+            $result->status = new ezpRestHttpResponse( 204 );
+        }
         return $result;
     }
 
@@ -334,7 +332,6 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - DELETE /content/objects/<Id>/translations/<localeCode>
      *
      * @return ezpRestMvcResult
-     * @todo move logic to model
      */
     public function doRemoveTranslation()
     {
@@ -351,8 +348,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Translation in '{$this->localeCode}' not found in the content '$objectId'" );
         }
 
-        eZContentOperationCollection::removeTranslation(
-            $objectId,
+        eZContentStagingContent::removeTranslations(
+            $object,
             array( $languages[$this->localeCode]->attribute( 'id' ) )
         );
 
@@ -369,7 +366,6 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - PUT /content/objects/<Id>/section?sectionId=<sectionId>
      *
      * @return ezpRestMvcResult
-     * @todo move logic to model
      */
     public function doUpdateSection()
     {
@@ -390,12 +386,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Section with Id '$sectionId' not found" );
         }
 
-        /// @todo perms checking
-
-        eZContentObjectTreeNode::assignSectionToSubTree(
-            $object->attribute( 'main_node_id' ),
-            $sectionId
-        );
+        eZContentStagingContent::updateSection( $object, $sectionId );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -410,7 +401,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - PUT /content/objects/<Id>/states
      *
      * @return ezpRestMvcResult
-     * @todo move logic to model
+     *
+     * @ todo...
      */
     public function doUpdateStates()
     {
@@ -420,7 +412,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return $object;
         }
 
-        /// @ todo...
+        eZContentStagingContent::updateStates( $object, array() );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -473,7 +465,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         /// @todo validate location input received: are priority, sortField, sortOrder mandatory?
 
-        $newNode = eZContentStagingContent::addAssignment(
+        $newNode = eZContentStagingContent::addLocation(
             $object, $parentNode,
             $this->request->inputVariables['remoteId'],
             (int)$this->request->inputVariables['priority'], /// @todo why typecast only this value?
@@ -518,4 +510,3 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
     }
 
 }
-

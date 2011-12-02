@@ -99,6 +99,10 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
             case eZContentStagingEvent::ACTION_PUBLISH:
                 // this can be either a content creation or update
+                // in any way, it is a multi-step process
+
+                // step 1: create new version
+
                 /// @todo what if we create many drafts and we discard them? Is the first version created still 1? test it!
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                 if ( $data['version'] == 1 )
@@ -125,12 +129,43 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
 
+                // step 2: publish created version
                 $array = explode( '/', $out['Location'] );
                 $versionNr = end( $array );
+                if ( $versionNr == '' )
+                {
+                    throw new Exception( "Missing version number in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                }
                 $method = 'POST';
                 $url = "/content/objects/remote/$RemoteObjRemoteID/versions/$versionNr";
                 $out = $this->restCall( $method, $url );
 
+                // step 3: fix remote id of created node (only for new nodes)
+                if ( $data['version'] == 1 )
+                {
+                    /// @todo test format for $out
+                    $array = explode( '/', $out['Location'] );
+                    $remoteNodeId = end( $array );
+                    if ( $remoteNodeId == '' )
+                    {
+                        throw new Exception( "Missing node id in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                    }
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+                    $method = 'PUT';
+                    $url = "/content/locations/$remoteNodeId";
+                    $payload = array(
+                        'remoteId' => $RemoteNodeRemoteID
+                    );
+                    $out = $this->restCall( $method, $url, $payload );
+                    if ( !is_array( $out ) || !isset( $out['remoteId'] ) )
+                    {
+                        throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                    }
+                    if ( $out['remoteId'] != $RemoteNodeRemoteID )
+                    {
+                        throw new Exception( "node remoteId in response does not match what was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                    }
+                }
                 return 0;
 
 
