@@ -29,6 +29,7 @@ class eZStageMoveType extends eZWorkflowEventType
         // sanity checks
 
         $node = eZContentObjectTreeNode::fetch( $nodeID );
+        $object = eZContentObject::fetch( $objectID );
         if ( !is_object( $node ) )
         {
             eZDebug::writeError( 'Unable to fetch node ' . $nodeID, __METHOD__ );
@@ -43,7 +44,8 @@ class eZStageMoveType extends eZWorkflowEventType
         }
 
         $nodePath = array( $node->attribute( 'path_string' ) );
-        $newParentNodePath = $newParentNode( $newParentNode->attribute( 'path_string' ) );
+        $newParentNodePath = $newParentNode->attribute( 'path_string' );
+
         $affectedNodes = array( $nodeID );
         $movedNodeData = array(
             'nodeID' => $nodeID,

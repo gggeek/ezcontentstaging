@@ -1,7 +1,7 @@
 <?php /*
 
 [CustomTemplateSettings]
-CustomTemplateList[]=sync
-IncludeInView[sync]=full
+#CustomTemplateList[]=sync
+#IncludeInView[sync]=full
 
 */ ?>

@@ -260,6 +260,25 @@ class eZContentStagingEvent extends eZPersistentObject
                                       $asObject );
     }
 
+	/**
+     * Fetch all pending events for a given object and a given event caterory, optionally filtered by feed.
+     * 2nd param is there for optimal resource usage
+     */
+    static function fetchRelatedEventByObjectIdAndEventType( $object_id, $to_sync_category_id, $target_id = null, $asObject = true )
+    {
+        $conds = array( 'object_id' => $object_id, 'to_sync' =>  $to_sync_category_id);
+        if ( $target_id != null )
+        {
+            $conds['target_id'] = $target_id;
+        }
+        return self::fetchObjectList( self::definition(),
+                                      null,
+                                      $conds,
+                                      null,
+                                      null,
+                                      $asObject );
+    }
+	
     /**
     * Fetch all pending events for a given node, optionally filtered by feed.
     * 2nd param is there for optimal resource usage
@@ -361,6 +380,46 @@ class eZContentStagingEvent extends eZPersistentObject
                                       $custom_conds );
     }
 
+	
+	/**
+    * Fetch all items that need to be synced to a given server (or all of them)
+	* en send back only one event per ObjectId and event category
+    * @return array of eZContentStagingEvent
+    */
+    static function fetchSumUpList( $target_id=false, $asObject = true, $offset = false, $limit = false )
+    {
+        $conditions = array();
+        if ( $target_id != '' )
+        {
+            $conditions = array( 'target_id' => $target_id );
+        }
+        $limits = array();
+        if ( $offset !== false )
+            $limits['offset'] = $offset;
+        if ( $limit !== false )
+            $limits['limit'] = $limit;
+        $syncItems = self::fetchObjectList( self::definition(),
+                                      null,
+                                      $conditions,
+                                      null,
+                                      $limits,
+                                      $asObject );
+
+		$cleanSyncItems = array();
+		$existSyncEvent = array();
+		foreach ($syncItems as $syncKey => $syncItem){
+			if(!in_array($syncItem->ObjectID.'-'.$syncItem->ToSync, $existSyncEvent)){
+				array_push($existSyncEvent, $syncItem->ObjectID.'-'.$syncItem->ToSync);
+				array_push($cleanSyncItems, $syncItem);
+			}else{
+				eZDebug::writeDebug('Event already exists for ObjectID = '.$syncItem->ObjectID.' & Syncing Event ID = '.$syncItem->ToSync, __METHOD__);
+			}
+			
+		}
+		return $cleanSyncItems;
+    }
+		
+	
     /**
     * Returns count of events to sync to a given server
     * @return integer

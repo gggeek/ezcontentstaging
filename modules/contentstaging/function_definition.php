@@ -38,6 +38,18 @@ $FunctionList = array(
                                          'required' => false,
                                          'default' => null ) ) ),
 
+    'sync_feeds_by_node' => array(
+        'name' => 'sync_feeds_by_node',
+        'call_method' => array(
+               'class'  => 'eZContentStagingFunctionCollection',
+               'method' => 'fetchFeedsByNodeId'  ),
+        'parameters' => array( array( 'name'     => 'node_id',
+                                      'type'     => 'integer',
+                                      'required' => false,
+                                      'default' => null ) ) ),
+
+
+
     'sync_target' => array(
         'name' => 'sync_target',
         'call_method' => array(
@@ -68,6 +80,23 @@ $FunctionList = array(
                                       'type' => 'string',
                                       'required' => false,
                                       'default' => null ) ) ),
+    'sync_sum_up_events'  => array(
+        'name' => 'sync_sum_up_events',
+        'call_method' => array(
+            'class'  => 'eZContentStagingFunctionCollection',
+            'method' => 'fetchSyncSumUpEvents' ),
+        'parameters' => array( array( 'name'     => 'target_id',
+                                      'type'     => 'string',
+                                      'required' => false,
+                                      'default'  => '' ),
+                               array( 'name'     => 'offset',
+                                      'type'     => 'integer',
+                                      'required' => false,
+                                      'default'  => 0 ),
+                               array( 'name'     => 'limit',
+                                      'type'     => 'integer',
+                                      'required' => false,
+                                      'default'  => 0 ) ) ),
 
     'sync_events_count'  => array(
         'name' => 'sync_events_count',

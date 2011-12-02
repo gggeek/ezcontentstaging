@@ -17,6 +17,11 @@ class eZContentStagingFunctionCollection
         return array( 'result' => eZContentStagingEvent::fetchList( $target_id, true, $offset, $limit, $language ) );
     }
 
+	static function fetchSyncSumUpEvents( $target_id=false, $offset=false, $limit=false, $group=true )
+    {
+        return array( 'result' => eZContentStagingEvent::fetchSumUpList( $target_id, true, $offset, $limit, $group ) );
+    }
+
     static function fetchSyncEventsCount( $target_id=false, $language=false )
     {
         return array( 'result' => eZContentStagingEvent::fetchListCount( $target_id, $language ) );
@@ -37,6 +42,11 @@ class eZContentStagingFunctionCollection
     {
         return array( 'result' => eZContentStagingEvent::fetch( $target_id ) );
     }
+
+    static function fetchFeedsByNodeId( $node_id=false )
+    {
+        return array( 'result' => eZContentStagingTarget::fetchList() );
+    }    
 }
 
 ?>

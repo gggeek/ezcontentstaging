@@ -86,7 +86,7 @@ function checkAll()
 </div>
 
 {if $list_count}
-
+	{def $sync_label = ezini('GeneralSettings', 'SyncLabel', 'contentstaging.ini')}
     <p>
         {"These are the events in need of synchronization. You can push them to the destination server."|i18n('ezcontentstaging')|nl2br}
     </p>
@@ -94,12 +94,12 @@ function checkAll()
     {* @todo add view params to the form target url ? *}
     <form name="syncaction" action={concat( "contentstaging/feed/", $target_id )|ezurl} method="post" >
     {if ne($target_id, '')}
-        {def $item_list = fetch( 'contentstaging', 'sync_events', hash( 'target_id', $target_id,
-                                                                        'limit', $page_limit,
-                                                                        'offset', $view_parameters.offset ) )}
+        {def $item_list = fetch( 'contentstaging', 'sync_sum_up_events', hash( 'target_id', $target_id,
+                                                                      'limit', $page_limit,
+                                                                      'offset', $view_parameters.offset ) )}
     {else}
-        {def $item_list = fetch( 'contentstaging', 'sync_events', hash( 'limit', $page_limit,
-                                                                        'offset', $view_parameters.offset ) )}
+        {def $item_list = fetch( 'contentstaging', 'sync_sum_up_events', hash( 'limit', $page_limit,
+                                                                      'offset', $view_parameters.offset ) )}
     {/if}
 
     <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -117,6 +117,7 @@ function checkAll()
         <th>{"Language"|i18n('ezcontentstaging')}</th>
     </tr>
     {foreach $item_list as $sync_item sequence array( 'bglight', 'bgdark' ) as $style}
+	{*$sync_item|attribute(show)*}
     <tr class="{$style}">
         {if $sync_access}
         <td align="left" width="1">
@@ -153,13 +154,19 @@ function checkAll()
             {$sync_item.to_sync_string|d18n('ezcontentstaging')}
         </td>
         <td>
-            {$sync_item.language.locale}
+            {* nb: for deleted objects we have no link to node anymore *}
+            {if $sync_nodes|count()}
+                {$sync_item.language.locale}
+            {else}
+                {$sync_item.data.language|wash()|d18n('ezcontentstaging')}
+            {/if}
         </td>
     </tr>
     {/foreach}
     </table>
 
     {if $sync_access}
+		<input name="viewmode" type="hidden" value="sum_up" />
         <input class="button" name="selectall" onclick="checkAll()" type="button" value="{'Select all'|i18n('ezcontentstaging')}" />
         <input class="button" name="SyncEventsButton" type="submit" value="{'Synchronize'|i18n('ezcontentstaging')}" />
     {/if}

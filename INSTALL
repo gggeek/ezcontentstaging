@@ -26,7 +26,7 @@ Target server:
 Source server:
 . unzip the extension, enable it (make sure to regenerate autoloads)
 . create the new db table: either go to setup/Upgrade check/DB Upgrade check in the admin interface, or use sql script in the sql/ folder
-. copy the files from the pat hes directory over the original eZ Publish kernel files (back up original first)
+. copy the files from the patches directory over the original eZ Publish kernel files (back up original first)
 . enable all the needed workflow events:
   - create one workflow per trigger for all content-related triggers:
   - add to each workflow one event of type "stage <xxx>"
