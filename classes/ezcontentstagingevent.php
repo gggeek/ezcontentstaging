@@ -242,10 +242,11 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-     * Fetch all pending ecents for a given object, optionally filtered by feed and
-     * by event type.
+     * Fetch all pending events for a given object, optionally filtered by feed
+     * and by event type.
+     * @todo refactor: asObject as last param
      */
-    static function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true )
+    static function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true, $language=null )
     {
         $conds = array( 'object_id' => $objectId );
         if ( $target_id != null )
@@ -256,18 +257,28 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $conds['to_sync'] = $to_sync;
         }
+        $custom_conds = null;
+        if ( $language != null )
+        {
+            $custom_conds = ' AND ' . self::languagesSQLFilter( $language );
+        }
         return self::fetchObjectList( self::definition(),
                                       null,
                                       $conds,
                                       null,
                                       null,
-                                      $asObject );
+                                      $asObject,
+                                      false,
+                                      null,
+                                      null,
+                                      $custom_conds );
     }
 
     /**
     * Fetch all pending events for a given node, optionally filtered by feed.
     * 2nd param is there for optimal resource usage
     * @return array of eZContentStagingEvent
+    * @todo refactor: asObject as last param
     */
     static function fetchByNode( $nodeId, $objectId=null, $target_id=null, $asObject=true, $language=null )
     {
@@ -321,8 +332,74 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
+    * @todo refactor: asObject as last param
+    */
+    static function fetchListGroupedByObject( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
+    {
+        $conditions = array();
+        if ( $language != null )
+        {
+            $custom_conds .= ' AND ' . self::languagesSQLFilter( $language );
+        }
+        $conditions = array();
+        if ( $target_id != '' )
+        {
+            $conditions = array( 'target_id' => $target_id );
+        }
+        $limits = array();
+        if ( $offset !== null )
+        {
+            $limits['offset'] = $offset;
+        }
+        if ( $limit != null )
+        {
+            $limits['limit'] = $limit;
+        }
+        $custom_conds = null;
+        if ( $language != null )
+        {
+            if ( $conditions )
+            {
+                $custom_conds = ' AND ';
+            }
+            else
+            {
+                $custom_conds = ' WHERE ';
+            }
+            $custom_conds .= self::languagesSQLFilter( $language );
+        }
+        $out = array();
+        foreach( self::fetchObjectList( self::definition(),
+                                        array( 'object_id' ),
+                                        $conditions,
+                                        null,
+                                        $limits,
+                                        false,
+                                        array( 'object_id' ),
+                                        null,
+                                        null,
+                                        $custom_conds ) as $row )
+        {
+            $conditions = array( 'target_id' => $target_id, 'object_id' => $row['object_id'] );
+            $out[$row['object_id']] = self::fetchObjectList( self::definition(),
+                                                             null,
+                                                             $conditions,
+                                                             null, /// @todo sort by id
+                                                             null,
+                                                             $asObject,
+                                                             false,
+                                                             null,
+                                                             null,
+                                                             $custom_conds );
+        }
+        return $out;
+    }
+
+    /**
     * Fetch all events that need to be synced to a given feed (or all of them)
     * @return array of eZContentStagingEvent
+    *
+    * @todo refactor: asObject as last param
     */
     static function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
     {
@@ -336,7 +413,7 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $limits['offset'] = $offset;
         }
-        if ( $limit !== null )
+        if ( $limit != null )
         {
             $limits['limit'] = $limit;
         }
@@ -370,7 +447,9 @@ class eZContentStagingEvent extends eZPersistentObject
     * Fetch all items that need to be synced to a given server (or all of them)
 	* en send back only one event per ObjectId and event category
     * @return array of eZContentStagingEvent
-    */
+    *
+    * @todo refactor: asObject as last param
+    * /
     static function fetchSumUpList( $target_id=false, $asObject = true, $offset = false, $limit = false )
     {
         $conditions = array();
@@ -402,8 +481,7 @@ class eZContentStagingEvent extends eZPersistentObject
 
 		}
 		return $cleanSyncItems;
-    }
-
+    }*/
 
     /**
     * Returns count of events to sync to a given server
