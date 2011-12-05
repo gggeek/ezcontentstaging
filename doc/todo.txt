@@ -28,7 +28,7 @@
 
 . source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
 
-. source server: logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them it anymore
+. source server: logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them anymore
   => warn editor (on delete or on sync?), remove pending events, or... ?
 
 
