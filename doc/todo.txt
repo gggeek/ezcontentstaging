@@ -67,9 +67,6 @@
 
 . source server: in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
-. source server: rework dashboard block so that it lists nodes instead of sync events
-  note that we will have problems with deleted objects not being shown there
-
 
 5 - MISC
 
@@ -89,6 +86,8 @@ Phase 1.5 (move to phase 2 ?)
     local and remote
 
 . source server: add confirmation dialogs when deleting events / resetting feeds
+
+. source server: when executing an action, use an http redirect so that landing page can be refreshed via F5
 
 . source server: add an extra per-feed ini parameter that decides whether content creation/modification dates on targets are kept in sync with source or sync event execution date is used instead
 
@@ -135,3 +134,5 @@ Phase 3:
 . review separation of checking inputs between controllers and models
 . review usage of return codes vs. exceptions
 . allow a target server not to execute existing content triggers when importing objects
+. tackle problem of not-atomic operations, eg. when a node-create-on-target fails, it might have
+  in fact created the node but not set the remote-id. How (if) to rollback?
