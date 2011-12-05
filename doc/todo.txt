@@ -2,18 +2,20 @@
 
 . look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
-  - binary datatypes -> we need better support than fromstring/tostring do natively
-  - ezpage: ???
+  - binary datatypes -> we need better support than fromstring/tostring do natively to encode more metadata
   - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format
 
 . status:
-  - export+import of object relations(s) and binary files: ok with remote ids, use json arrays for non-remote ids too
-  - export+import to be done for xml block
-  - export+import to be done for ezauthor
+  - object relations(s): ok with remote ids, use json arrays for non-remote ids too
+  - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
+  - ezpage: seems to be OK by usage of native xml serialization (would be too hard to use json-encoded, move it to phase 2)
+  - date/datetime/time?: use iso8601 format?
+  - check for ezfloat: encode as json native float but using arbitrary precision
+  - ezstarrating: we only transfer is_enabled, not actual ratings
+  - ezuser: we transfer both enabled and disabled accounts as long as account login != ''
   - export+import to be done for ezuser
-  - export+import to be done for ezenum ?
-  - ezstarrating, ezgmaplocation, ezpage ?
-  - all other types that do not serialize to a single scalar value
+  - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection
+  - all other types that do not serialize to a single scalar value: ...
 
 . add support for sending in object creation/modification requests the original timestamp and remote_id of creator user;
   - add support for importing that data into target system
@@ -26,11 +28,13 @@
 
 . test all events
 
-. source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
-
-. source server: logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them anymore
-  => warn editor (on delete or on sync?), remove pending events, or... ?
-
+. handling of dependencies between events
+  - source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
+  - source server: logical bug: if local obj has been deleted (no trash) and there are pending publication events for it, we will not be able to sync them anymore
+    => warn editor (on delete or on sync?), remove pending events, or... ?
+  - source server: when sending creation event for an object but creation events for parent(s) are pending, warn user
+  - source server: when sending creation/update event for an object but creation events for related objects are pending, warn user
+  - etc...
 
 3 - REST API
 

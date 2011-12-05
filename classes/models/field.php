@@ -38,8 +38,105 @@ class eZContentStagingField
     {
         $this->fieldDef = $attribute->attribute( 'data_type_string' );
         $this->language = $locale;
+
         switch( $this->fieldDef )
         {
+            case 'ezauthor':
+                $ezauthor = $attribute->attribute( 'content' );
+                $authors = array();
+                foreach( $ezauthor->attribute( 'author_list' ) as $author )
+                {
+                    $authors[] = array(
+                        'name' => $author['name'],
+                        'email' => $author['email']
+                    );
+                }
+                $this->value = $authors;
+                break;
+
+                // serialized as a struct
+            case 'ezbinaryfile':
+                $content = $attribute->attribute( 'content' );
+                $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
+                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
+                $this->value = array(
+                    'fileSize' => (int)$content->attribute( 'filesize' ),
+                    'fileName' => $content->attribute( 'original_filename' ),
+                    'content' => base64_encode( $file->fetchContents() )
+                    );
+                break;
+
+            case 'ezboolean':
+                $this->value = (bool) $attribute->toString();
+                break;
+
+            /// @todo shall we use iso 8601 format for dates?
+            case 'ezdate':
+            case 'ezdatetime':
+                $this->value = (int) $attribute->toString();
+                break;
+
+            /// @todo serialize with wanted precision, using json native float type
+            //case 'ezfloat':
+            //    $this->value = ...;
+            //    break;
+
+            case 'ezgmaplocation':
+                /// @todo shall we double check that data is valid, ie attribute( 'data_int' ) == 1 ?
+                $gmaplocation = $attribute->attribute( 'content' );
+                $this->value = array(
+                    "latitude" => $gmaplocation->attribute( 'latitude' ),
+                    "longitude" =>  $gmaplocation->attribute( 'longitude' ),
+                    "address" =>  $gmaplocation->attribute( 'address' )
+                );
+                break;
+
+            // serialized as a struct
+            case 'ezimage':
+                $content = $attribute->attribute( 'content' );
+                $original = $content->attribute( 'original' );
+                $file = eZClusterFileHandler::instance( $original['url'] );
+                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
+                $this->value = array(
+                    'fileSize' => (int)$original['filesize'],
+                    'fileName' => $original['original_filename'],
+                    'alternativeText' => $original['alternative_text'],
+                    'content' => base64_encode( $file->fetchContents() )
+                    );
+                break;
+
+            case 'ezinteger':
+                $this->value = (int) $attribute->toString();
+                break;
+
+            // serialize as structured array instead of string:
+            case 'ezkeyword':
+                $keyword = new eZKeyword();
+                $keyword->fetch( $attribute );
+                $this->value = $keyword->attribute( 'keywords' );
+                break;
+
+                // serialized as a struct
+                // nb: this datatype has, as of eZ 4.5, a broken toString method
+            case 'ezmedia':
+                $content = $attribute->attribute( 'content' );
+                $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
+                /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                $this->value = array(
+                    'fileSize' => (int)$content->attribute( 'filesize' ),
+                    'fileName' => $content->attribute( 'original_filename' ),
+                    'width' => $content->attribute( 'width' ),
+                    'height' => $content->attribute( 'height' ),
+                    'hasController' => (bool)$content->attribute( 'has_controller' ),
+                    'controls' => (bool)$content->attribute( 'controls' ),
+                    'isAutoplay' => (bool)$content->attribute( 'is_autoplay' ),
+                    'pluginsPage' => $content->attribute( 'pluginspage' ),
+                    'quality' => $content->attribute( 'quality' ),
+                    'isLoop' => (bool)$content->attribute( 'is_loop' ),
+                    'content' => base64_encode( $file->fetchContents() )
+                    );
+                break;
+
             // serialized as a single string of either local or remote id
             case 'ezobjectrelation':
                 // slightly more intelligent than base "toString" method: we always check for presence of related object
@@ -89,51 +186,43 @@ class eZContentStagingField
                 }
                 break;
 
-            // serialized as a struct
-            // nb: this datatype has, as of eZ 4.5, a broken toString method
-            case 'ezmedia':
-                $content = $attribute->attribute( 'content' );
-                $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
-                /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
-                $this->value = array(
-                    'fileSize' => (int)$content->attribute( 'filesize' ),
-                    'fileName' => $content->attribute( 'original_filename' ),
-                    'width' => $content->attribute( 'width' ),
-                    'height' => $content->attribute( 'height' ),
-                    'hasController' => (bool)$content->attribute( 'has_controller' ),
-                    'controls' => (bool)$content->attribute( 'controls' ),
-                    'isAutoplay' => (bool)$content->attribute( 'is_autoplay' ),
-                    'pluginsPage' => $content->attribute( 'pluginspage' ),
-                    'quality' => $content->attribute( 'quality' ),
-                    'isLoop' => (bool)$content->attribute( 'is_loop' ),
-                    'content' => base64_encode( $file->fetchContents() )
-                    );
+            case 'ezselection':
+                $this->value = explode( '|', $attribute->toString() );
                 break;
 
-            // serialized as a struct
-            case 'ezbinaryfile':
-                $content = $attribute->attribute( 'content' );
-                $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
-                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
-                $this->value = array(
-                    'fileSize' => (int)$content->attribute( 'filesize' ),
-                    'fileName' => $content->attribute( 'original_filename' ),
-                    'content' => base64_encode( $file->fetchContents() )
-                    );
+            case 'ezsrrating':
+                $this->value = array( 'can_rate' => (bool)$attribute->attribute( 'data_int' ) );
                 break;
 
-            // serialized as a struct
-            case 'ezimage':
-                $content = $attribute->attribute( 'content' );
-                $original = $content->attribute( 'original' );
-                $file = eZClusterFileHandler::instance( $original['url'] );
-                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
-                $this->value = array(
-                    'fileSize' => (int)$original['filesize'],
-                    'fileName' => $original['original_filename'],
-                    'alternativeText' => $original['alternative_text'],
-                    'content' => base64_encode( $file->fetchContents() )
+            case 'ezuser':
+                $userID = $attribute->attribute( "contentobject_id" );
+                if ( empty( $GLOBALS['eZUserObject_' . $userID] ) )
+                {
+                    $user = eZUser::fetch( $userID );
+                    if ( $user )
+                    {
+                        $GLOBALS['eZUserObject_' . $userID] = eZUser::fetch( $userID );
+                    }
+                }
+                else
+                {
+                    $user = $GLOBALS['eZUserObject_' . $userID];
+                }
+
+                if ( $user && $user->attribute( 'login' ) != '' )
+                {
+                    $this->value = array(
+                        'login' => $user->attribute( 'login' ),
+                        'email' => $user->attribute( 'email' ),
+                        'password_hash' => $user->attribute( 'password_hash' ),
+                        'password_hash_type' => eZUser::passwordHashTypeName( $user->attribute( 'password_hash_type' ) ),
+                        'is_enabled' => (bool)$user->isEnabled()
                     );
+                }
+                else
+                {
+                    $this->value = null;
+                }
                 break;
 
             case 'ezxmltext':
@@ -178,7 +267,13 @@ class eZContentStagingField
                 }
                 break;
 
-                // known bug in ezuser serialization: #018609
+            case 'ezurl':
+                $this->value = array(
+                    'url' => eZURL::url( $attribute->attribute( 'data_int' ) ),
+                    'text' => $attribute->attribute( 'data_text' ) );
+                break;
+
+            // known bug in ezuser serialization: #018609
             case 'ezuser':
 
             default:
@@ -203,6 +298,72 @@ class eZContentStagingField
         $type = $attribute->attribute( 'data_type_string' );
         switch( $type )
         {
+            case 'ezauthor':
+                $author = new eZAuthor( );
+                foreach ( $value as $authorData )
+                {
+                    $author->addAuthor( -1, $authorData['name'], $authorData['email'] );
+                }
+                $attribute->setContent( $author );
+                break;
+
+            case 'ezbinaryfile':
+            case 'ezmedia':
+            case 'ezimage':
+                if ( !is_array( $value ) || !isset( $value['fileName'] ) || !isset( $value['content'] ) )
+                {
+                    $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                    eZDebug::writeWarning( "Can not create binary file because fileName or content is missing in attribute $attrname", __METHOD__ );
+                    $ok = false;
+                    break;
+                }
+
+                $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid() . '-' . microtime( true );
+                $fileName = $value['fileName'];
+                /// @todo test if base64 decoding fails and if decoded img filesize is ok
+                eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
+
+                $path = "$tmpDir/$fileName";
+                if ( $type == 'image' )
+                {
+                    $path .= "|{$value['alternativeText']}";
+                }
+                $ok = $attribute->fromString( $path );
+
+                if ( $ok && $type == 'ezmedia' )
+                {
+                    $mediaFile = $attribute->attribute( 'content' );
+                    $mediaFile->setAttribute( 'width', $value['width'] );
+                    $mediaFile->setAttribute( 'height', $value['height'] );
+                    $mediaFile->setAttribute( 'has_controller', $value['hasController'] );
+                    $mediaFile->setAttribute( 'controls', $value['controls'] );
+                    $mediaFile->setAttribute( 'is_autoplay', $value['isAutoplay'] );
+                    $mediaFile->setAttribute( 'pluginspage', $value['pluginsPage'] );
+                    $mediaFile->setAttribute( 'quality', $value['quality'] );
+                    $mediaFile->setAttribute( 'is_loop', $value['isLoop'] );
+                    $mediaFile->store();
+                }
+
+                eZDir::recursiveDelete( $tmpDir, false );
+                break;
+
+            // serialized as array instead of single string
+            case 'ezgmaplocation':
+                $location = new eZGmapLocation( array(
+                    'contentobject_attribute_id' => $attribute->attribute( 'id' ),
+                    'contentobject_version' => $attribute->attribute( 'version' ),
+                    'latitude' => $value['latitude'],
+                    'longitude' => $value['longitude'],
+                    'address' => $value['address']
+                ) );
+                $attribute->setContent( $location );
+                $attribute->setAttribute( 'data_int', 1 );
+                break;
+
+            case 'ezkeyword':
+                $attribute->fromString( implode( ',', $value ) );
+                break;
+
             case 'ezobjectrelation':
                 if ( is_array( $value ) && isset( $value['remoteId'] ) )
                 {
@@ -259,44 +420,74 @@ class eZContentStagingField
                 }
                 break;
 
-            case 'ezbinaryfile':
-            case 'ezmedia':
-            case 'ezimage':
-                if ( !is_array( $value ) || !isset( $value['fileName'] ) || !isset( $value['content'] ) )
+            case 'ezselection':
+                $attribute->fromString( implode( '|', $value ) );
+                break;
+
+            case 'ezsrrating':
+                $attribute>setAttribute( 'data_int', $value['can_rate'] );
+                break;
+
+
+            case 'ezurl':
+                $urlID = eZURL::registerURL( $value['url'] );
+                $attribute->setAttribute( 'data_int', $urlID );
+                if( isset( $value['text'] ) )
                 {
-                    $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
-                    eZDebug::writeWarning( "Can not create binary file because fileName or content is missing in attribute $attrname", __METHOD__ );
-                    $ok = false;
-                    break;
+                    $attribute->setAttribute( 'data_text', $value['text'] );
                 }
+                break;
 
-                $tmpDir = eZINI::instance()->variable( 'FileSettings', 'TemporaryDir' ) . '/' . uniqid() . '-' . microtime( true );
-                $fileName = $value['fileName'];
-                /// @todo test if base64 decoding fails and if decoded img filesize is ok
-                eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
-
-                $path = "$tmpDir/$fileName";
-                if ( $type == 'image' )
+            case 'ezuser':
+                // convoluted logic: creation or update of user account
+                if ( is_array( $value ) )
                 {
-                    $path .= "|{$value['alternativeText']}";
-                }
-                $ok = $attribute->fromString( $path );
+                    $login = @$value['login'];
+                    $email = @$value['email'];
+                    $user = null;
+                    if ( $login != '' )
+                    {
+                        $user = eZUser::fetchByName( $login );
+                        //$login = '';
+                    }
+                    if( $user == null && $email != '' && eZUser::requireUniqueEmail() )
+                    {
+                        $user = eZUser::fetchByEmail( $email );
+                        //$email = '';
+                    }
+                    if( $user == null )
+                    {
+                        // allow creation of a new user only with both login and email provided
+                        if ( $login == '' && $email == '' )
+                        {
+                            break;
+                        }
+                        $user = eZUser::create( $attribute->attribute( 'contentobject_id' ) );
+                    }
 
-                if ( $ok && $type == 'ezmedia' )
-                {
-                    $mediaFile = $attribute->attribute( 'content' );
-                    $mediaFile->setAttribute( 'width', $value['width'] );
-                    $mediaFile->setAttribute( 'height', $value['height'] );
-                    $mediaFile->setAttribute( 'has_controller', $value['hasController'] );
-                    $mediaFile->setAttribute( 'controls', $value['controls'] );
-                    $mediaFile->setAttribute( 'is_autoplay', $value['isAutoplay'] );
-                    $mediaFile->setAttribute( 'pluginspage', $value['pluginsPage'] );
-                    $mediaFile->setAttribute( 'quality', $value['quality'] );
-                    $mediaFile->setAttribute( 'is_loop', $value['isLoop'] );
-                    $mediaFile->store();
-                }
+                    /// @todo what if we try to update email attribute making it a double,
+                    ///       not respecting requireUniqueEmail?
 
-                eZDir::recursiveDelete( $tmpDir, false );
+                    if ( $login != '' ) $user->setAttribute( 'login', $login );
+                    if ( $email != '' ) $user->setAttribute( 'email', $email );
+                    if ( isset( $value['password_hash'] ) )
+                    {
+                        $user->setAttribute( 'password_hash', $value['password_hash'] );
+                    }
+                    if ( isset( $value['password_hash_type'] ) )
+                    {
+                        $user->setAttribute( 'password_hash_type', eZUser::passwordHashTypeID( $value['password_hash_type'] ) );
+                    }
+                    if( isset( $value['is_enabled'] ) )
+                    {
+                        $userSetting = eZUserSetting::fetch(
+                            $attribute->attribute( 'contentobject_id' )
+                        );
+                        $userSetting->setAttribute( "is_enabled", (int)$value['is_enabled'] );
+                        $userSetting->store();
+                    }
+                    $user->store();
+                }
                 break;
 
             /// @see eZXMLTextType::unserializeContentObjectAttribute

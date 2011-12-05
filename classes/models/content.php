@@ -70,22 +70,11 @@ class eZContentStagingContent extends contentStagingBase
         $this->fields = array();
         foreach ( $object->attribute( 'data_map' ) as $identifier => $attr )
         {
-            if ( $attr->attribute( 'has_content' ) )
+            /// @todo move list of datatypes that have broken implementations (for us) of has_content to a separate function
+            $type = $attr->attribute( 'data_type_string' );
+            if ( $attr->attribute( 'has_content' ) || $type == 'ezsrrating' || $type == 'ezuser' )
             {
-                //$type = $attr->attribute( 'data_type_string' );
-                //$name = $attribute->attribute( 'contentclass_attribute_identifier' );
                 $this->fields[$identifier] = (array) new eZContentStagingField( $attr, $attr->attribute( 'language_code' ), null );
-                /*switch( $type )
-                {
-                    default:
-                        $value = $attr->toString();
-                }
-                $this->fields[$identifier] = array(
-                    'fieldDef' => $type,
-                    'id' => (int)$attr->attribute( 'id' ),
-                    'value' => $value,
-                    'language' => $attr->attribute( 'language_code' )
-                );*/
             }
         }
     }
