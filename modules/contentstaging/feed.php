@@ -41,23 +41,7 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $event instanceof eZContentStagingEvent )
             {
-
-                //We collect all related event for a object and a event category
-                if ( $http->hasPostVariable( 'viewmode' ) && $http->postVariable( 'viewmode' ) === 'sum_up')
-                {
-                    $allEvents = eZContentStagingEvent::fetchByObject( $event->attribute( 'object_id' ), $targetId, $event->attribute( 'to_sync' ) );
-
-                    foreach($allEvents as $event){
-                        if ( $event instanceof eZContentStagingEvent )
-                        {
-                            $tosync[$event->attribute( 'id' )] = $event;
-                        }
-                    }
-                }
-                else
-                {
-                    $tosync[$event->attribute( 'id' )] = $event;
-                }
+                $tosync[$event->attribute( 'id' )] = $event;
             }
             else
             {
@@ -73,11 +57,11 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
             $event = $tosync[$id];
             if ( $resultCode !== 0 )
             {
-                $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
+                $actionErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
             }
             else
             {
-                $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
+                $actionResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
             }
         }
 
@@ -85,7 +69,7 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
     else
     {
         eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
-        $syncErrors[] = ezpI18n::tr( "stagging", "No object to sync...");
+        $actionErrors[] = ezpI18n::tr( "staging", "No object to synchronize" );
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
     $tpl->setVariable( 'action_errors', $actionErrors );
