@@ -445,24 +445,30 @@ class eZContentStagingField
                     $login = @$value['login'];
                     $email = @$value['email'];
                     $user = null;
+
+                    // we allow to identify a user by login, or by email if eZUser::requireUniqueEmail is true
+                    if ( $login == '' && ( $email == '' || !eZUser::requireUniqueEmail() ) )
+                    {
+                        // cannot identify nor create
+                        break;
+                    }
+
                     if ( $login != '' )
                     {
                         $user = eZUser::fetchByName( $login );
-                        //$login = '';
                     }
-                    if( $user == null && $email != '' && eZUser::requireUniqueEmail() )
+                    if ( $user == null && $email != '' && eZUser::requireUniqueEmail() )
                     {
                         $user = eZUser::fetchByEmail( $email );
-                        //$email = '';
                     }
-                    if( $user == null )
+                    if ( $user == null && $login != '' && $email != '' )
                     {
-                        // allow creation of a new user only with both login and email provided
-                        if ( $login == '' && $email == '' )
-                        {
-                            break;
-                        }
                         $user = eZUser::create( $attribute->attribute( 'contentobject_id' ) );
+                    }
+
+                    if ( $user == null )
+                    {
+                        break;
                     }
 
                     /// @todo what if we try to update email attribute making it a double,

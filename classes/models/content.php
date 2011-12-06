@@ -55,8 +55,8 @@ class eZContentStagingContent extends contentStagingBase
 
         $this->versionNo = (int)$object->attribute( 'current_version' );
         $this->creatorId = (int)$object->attribute( 'current' )->attribute( 'creator_id' );
-        $this->created = self::encodeDatetIme( $object->attribute( 'published' ) );
-        $this->modified = self::encodeDatetIme( $object->attribute( 'modified' ) );
+        $this->created = self::encodeDateTime( $object->attribute( 'published' ) );
+        $this->modified = self::encodeDateTime( $object->attribute( 'modified' ) );
         $this->alwaysAvailable = (bool)$object->attribute( 'always_available' );
         $this->remoteId = $object->attribute( 'remote_id' );
 
@@ -96,7 +96,9 @@ class eZContentStagingContent extends contentStagingBase
     static function updateContent( eZContentObject $object, $input )
     {
         $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        // within transactions, db errors generate a fatal halt, unless we tell
+        // the db to use exceptions
+        $dbhandling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             $db->begin();
@@ -105,14 +107,11 @@ class eZContentStagingContent extends contentStagingBase
             $version = $object->createNewVersionIn( $input['initialLanguage'] );
 
             /// @todo log an error and maybe abort instead of continuing if bad date format?
-            if ( isset( $input['modified'] ) && ( $time = self::decodeDatetIme( $input['modified'] ) ) != 0 )
+            if ( isset( $input['created'] ) && ( $time = self::decodeDatetIme( $input['created'] ) ) != 0 )
             {
-                $version->setAttribute( 'modified', $time );
+                $version->setAttribute( 'created', $time );
             }
-            else
-            {
-                $version->setAttribute( 'modified', time() );
-            }
+            // The modified date for now we do not allow to be synced
             $version->store();
 
             self::updateAttributesList(
@@ -134,7 +133,10 @@ class eZContentStagingContent extends contentStagingBase
         }
         catch ( exception $e )
         {
-            $db->rollback();
+            if ( $db->transactionCounter() )
+            {
+                $db->rollback();
+            }
             return $e->getMessage();
         }
     }
@@ -186,13 +188,28 @@ class eZContentStagingContent extends contentStagingBase
         }
 
         $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        // within transactions, db errors generate a fatal halt, unless we tell
+        // the db to use exceptions
+        $dbhandling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
+            /// @todo log an error and maybe abort instead of continuing if bad date format?
+            /// @todo add a check that date is not in the future?
+            $creationdate = null;
+            if ( isset( $input['created'] ) )
+            {
+                $creationdate = self::decodeDatetIme( $input['created'] );
+            }
+
             $db->begin();
 
             $content = $class->instantiateIn( $input['initialLanguage'] );
             $content->setAttribute( 'remote_id', $input['remoteId'] );
+            // the date set here is normally not reset during the publication process
+            if ( $creationdate )
+            {
+                $content->setAttribute( 'published', $creationdate );
+            }
             $content->store();
 
             $nodeAssignment = eZNodeAssignment::create(
@@ -208,15 +225,18 @@ class eZContentStagingContent extends contentStagingBase
             $nodeAssignment->store();
 
             $version = $content->version( 1 );
-            /// @todo log an error and maybe abort instead of continuing if bad date format?
-            if ( isset( $input['modified'] ) && ( $time = self::decodeDatetIme( $input['modified'] ) ) != 0 )
+            // The date of version creation we set to object publication date,
+            // in order not to make it appear as if it was created after object publication
+            if ( $creationdate )
             {
-                $version->setAttribute( 'modified', $time );
+                $version->setAttribute( 'created', $time );
             }
-            else
+            // Version modification time is taken as current time at version creation.
+            // For now we do not allow syncing it
+            /*else
             {
                 $version->setAttribute( 'modified', time() );
-            }
+            }*/
             $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
             $version->store();
 
@@ -237,7 +257,10 @@ class eZContentStagingContent extends contentStagingBase
         }
         catch ( exception $e )
         {
-            $db->rollback();
+            if ( $db->transactionCounter() )
+            {
+                $db->rollback();
+            }
             return $e->getMessage();
         }
     }

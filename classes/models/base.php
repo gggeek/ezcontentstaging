@@ -16,7 +16,7 @@
 
 class contentStagingBase
 {
-    protected static function encodeDatetIme( $time )
+    public static function encodeDateTime( $time )
     {
         return gmdate( DATE_ISO8601, $time );
     }

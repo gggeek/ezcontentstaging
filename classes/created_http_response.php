@@ -18,8 +18,13 @@ class eZContentStagingCreatedHttpResponse extends ezpRestHttpResponse
             $writer->headers["HTTP/1.1 " . $this->code] = $this->message;
         }
 
-        $writer->headers['Content-Type'] = 'application/json; charset=UTF-8';
         $writer->headers['Location'] = $this->uri;
+
+        // the following two lines do not belong in a status object really,
+        // but ezcMvcConfigurableDispatcher::run makes it extremely hard to
+        // return a result object with data to be serialized and a non-200 status
+        // code...
+        $writer->headers['Content-Type'] = 'application/json; charset=UTF-8';
         $writer->response->body = json_encode( array( 'Location' => $this->uri ) );
     }
 

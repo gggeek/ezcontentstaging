@@ -46,7 +46,7 @@ class eZContentStagingLocation extends contentStagingBase
         $this->depth = (int)$node->attribute( 'depth' );
         $this->invisible = (bool)$node->attribute( 'invisible' );
         $this->remoteId = $node->attribute( 'remote_id' );
-        $this->modifiedSubLocation = self::encodeDatetIme( $node->attribute( 'modified_subnode' ) );
+        $this->modifiedSubLocation = self::encodeDateTime( $node->attribute( 'modified_subnode' ) );
 
         $this->children = array();
         /// @todo optimize: do not load all children just to get their ids

@@ -9,15 +9,15 @@
   - object relations(s): ok with remote ids, use json arrays for non-remote ids too
   - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
   - ezpage: seems to be OK by usage of native xml serialization (would be too hard to use json-encoded, move it to phase 2)
-  - date/datetime/time?: use iso8601 format?
+  - date/datetime/time?: use iso8601 format instead of timestamp?
   - check for ezfloat: encode as json native float but using arbitrary precision
   - ezstarrating: we only transfer is_enabled, not actual ratings
   - ezuser: we transfer both enabled and disabled accounts as long as account login != ''
   - export+import to be done for ezuser
-  - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection
+  - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments
   - all other types that do not serialize to a single scalar value: ...
 
-. add support for sending in object creation/modification requests the original timestamp and remote_id of creator user;
+. add support for sending in object creation/modification requests the remote_id of creator user;
   - add support for importing that data into target system
 
 
@@ -36,6 +36,7 @@
   - source server: when sending creation/update event for an object but creation events for related objects are pending, warn user
   - etc...
 
+
 3 - REST API
 
 . target server: finish actions:
@@ -43,6 +44,8 @@
   - swap
 
 . test all actions
+
+. test: is view cache expired correctly on all occasions when updating an object?
 
 . target server: test content creation/modification triggers used on target server too, to make server chaining possible
 
@@ -89,8 +92,6 @@ Phase 1.5 (move to phase 2 ?)
 
 . source server: when executing an action, use an http redirect so that landing page can be refreshed via F5
 
-. source server: add an extra per-feed ini parameter that decides whether content creation/modification dates on targets are kept in sync with source or sync event execution date is used instead
-
 . dependency tracking:
   - all events should not have a pending create event for any of their parents (or they cannot be synced)
   - obj relations?
@@ -136,3 +137,5 @@ Phase 3:
 . allow a target server not to execute existing content triggers when importing objects
 . tackle problem of not-atomic operations, eg. when a node-create-on-target fails, it might have
   in fact created the node but not set the remote-id. How (if) to rollback?
+. enforce stricter checking rules for datatypes when updating content via rest, eg. min/max limits for integers etc...
+  (i.e. the controls which are applied when editing via web but not in fromString methods)

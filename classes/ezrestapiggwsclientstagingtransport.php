@@ -105,18 +105,23 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
 
                 /// @todo what if we create many drafts and we discard them? Is the first version created still 1? test it!
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                $syncdate = false;
+                if ( $this->target->attribute( 'use_source_creation_dates_on_target' ) == 'enabled')
+                {
+                    $syncdate = true;
+                }
                 if ( $data['version'] == 1 )
                 {
                     $method = 'POST';
                     $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
                     $url = "/content/objects?parentRemoteId=$RemoteParentNodeRemoteID";
-                    $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], false, $RemoteObjRemoteID );
+                    $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], false, $RemoteObjRemoteID, $syncdate );
                 }
                 else
                 {
                     $method = 'POST';
                     $url = "/content/objects/remote/$RemoteObjRemoteID/versions";
-                    $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], true );
+                    $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], true, false, $syncdate );
                 }
                 if ( !$payload )
                 {
@@ -454,14 +459,11 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 $out = self::DIFF_TRANSPORTERROR;
             }
         }
-//echo "Result: $out\n";
         return $out;
     }
 
     function checkObject( eZContentObject $object )
     {
-//echo "Cheking obj: " . $object->attribute( 'id' ) . "\n";
-
         $out = 0;
         $RemoteObjectRemoteID = $this->buildRemoteId( $object->attribute( 'id' ), $object->attribute( 'remote_id' ), 'object' );
         $method = 'GET';
@@ -510,7 +512,6 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 $out = self::DIFF_TRANSPORTERROR;
             }
         }
-//echo "Result: $out\n";
         return $out;
     }
 
@@ -570,7 +571,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
     * @todo miss object state info (both create and update)
     *
     */
-    protected function encodeObject( $objectID, $versionNr, $locale, $isupdate=false, $RemoteObjRemoteID=false )
+    protected function encodeObject( $objectID, $versionNr, $locale, $isupdate=false, $RemoteObjRemoteID=false, $syncdate=false )
     {
         $object = eZContentObject::fetch( $objectID );
         if ( !$object )
@@ -605,6 +606,11 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
         if ( $isupdate )
         {
             $out['initialLanguage'] = $locale; // initial language of new version
+            if ( $syncdate )
+            {
+                // this is what is shown in template object_information.tpl as "object created" date
+                $out['created'] = contentStagingBase::encodeDateTime( $version->attribute( 'created' ) );
+            }
         }
         else
         {
@@ -613,6 +619,10 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             $out['remoteId'] = $RemoteObjRemoteID;
             $out['sectionId'] = $object->attribute( 'section_id' );
             $out['ownerId'] = $object->attribute( 'owner_id' );
+            if ( $syncdate )
+            {
+                $out['created'] = contentStagingBase::encodeDateTime( $object->attribute( 'published' ) );
+            }
         }
 
         return $out;
