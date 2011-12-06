@@ -8,9 +8,15 @@ ProviderClass[contentstaging]=eZContentStagingRestApiProvider
 SkipFilter[]=eZContentStagingRestContentController_*
 SkipFilter[]=eZContentStagingRestLocationController_*
 
+[PreRoutingFilters]
+Filters[]=eZContentStagingPreventWarningsFilter
+
 [RequestFilters]
+Filters[]=eZContentStagingPreventErrorsFilter
 Filters[]=eZContentStagingAutoAuthFilter
-Filters[]=eZContentStagingJsonRequestFilter
+# Json request decoding for POST and PUT has been implemented via patches to
+# ezpRestHttpRequestParser, this filter is not needed anymore
+#Filters[]=eZContentStagingJsonRequestFilter
 
 
 [eZContentStagingRestContentController_create_CacheSettings]

@@ -82,10 +82,9 @@ class ezpRestHttpRequestParser extends ezcMvcHttpRequestParser
         if ( $req->protocol === 'http-put' ||  $req->protocol === 'http-post' )
         {
             $req->body = file_get_contents( "php://input" );
-
-            if ( isset( $headers['CONTENT_TYPE'] ) &&  strlen( $req->body ) > 0 )
+            if ( isset( $_SERVER['CONTENT_TYPE'] ) &&  strlen( $req->body ) > 0 )
             {
-                switch( $headers['CONTENT_TYPE'] )
+                switch( $_SERVER['CONTENT_TYPE'] )
                 {
                     case 'application/json':
                     case 'json':
@@ -118,7 +117,6 @@ class ezpRestHttpRequestParser extends ezcMvcHttpRequestParser
                 }
             }
         }
-        $this->request->inputVariables = null;
     }
 
     /**
