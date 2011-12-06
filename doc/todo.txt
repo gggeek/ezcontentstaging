@@ -53,6 +53,8 @@
   with a separate rest call after the publication trigger has run on target server
   -> is chaining of target servers possible at all?
 
+. test usage of http basic auth
+
 
 4 - INTERFACE
 
