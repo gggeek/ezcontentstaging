@@ -47,14 +47,15 @@ $ViewList = array(
                        )
     */
 
-    /* moved to ezjscore functions
+
     /// view used to sync a set of events
     'syncevents' => array( 'script' => 'syncevents.php',
                            'functions' => 'sync',
                            'default_navigation_part' => 'ezsetupnavigationpart',
                            'ui_context' => 'default',
-                           'params' => array( 'event_ids' ) ), */
+                           'params' => array( 'event_ids' ) ),
     
+    //duplicated to ezjscore functions
     /// view used to sync a node - DEPRECATED
     'syncnode' => array( 'script' => 'syncnode.php',
                          'functions' => 'sync',
