@@ -21,24 +21,31 @@
     </h1>
 </div>
 {if or(is_set( $sync_results ), is_set( $sync_errors ))}
-    <div class="message-warning">
-        <h2>{"Content synchronisation action results "|i18n("design/admin/class/edit")}:</h2>
-        {* @todo mark in red *}
-        {if $sync_errors|count()}
-            <ul>
-            {foreach $sync_errors as $msg}
-                <li>{$msg|wash()}</li>
-            {/foreach}
-            </ul>
-        {/if}
+    {if $sync_errors|count()}
+    <div class="message-error">
+        <h2>{"Error : content synchronisation action results "|i18n("design/admin/class/edit")}:</h2>
         <ul>
-            {foreach $sync_results as $msg}
-                <li>{$msg|wash()}</li>
-            {/foreach}
+        {foreach $sync_errors as $msg}
+            <li>{$msg|wash()}</li>
+        {/foreach}
         </ul>
     </div>
+    {/if}
+    <p class="clear"></p>
+    {if $sync_results|count()}
+    <div class="message-warning">
+        <h2>{"Content synchronisation action results "|i18n("design/admin/class/edit")}:</h2>
+        <ul>
+        {foreach $$sync_results as $msg}
+            <li>{$msg|wash()}</li>
+        {/foreach}
+        </ul>
+    </div>
+    {/if}
+{/if}
 
-<form name="syncaction" action={"contentstaging/syncnode/"|ezurl} method="post" >
+{if or($sync_errors|count(), $sync_results|count()|eq(0) )}
+<form name="syncaction" action={"contentstaging/syncevents/"|ezurl} method="post" >
 <input type="hidden" name="NodeID" value="{$current_node.node_id}" />
 <input type="hidden" name="TargetId" value="{$target_id}" />
 
@@ -70,8 +77,8 @@
 </table>        
 {/if}
 
-<h2>{"Related node details"|i18n("contentstaging")} :</h2>
 {if and(count($sync_related_objects)|gt(0), $create_sync_access, count($related_node_events)|gt(0) ) }
+<h2>{"Related node details"|i18n("contentstaging")} :</h2>
 <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
         <th width="30%">{"Name"|i18n("contentstaging")}</th>
@@ -101,11 +108,13 @@
 {/if}
 
 {if and($create_sync_access, count($current_node_events)|gt(0))}
-    <input class="button" name="ConfirmSyncNodeButton" type="submit" value="{'Confirm the synchronization of all above contents'|i18n(' ')}" />
+    <input class="button" name="ConfirmSyncButton" type="submit" value="{'Confirm the synchronization of all above contents'|i18n(' ')}" />
     <input class="button" name="CancelButton" type="submit" value="{'Cancel the synchronisation'|i18n(' ')}" />
 {/if}
 </form>
-
+{else}
+    <a href={$current_node.url_alias|ezurl()} title="{$current_node.name}">{"Back to the content "|i18n("contentstaging")}"{$current_node.name}"</a>
+{/if}
 {undef $create_sync_access}
 
 </div>
