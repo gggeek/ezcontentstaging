@@ -65,12 +65,12 @@ class contentStagingBase
         return $field;
     }
 
-    static protected function encodeSortOrder( $value )
+    static function encodeSortOrder( $value )
     {
         return $value == eZContentObjectTreeNode::SORT_ORDER_DESC ? "DESC" : "ASC";
     }
 
-    static protected function encodeSortField( $value )
+    static function encodeSortField( $value )
     {
         $value = strtoupper( eZContentObjectTreeNode::sortFieldName( $value ) );
         return $value;
