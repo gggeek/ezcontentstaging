@@ -34,7 +34,7 @@ class contentStagingBase
      * @param string $stringSortOrder
      * @return int
      */
-    protected static function decodeSortOrder( $stringSortOrder )
+    static function decodeSortOrder( $stringSortOrder )
     {
         // @todo throw an exception if $stringSortOrder is not ASC or DESC ?
         $sortOrder = eZContentObjectTreeNode::SORT_ORDER_ASC;
@@ -52,7 +52,7 @@ class contentStagingBase
      * @param string $stringSortField
      * @return int
      */
-    protected static function decodeSortField( $stringSortField )
+    static function decodeSortField( $stringSortField )
     {
         $field = eZContentObjectTreeNode::sortFieldID( strtolower( $stringSortField ) );
         if ( $field === null )

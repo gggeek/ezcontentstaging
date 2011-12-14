@@ -465,12 +465,16 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         /// @todo validate location input received: are priority, sortField, sortOrder mandatory?
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         $newNode = eZContentStagingContent::addLocation(
             $object, $parentNode,
             $this->request->inputVariables['remoteId'],
-            (int)$this->request->inputVariables['priority'], /// @todo why typecast only this value?
-            $this->request->inputVariables['sortField'],
-            $this->request->inputVariables['sortOrder']
+            isset( $this->request->inputVariables['priority'] ) ? $this->request->inputVariables['priority'] : null,
+            isset( $this->request->inputVariables['sortField'] ) ? $this->request->inputVariables['sortField'] : null,
+            isset( $this->request->inputVariables['sortOrder'] ) ? $this->request->inputVariables['sortOrder'] : null
         );
         /// @todo return a 401 in case of permission problems!
         if ( !$newNode instanceof eZContentObjectTreeNode )

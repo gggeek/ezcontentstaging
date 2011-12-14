@@ -300,59 +300,124 @@ class eZContentStagingContent extends contentStagingBase
      * @param int $sortOrder
      * @return eZContentObjectTreeNode|string
      *
-     * @todo return an ok/ko value
-     * @todo add a try/catch block for transactions?
-     * @todo perms checking
+     * @todo return a better ok/ko value
+     * @todo make more params optional: $newNodeRemoteId
+     * @todo perms checking: Is it doen always by called code?
      */
-    static function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority, $sortField, $sortOrder )
+    static function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority=null, $sortField=null, $sortOrder=null )
     {
-        $sortField = self::decodeSortField( $sortField );
-        $sortOrder = self::decodeSortOrder( $sortOrder);
-
-        $selectedNodeIDArray = array();
-
-        if ( eZOperationHandler::operationIsAvailable( 'content_addlocation' ) )
+        if ( $priority !== null )
         {
-            $operationResult = eZOperationHandler::execute(
-                'content',
-                'addlocation',
-                array(
-                    'node_id' => $object->attribute( 'main_node_id' ),
-                    'object_id' => $object->attribute( 'id' ),
-                    'select_node_id_array' => $selectedNodeIDArray ),
+            $priority = (int) $priority;
+        }
+        if ( $sortField !== null )
+        {
+            $sortField = self::decodeSortField( $sortField );
+        }
+        if ( $sortOrder !== null )
+        {
+            $sortOrder = self::decodeSortOrder( $sortOrder);
+        }
+        $selectedNodeIDArray = array( $parent->attribute( 'node_id' ) );
+
+        $db = eZDB::instance();
+        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        try
+        {
+            $newNode = false;
+
+            if ( eZOperationHandler::operationIsAvailable( 'content_addlocation' ) )
+            {
+                /// @todo what if this triggers a reported action (eg. approval?)
+                $operationResult = eZOperationHandler::execute(
+                    'content',
+                    'addlocation',
+                    array(
+                        'node_id' => $object->attribute( 'main_node_id' ),
+                        'object_id' => $object->attribute( 'id' ),
+                        'select_node_id_array' => $selectedNodeIDArray ),
+                    null,
+                    true );
+            }
+            else
+            {
+                $operationResult = eZContentOperationCollection::addAssignment( $object->attribute( 'main_node_id' ), $object->attribute( 'id' ), $selectedNodeIDArray );
+
+                /* manual creation
+                /// @todo do we need a transaction here?
+                $db = eZDB::instance();
+                $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+                try
+                {
+                    $db->begin();
+                    $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
+                    $newNode->setAttribute( 'contentobject_is_published', 1 );
+                    $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
+                    $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
+                    $newNode->setAttribute( 'priority', $priority );
+                    $newNode->setAttribute( 'sort_field', $sortField );
+                    $newNode->setAttribute( 'sort_order', $sortOrder );
+                    // Make sure the url alias is set updated.
+                    $newNode->updateSubTreePath();
+                    $newNode->sync();
+                    $db->commit();
+                    return $newNode;
+                    /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
+                }
+                catch ( exception $e )
+                {
+                    $db->rollback();
+                    return $e->getMessage();
+                }*/
+            }
+            /// @see eZModuleoperationInfo::execute
+            // note: eZContentOperationCollection::addAssignment always returns array ( 'status' => true ).
+            /// @todo Open a bug...
+            if ( $operationResult == null || $operationResult['status'] != true )
+            {
+                throw new exception( 'New node has not been created. Possible workflow problem' );
+            }
+
+            // fetch new node by its parent and object id
+            $conds = array(
+                'contentobject_id' => $object->attribute( 'id' ),
+                'parent_node_id' => $parent->attribute( 'node_id' ) );
+            $newNode =  eZPersistentObject::fetchObjectList(
+                eZContentObjectTreeNode::definition(),
+                null,
+                $conds,
+                null,
                 null,
                 true );
-        }
-        else
-        {
-            eZContentOperationCollection::addAssignment( $object->attribute( 'main_node_id' ), $object->attribute( 'id' ), $selectedNodeIDArray );
-
-            /* manual creation
-            /// @todo do we need a transaction here?
-            $db = eZDB::instance();
-            $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-            try
+            if ( !$newNode )
             {
-                $db->begin();
-                $newNode = $object->addLocation( $parent->attribute( 'node_id' ), true );
-                $newNode->setAttribute( 'contentobject_is_published', 1 );
-                $newNode->setAttribute( 'main_node_id', $object->attribute( 'main_node_id' ) );
-                $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
-                $newNode->setAttribute( 'priority', $priority );
-                $newNode->setAttribute( 'sort_field', $sortField );
-                $newNode->setAttribute( 'sort_order', $sortOrder );
-                // Make sure the url alias is set updated.
-                $newNode->updateSubTreePath();
-                $newNode->sync();
-                $db->commit();
-                return $newNode;
-                /// @bug we should be able to reset db error handler to its previous state, but there is no way to do so in the api...
+                throw new exception( 'New node has not been created. Possible permissions problem' );
             }
-            catch ( exception $e )
+
+            $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
+            if ( $priority !== null )
+            {
+                $newNode->setAttribute( 'priority', $priority );
+            }
+            if ( $sortField !== null )
+            {
+                $newNode->setAttribute( 'sort_field', $sortField );
+            }
+            if ( $sortOrder !== null )
+            {
+                $newNode->setAttribute( 'sort_order', $sortOrder );
+            }
+            $db->commit();
+            /// @todo is it necessary to clear caches again?
+            return $newNode;
+        }
+        catch ( exception $e )
+        {
+            if ( $db->transactionCounter() )
             {
                 $db->rollback();
-                return $e->getMessage();
-            }*/
+            }
+            return $e->getMessage();
         }
     }
 
