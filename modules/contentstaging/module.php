@@ -54,14 +54,21 @@ $ViewList = array(
                            'default_navigation_part' => 'ezsetupnavigationpart',
                            'ui_context' => 'default',
                            'params' => array( 'event_ids' ) ),
-    
+
     //duplicated to ezjscore functions
     /// view used to sync a node - DEPRECATED
     'syncnode' => array( 'script' => 'syncnode.php',
                          'functions' => 'sync',
                          'default_navigation_part' => 'ezsetupnavigationpart',
                          'ui_context' => 'default',
-                         'params' => array( 'node_id', 'target_it' ) )
+                         'params' => array( 'node_id', 'target_id' ) ),
+
+    // also available via ezjscore functionality
+    'checknode' => array( 'script' => 'checknode.php',
+                          'functions' => 'sync',
+                          'default_navigation_part' => 'ezsetupnavigationpart',
+                          'ui_context' => 'default',
+                          'params' => array( 'node_id', 'target_id' ) ),
 );
 
 $FunctionList = array(
