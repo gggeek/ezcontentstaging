@@ -277,7 +277,7 @@ class eZContentStagingTarget
             }
 
             // nb: using integer-indexed arrays: must not use array_merge
-            $out = $out + $this->checkNode( $node, true, $transport, $iterator );
+            $out = $out + $this->checkNode( $node, true, $iterator, $transport );
         }
 
         return $out;
@@ -290,7 +290,7 @@ class eZContentStagingTarget
     * @todo prevent loops
     * @todo smarter checking: if node x is not there all its children can not be there either
     */
-    protected function checkNode( $node, $recursive=true, $transport, $iterator )
+    function checkNode( $node, $recursive=true, $iterator=false, $transport=false )
     {
         //static $testedobjects;
         //$objectID = $object->attribute( 'id' );
@@ -303,6 +303,16 @@ class eZContentStagingTarget
         //{
         //    $objectok = $testedobjects[$objectId];
         //}
+        if ( $transport == false )
+        {
+            $class = $this->attribute( 'transport_class' );
+            if ( !class_exists( $class ) )
+            {
+                eZDebug::writeError( "Can not create transport, class $class not found", __METHOD__ );
+                return array();
+            }
+            $transport = new $class( $this );
+        }
 
         $nodeok = $transport->checkNode( $node );
         $object = $node->attribute( 'object' );

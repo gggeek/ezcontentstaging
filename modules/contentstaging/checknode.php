@@ -11,16 +11,38 @@
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
 */
 
-$http = eZHTTPTool::instance();
+$nodeId = $Params['node_id'];
+$targetId = $Params['target_id'];
+
+$checkErrors = '';
+$checkResults = -1;
+$node = eZContentObjectTreeNode::fetch( $nodeId );
+if ( $node )
+{
+    $target = eZContentStagingTarget::fetch( $targetId );
+    if ( $target )
+    {
+        $checkResults = $target->checkNode( $node, false );
+        $checkResults = $checkResults[$nodeId];
+    }
+    else
+    {
+        /// @todo make translatable
+        $checkErrors = "Invalid target id: $targetId";
+    }
+}
+else
+{
+    /// @todo make translatable
+    $checkErrors = "Invalid node id: $nodeId";
+}
+
 
 $tpl = eZTemplate::factory();
-/*$tpl->setVariable( 'current_node', $currentNode );
-$tpl->setVariable( 'sync_related_objects', $relatedObjectNeedingSync );
+$tpl->setVariable( 'current_node', $node );
 $tpl->setVariable( 'target_id', $targetId );
-$tpl->setVariable( 'current_node_events', $current_node_events );
-$tpl->setVariable( 'related_node_events', $related_node_events_list );
-$tpl->setVariable( 'sync_errors', $syncErrors );
-$tpl->setVariable( 'sync_results', $syncResults );*/
+$tpl->setVariable( 'check_errors', $checkErrors );
+$tpl->setVariable( 'check_results', $checkResults );
 
 $Result['content'] = $tpl->fetch( 'design:contentstaging/checknode.tpl' );
 
