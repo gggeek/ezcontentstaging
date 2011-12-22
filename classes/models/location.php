@@ -42,9 +42,9 @@ class eZContentStagingLocation extends contentStagingBase
         $this->parentId = (int)$node->attribute( 'parent_node_id' );
         $this->mainLocationId = (int)$node->attribute( 'main_node_id' );
         $this->priority = (int)$node->attribute( 'priority' );
-        $this->hidden = (bool)$node->attribute( 'hidden' );
+        $this->hidden = (bool)$node->attribute( 'is_hidden' );
         $this->depth = (int)$node->attribute( 'depth' );
-        $this->invisible = (bool)$node->attribute( 'invisible' );
+        $this->invisible = (bool)$node->attribute( 'is_invisible' );
         $this->remoteId = $node->attribute( 'remote_id' );
         $this->modifiedSubLocation = self::encodeDateTime( $node->attribute( 'modified_subnode' ) );
 
