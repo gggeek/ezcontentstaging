@@ -45,6 +45,6 @@
         {undef $needs_sync $create_sync_access $feeds}
 
     {/foreach}
-    {udef $assignments}
+    {undef $assignments}
 {/if}
 {undef $view_sync_access}
