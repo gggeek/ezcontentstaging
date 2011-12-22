@@ -12,8 +12,7 @@
     {def $needs_sync = fetch( 'contentstaging', 'node_sync_events_by_target', hash( 'node_id', $current_node.node_id,
                                                                                     'language', ezini( 'RegionalSettings', 'ContentObjectLocale' ) ) )
          $create_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
-		 $feeds = fetch( 'contentstaging', 'sync_feeds_by_node', hash( 'node_id', $current_node.node_id) )
-         $title = ''}
+		 $title = ''}
     {if $needs_sync|count()}
         {def $preferred_lib = ezini('eZJSCore', 'PreferredLibrary', 'ezjscore.ini')}
         {if array( 'yui3', 'jquery' )|contains( $preferred_lib )|not()}
