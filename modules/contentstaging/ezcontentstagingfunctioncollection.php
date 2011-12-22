@@ -45,7 +45,7 @@ class eZContentStagingFunctionCollection
 
     static function fetchFeedsByNodeId( $node_id=false )
     {
-        return array( 'result' => eZContentStagingTarget::fetchList() );
+        return array( 'result' => eZContentStagingTarget::fetchByNode( $node_id ) );
     }
 
 }

@@ -81,9 +81,19 @@ class eZContentStagingTarget
     /**
     * Returns list of targets that should be notified of a given node
     * (assuming that there are events for that node)
+    * @param int|eZContentObjectTreeNode $node
     */
-    static function fetchByNode( eZContentObjectTreeNode $node )
+    static function fetchByNode( $node )
     {
+        if ( is_numeric( $node ) )
+        {
+            $node = eZContentObjectTreeNode::fetch( $node );
+
+        }
+        if ( ! is_a( $node, 'eZContentObjectTreeNode' ) )
+        {
+            return array();
+        }
         $out = array();
         foreach( self::fetchList() as $id => $target )
         {
