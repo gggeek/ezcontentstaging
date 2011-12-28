@@ -65,7 +65,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
             /// @todo test for errors
             $data = $data[0];
             $newNodesData[$data['path_string']] = array(
-                'nodeID' => $nodeID,
+                'nodeID' => $data['node_id'],
                 'nodeRemoteID' => $data['remote_id'],
                 'objectRemoteID' => $object->attribute( 'remote_id' ),
                 'parentNodeID' => $newParentNode->attribute( 'node_id' ),
