@@ -60,7 +60,7 @@
 
 . source server: finish js code used by ajax calls for ezwt (it misses checking of return value, alert, changing icon state)
 
-. source server: proper policy checking before allowing sync calls (ok in "feed" view; remains to be seen in ezjscore call)
+. source server: proper policy checking before allowing sync calls (ok in "feed" view; remains to be seen in ezjscore calls)
 
 . source server: settle on naming conventions (user-side), rewrite all text labels in templates
 
@@ -102,6 +102,8 @@ Phase 1.5 (move to phase 2 ?)
 
 . source server: refactor diffing of content in separate classes
 
+. source server: more readable output of checknode view - also make it available via ezjscore
+
 
 Phase 2:
 
@@ -125,6 +127,7 @@ Phase 2:
 . refactor error condition management so that we get both a number and a string across the whole chain from the transport layer to the templates
 . fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
 . use the same class to encode/decode objects on both source and target (90% there)
+. target server: review all operations that check for user perms vs. those that do not
 
 
 Phase 3:
@@ -141,3 +144,4 @@ Phase 3:
   in fact created the node but not set the remote-id. How (if) to rollback?
 . enforce stricter checking rules for datatypes when updating content via rest, eg. min/max limits for integers etc...
   (i.e. the controls which are applied when editing via web but not in fromString methods)
+. allow checknode view to reset/sanitize the existing events for a node if they do not match the existing ones
