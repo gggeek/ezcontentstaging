@@ -21,7 +21,8 @@ Installation
 
 Target server:
 . enable rewrite rules to make the rest api accessible
-. disable oauth authentication
+. disable oauth authentication (use basic auth with or without https)
+. make sure there is a user account that has enough rights to create/read/update/delete any content, e.g. admin
 
 Source server:
 . unzip the extension, enable it (make sure to regenerate autoloads)
@@ -41,7 +42,14 @@ Source server:
   . in contenstaging.ini.append.php:
     ...
   . in wsproviders.ini.append.php
-    ...
+    [<feedname>]
+    providerType=REST
+	providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/rest/api/contentstaging/v1>
+	Options[]
+	Options[authType]=1 (for basic auth)
+	Options[login]=<username>
+	Options[password]=<password>
+
 . in the Administration interface, click on the "init feed" button and sync the generated event
 
 
