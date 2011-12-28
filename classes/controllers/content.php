@@ -302,11 +302,6 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, "Error while publishing version" );
         }
 
-        /*var_dump( $refresh );
-        var_dump( $version );
-        var_dump( $object );
-        die();*/
-
         // in case version created is the 1st, return location address
         $result = new ezpRestMvcResult();
         if ( $version->attribute( 'version' ) == 1 )
@@ -427,6 +422,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - PUT /content/objects/remote/:remoteId/locations?parentRemoteId=<parentNodeRemoteID>
      * - PUT /content/objects/:Id/locations?parentRemoteId=<parentNodeRemoteID>
      *
+     * NB: checks user permissions
+     *
      * @return ezpRestMvcResult
      *
      * @todo add support for parentId besides parentRemoteId
@@ -456,10 +453,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         {
             if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
             {
-                //return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$this->remoteId}' already has a location under of location '{$parentRemoteId}'" );
-                $result = new ezpRestMvcResult();
+                return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$this->request->inputVariables['remoteId']}' already has a location under of location '{$parentRemoteId}'" );
+                /*$result = new ezpRestMvcResult();
                 $result->status = new ezpRestHttpResponse( 403 );
-                return $result;
+                return $result;*/
             }
         }
 
