@@ -382,16 +382,13 @@ class eZContentStagingContent extends contentStagingBase
             $conds = array(
                 'contentobject_id' => $object->attribute( 'id' ),
                 'parent_node_id' => $parent->attribute( 'node_id' ) );
-            $newNode =  eZPersistentObject::fetchObjectList(
+            $newNode = eZPersistentObject::fetchObject(
                 eZContentObjectTreeNode::definition(),
                 null,
-                $conds,
-                null,
-                null,
-                true );
+                $conds );
             if ( !$newNode )
             {
-                throw new exception( 'New node has not been created. Possible permissions problem' );
+                throw new exception( 'New node has not been created. Possible permissions problem ' . var_export( $newNode, true ) );
             }
 
             $newNode->setAttribute( 'remote_id', $newNodeRemoteId );
@@ -407,6 +404,7 @@ class eZContentStagingContent extends contentStagingBase
             {
                 $newNode->setAttribute( 'sort_order', $sortOrder );
             }
+            $newNode->store();
             $db->commit();
             /// @todo is it necessary to clear caches again?
             return $newNode;

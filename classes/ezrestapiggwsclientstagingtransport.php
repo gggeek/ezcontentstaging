@@ -65,11 +65,11 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
                     );
                 $out = $this->restCall( $method, $url, $payload );
-                if ( !is_array( $out ) || !isset( $out['remoteId'] ) )
+                if ( !is_array( $out ) || !is_array( $out['Location'] ) || !isset( $out['Location']['remoteId'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
-                if ( $out['remoteId'] != $RemoteNodeRemoteID )
+                if ( $out['Location']['remoteId'] != $RemoteNodeRemoteID )
                 {
                     throw new Exception( "Remote id of created node does not match waht was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
