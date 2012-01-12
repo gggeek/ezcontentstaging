@@ -265,9 +265,10 @@ class eZContentStagingLocation extends contentStagingBase
             $operationResult = eZOperationHandler::execute(
                 'content',
                 'move',
-                array( 'node_id' => $node->attribute( 'node_id' ),
+                array(
+                    'node_id' => $node->attribute( 'node_id' ),
                     'object_id' => $node->attribute( 'contentobject_id' ),
-                    $dest->attribute( 'node_id' ) ),
+                    'new_parent_node_id' => $dest->attribute( 'node_id' ) ),
                 null,
                 true );
         }
