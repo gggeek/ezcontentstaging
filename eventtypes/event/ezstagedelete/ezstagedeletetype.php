@@ -28,7 +28,7 @@ class eZStageDeleteType extends eZWorkflowEventType
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-        $trash = $parameres['move_to_trash'];
+        $trash = $parameters['move_to_trash'];
 
         if ( isset( $parameters['node_id_list'] ) )
         {

@@ -78,7 +78,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
             case eZContentStagingEvent::ACTION_DELETE:
                 $method = 'DELETE';
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $url = "/content/objects/remote/$RemoteObjRemoteID?trash={$data['trash']}";
+                $url = "/content/objects/remote/$RemoteObjRemoteID?trash=" . self::encodeTrash( $data['trash'] );
                 $this->restCall( $method, $url );
                 return 0;
 
