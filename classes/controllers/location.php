@@ -65,10 +65,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
 
         /// @todo add perms checking
 
-        if ( ( $result = eZContentStagingLocation::updateVisibility( $node, ( $this->request->get['hide'] == 'true' ) )  )!== 0 )
-        {
-            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
-        }
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
+        eZContentStagingLocation::updateVisibility( $node, ( $this->request->get['hide'] == 'true' ) );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -180,6 +181,10 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$destParentRemoteId}'" );
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         eZContentStagingLocation::move( $node, $dest );
 
         $result = new ezpRestMvcResult();
@@ -212,6 +217,10 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             /// @todo move to common code: trim, strtolower
             $moveToTrash = ( $this->request->get['trash'] !== 'false' );
         }
+
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
 
         eZContentStagingLocation::remove( $node, $moveToTrash );
 

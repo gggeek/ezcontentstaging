@@ -75,12 +75,12 @@ class eZContentStagingLocation extends contentStagingBase
         if ( eZOperationHandler::operationIsAvailable( 'content_sort' ) )
         {
             $operationResult = eZOperationHandler::execute(
-            'content',
-            'sort',
-            array( 'node_id' => $node->attribute( 'node_id' ),
-                   'sorting_field' => $sortField,
-                   'sorting_order' => $sortOrder ),
-            null, true );
+                'content',
+                'sort',
+                array( 'node_id' => $node->attribute( 'node_id' ),
+                       'sorting_field' => $sortField,
+                       'sorting_order' => $sortOrder ),
+                null, true );
             /// @todo test if any errors occurred
             return 0;
 
@@ -200,6 +200,8 @@ class eZContentStagingLocation extends contentStagingBase
      *
      * @param eZContentObjectTreeNode $node
      * @param bool $hide
+     *
+     * @todo add checking for 'all ok'
      */
     static function updateVisibility( eZContentObjectTreeNode $node, $hide )
     {

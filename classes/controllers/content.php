@@ -64,6 +64,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             $moveToTrash = ( $this->request->get['trash'] !== 'false' );
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         eZContentStagingContent::remove( $object, $moveToTrash );
 
         $result = new ezpRestMvcResult();
@@ -343,6 +347,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Translation in '{$this->localeCode}' not found in the content '$objectId'" );
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         eZContentStagingContent::removeTranslations(
             $object,
             array( $languages[$this->localeCode]->attribute( 'id' ) )
@@ -381,6 +389,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Section with Id '$sectionId' not found" );
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         eZContentStagingContent::updateSection( $object, $sectionId );
 
         $result = new ezpRestMvcResult();
@@ -406,6 +418,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         {
             return $object;
         }
+
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
 
         eZContentStagingContent::updateStates( $object, array() );
 
