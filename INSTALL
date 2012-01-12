@@ -5,7 +5,7 @@ Requirements
 ------------
 
 Source server:
-. eZ Publish 4.5 or later
+. eZ Publish 4.5 or later (note that patches have to be applied for versions 4.5 and 4.6)
 . ggSysInfo 0.11 or later
 . ezjscore (if using ezwt)
 
@@ -20,15 +20,16 @@ Installation
 ------------
 
 Target server:
-. enable rewrite rules to make the rest api accessible
-. disable oauth authentication (use basic auth with or without https)
-. make sure there is a user account that has enough rights to create/read/update/delete any content, e.g. admin
+1. unzip the extension, enable it (make sure to regenerate autoloads)
+2. enable rewrite rules to make the rest api accessible
+3. disable oauth authentication (use basic auth with or without https)
+4. make sure there is a user account that has enough rights to create/read/update/delete any content, e.g. admin
 
 Source server:
-. unzip the extension, enable it (make sure to regenerate autoloads)
-. create the new db table: either go to setup/Upgrade check/DB Upgrade check in the admin interface, or use sql script in the sql/ folder
-. copy the files from the patches directory over the original eZ Publish kernel files (back up original first)
-. enable all the needed workflow events:
+1. unzip the extension, enable it (make sure to regenerate autoloads)
+2. create the new db table: either go to "setup/Upgrade check/DB Upgrade check" in the admin interface, or use sql script in the sql/ folder
+3. copy the files from the patches directory over the original eZ Publish kernel files (back up originals first)
+4. enable all the needed workflow events:
   - create one workflow per trigger for all content-related triggers:
   - add to each workflow one event of type "stage <xxx>"
   - add each workflow to one trigger
@@ -36,12 +37,13 @@ Source server:
 	. remove location: before
 	. ...
   - if you have existing workflows (eg. content approval), put the "stage" event where you deem appropriate (eg. after approval and wait-until-date events)
-. define target server:
+5. define target feed:
   . make sure all content classes, sections, languages, object states, are defined the same on source and target server
     (this has to be done by hand)
-  . in contenstaging.ini.append.php:
+  . edit contenstaging.ini.append.php:
     ...
-  . in wsproviders.ini.append.php
+    make sure that for all root nodes of the feed in the source server, a corresponding root node exists on the target server
+  . edit wsproviders.ini.append.php
     [<feedname>]
     providerType=REST
 	providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/rest/api/contentstaging/v1>
@@ -50,8 +52,10 @@ Source server:
 	Options[login]=<username>
 	Options[password]=<password>
 
-. in the Administration interface, click on the "init feed" button and sync the generated event
+6. in the Administration interface, click on the "init feed" button and sync the generated event
 
 
 Troubleshooting
 ---------------
+
+(to be done...)

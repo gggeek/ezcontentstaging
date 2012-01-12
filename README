@@ -1,4 +1,31 @@
 eZ Content Staging Extension
 ============================
 
-(To be done...)
+The goal of the extension is to allow content synchronization between different eZ Publish installations.
+
+The general architecture is the following:
+
+Feeds
+-----
+. on the source server, "synchronization feeds" are defined
+. every feed is used to relay content to one target server
+. for every feed, a set of "root nodes" has to be defined
+. every content that is a child of one of the feed root nodes will be synchronized to the target server
+. the same content can be part of many feeds that synchronize to different target servers
+
+Content editing
+---------------
+. the extension aims to synchronize content with a 100% accuracy, including e.g. objects states, sections, multiple locations etc...
+. whenever a content is edited on the source server, the changes are recorded locally in the database (not sent immediately)
+. editors and administrators can decide which contents to synchronize, via either the website toolbar (frontend), a dashboard panel or a dedicated page in the administration interface
+
+Communication between the servers
+---------------------------------
+. the communication between the source and target servers happens via REST calls
+. the extension needs to be installed on both source and target servers
+
+FAQ
+---
+. q: can a feed be defined on a subtree of already existing content? a: not yet
+. q: can content sync happen immediately without intervention of the editor? a: not yet
+. q: are all datatypes supported? a: the extension support all datatypes from eZ Publish, plus datatypes that support fully toString(), fromString() calls
