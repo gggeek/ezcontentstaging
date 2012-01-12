@@ -482,7 +482,6 @@ class eZContentStagingContent extends contentStagingBase
         {
             $nodeIDs[] = $node->attribute( 'node_id' );
         }
-
         if ( eZOperationHandler::operationIsAvailable( 'content_delete' ) )
         {
             $operationResult = eZOperationHandler::execute(
