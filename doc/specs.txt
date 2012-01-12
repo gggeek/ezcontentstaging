@@ -1,7 +1,9 @@
 Technical specifications
 ========================
 
-Information needed to replicate content actions via rest api
-------------------------------------------------------------
+(To be done...)
 
-REST API doc: https://github.com/ezsystems/ezpublish-ee/wiki/REST-API-V2
+See:
+
+. specs.odt
+. REST API doc: https://github.com/ezsystems/ezpublish-ee/wiki/REST-API-V2
