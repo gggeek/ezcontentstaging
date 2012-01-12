@@ -188,7 +188,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
             ),
             'stagingContentRemoveLanguage' => new ezpRestVersionedRoute(
                 new ezpMvcRailsRoute(
-                    '/content/objects/:Id/languages/:Language',
+                    '/content/objects/:Id/languages/:language',
                     'eZContentStagingRestContentController',
                     'removeLanguage',
                     array(),

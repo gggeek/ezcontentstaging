@@ -82,14 +82,6 @@ class eZContentStagingContent extends contentStagingBase
     }
 
     /**
-    * @todo ...
-    */
-    static function removeLanguage( $object, $anguage )
-    {
-
-    }
-
-    /**
     * Updates the $object with the provided fields in the request - ie. it creates a new version
     *
     * @param eZContentObject $object
