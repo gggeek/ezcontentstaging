@@ -230,16 +230,18 @@ class eZContentStagingLocation extends contentStagingBase
         }
     }
 
+    /// @todo check for failure
     static function updateMainLocation( eZContentObjectTreeNode $node, eZContentObjectTreeNode $newMainLocation )
     {
-        $mainAssignmentID = $node->attribute( 'object' )->attribute( 'main_node' )->attribute( 'node_id' );
+var_dump($newMainLocation->attribute( 'node_id' ));
+var_dump($newMainLocation->attribute( 'parent_node_id' ));
         if ( eZOperationHandler::operationIsAvailable( 'content_updatemainassignment' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
                 'updatemainassignment',
                 array(
-                    'main_assignment_id' => $mainAssignmentID,
+                    'main_assignment_id' => $newMainLocation->attribute( 'node_id' ),
                     'object_id' => $node->attribute( 'contentobject_id' ),
                     'main_assignment_parent_id' => $newMainLocation->attribute( 'parent_node_id' ) ),
                 null,
@@ -248,7 +250,7 @@ class eZContentStagingLocation extends contentStagingBase
         else
         {
             eZContentOperationCollection::UpdateMainAssignment(
-                $mainAssignmentID,
+                $newMainLocation->attribute( 'node_id' ),
                 $node->attribute( 'contentobject_id' ),
                 $newMainLocation->attribute( 'parent_node_id' ) );
         }

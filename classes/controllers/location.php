@@ -96,6 +96,8 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
+        $modified = false;
+
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
@@ -140,13 +142,16 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
                 return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with remote id '{$this->request->inputVariables['mainLocationRemoteId']}' not found" );
             }
             /// @todo check if new main location is same as current
-            if ( ( $result = eZContentStagingLocation::updateMainLocation(
-                    $node,
-                    $newMainLocation )
-                ) !== 0 )
-            {
-                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
-            }
+            eZContentStagingLocation::updateMainLocation(
+                $node,
+                $newMainLocation );
+            // we have to reload the node to pick up the change
+            $modified = true;
+        }
+
+        if ( $modified )
+        {
+            $node = eZContentObjectTreeNode::fetch( $node->attribute( 'node_id' ) );
         }
 
         $result = new ezpRestMvcResult();
