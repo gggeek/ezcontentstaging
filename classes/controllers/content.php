@@ -94,9 +94,14 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         /// @todo add perms checking
 
-        /// @todo return error if lang is not there ?
+        $objectId = $object->attribute( 'id' );
+        $languages = $object->allLanguages();
+        if ( !isset( $languages[$this->language] ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Translation in '{$this->language}' not found in the content '$objectId'" );
+        }
 
-        eZContentStagingContent::removeLanguage( $object, $this->request->language );
+        eZContentStagingContent::removeTranslations( $object, array( $this->language ) );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -185,7 +190,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
         {
             eZContentStagingContent::updateAlwaysAvailable(
-                $object->attribute( 'id' ),
+                $object,
                 (bool)$this->request->inputVariables['alwaysAvailable']
             );
             //$result->status = new ezpRestHttpResponse( 204 );
@@ -342,7 +347,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      *
      * @return ezpRestMvcResult
      */
-    public function doRemoveTranslation()
+    /*public function doRemoveTranslation()
     {
         $object = $this->object();
         if ( !$object instanceof eZContentObject )
@@ -369,7 +374,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
         return $result;
-    }
+    }*/
 
     /**
      * Handle change section for a content object from its remote id
