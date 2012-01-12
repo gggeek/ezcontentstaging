@@ -92,6 +92,10 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
