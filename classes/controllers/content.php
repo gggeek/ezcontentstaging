@@ -178,6 +178,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return $object;
         }
 
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
         if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
         {
             eZContentStagingContent::updateAlwaysAvailable(
@@ -189,9 +193,15 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         if ( isset( $this->request->inputVariables['initialLanguage'] ) )
         {
+            $lang = $this->request->inputVariables['initialLanguage'];
+            $languages = $object->allLanguages();
+            if ( !isset( $languages[$lang] ) )
+            {
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Translation in '$lang' not found in the content '{$object->attribute( 'id' )}'" );
+            }
             eZContentStagingContent::updateInitialLanguage(
-                $object->attribute( 'id' ),
-                $this->request->inputVariables['initialLanguage']
+                $object,
+                $languages[$lang]->attribute( 'id' )
             );
             //$result->status = new ezpRestHttpResponse( 204 );
         }

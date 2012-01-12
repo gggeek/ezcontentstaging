@@ -31,6 +31,7 @@ class eZContentStagingContent extends contentStagingBase
     public $alwaysAvailable;
     public $remoteId;
     public $locationIds;
+    public $initialLanguage;
     public $fields;
 
     function __construct( eZContentObject $object )
@@ -59,6 +60,7 @@ class eZContentStagingContent extends contentStagingBase
         $this->modified = self::encodeDateTime( $object->attribute( 'modified' ) );
         $this->alwaysAvailable = (bool)$object->attribute( 'always_available' );
         $this->remoteId = $object->attribute( 'remote_id' );
+        $this->initialLanguage = $object->attribute( 'initial_language_code' );
 
         $this->locationIds = array();
         /// @todo this is bad for performances, we should not fetch full nodes
