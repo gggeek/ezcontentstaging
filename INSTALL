@@ -24,7 +24,11 @@ Target server:
 
 2. enable rewrite rules to make the rest api accessible
 
-3. disable oauth authentication (use basic auth with or without https)
+3. disable oauth authentication (use basic auth with or without https):
+   edit rest.ini.append.php:
+
+   [Authentication]
+   AuthenticationStyle=ezpRestBasicAuthStyle
 
 4. make sure there is a user account that has enough rights to create/read/update/delete any content, e.g. admin
 
@@ -62,11 +66,11 @@ Source server:
     Server=<server_feedname> note: this can be the same or different from feedname, but haas to be the same as used in wsproviders.ini
     Subtrees[]=<local_root_node_id>
     RemoteSubtrees[]=<target_root_node_id>
-	
+
     make sure that for all root nodes of the feed in the source server, a corresponding root node exists on the target server
 
   . edit wsproviders.ini.append.php
-    
+
 	[<server_feedname>]
     providerType=REST
 	providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/rest/api/contentstaging/v1>
