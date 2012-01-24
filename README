@@ -29,6 +29,7 @@ FAQ
 . q: can a feed be defined on a subtree of already existing content? a: not yet. It is recommended to have no content for either source or target feed sources
 . q: can content sync happen immediately without intervention of the editor? a: not yet
 . q: can content sync happen via a cronjob? a: yes
-. q: are all datatypes supported? a: the extension support all datatypes from eZ Publish, plus datatypes that support fully toString(), fromString() calls
+. q: are all datatypes supported? a: the extension support all datatypes from eZ Publish, plus datatypes that support fully toString(), fromString() calls and do not rely on object_id/node_id or other database data
+. q: are custom tags for rich text supported? a: all tags that do not rely on object_id/node_id or other database data should be fine
 . q: is the REST protocol used for communication between the two servers documented? a: yes. It is in fact a "preview" version of the protocol that will be the official next version of the ezrest api
 . q: how does the extension cope with synchronization of "dictionary" data, such as sections, object states, content class definitin? a: so far, this is left to manual synchronization
