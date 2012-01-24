@@ -153,7 +153,7 @@ else
 {
     /// @todo use the name of the feed, not its id
     $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', "Feed: $targetId" ),
-                               'url' => false );
+                               'url' => 'contentstaging/feeds' . $targetId );
 }
 
 ?>
