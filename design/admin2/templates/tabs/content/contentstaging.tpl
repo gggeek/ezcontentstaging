@@ -30,7 +30,7 @@
                 <tr><td>{$feed.name|wash()}</td>
                 <td>{if is_set($needs_sync.$feedid)}
                     {foreach $needs_sync.$feedid as $i => $event}
-                        {$event.to_sync_string|i18n( 'contentstaging' ) )}
+                        {$event.to_sync_string|i18n('contentstaging')}
                         {delimiter}, {/delimiter}
                     {/foreach}
                 {else}
