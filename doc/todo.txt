@@ -146,3 +146,5 @@ Phase 3:
 . enforce stricter checking rules for datatypes when updating content via rest, eg. min/max limits for integers etc...
   (i.e. the controls which are applied when editing via web but not in fromString methods)
 . allow checknode view to reset/sanitize the existing events for a node if they do not match the existing ones
+. state sync event: it would be nice if changing one state would not need for other states definitions to be present on target server
+. add support for custom tags (in xmltext datatype) that store node/object id

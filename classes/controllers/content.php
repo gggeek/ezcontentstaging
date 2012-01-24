@@ -285,7 +285,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         $result = new ezpRestMvcResult();
         $result->status = new eZContentStagingCreatedHttpResponse(
-            '/content/objects/' . $object->attribute( 'id' ) . 'versions/' . $version->attribute( 'version' )
+            '/content/objects/' . $object->attribute( 'id' ) . '/versions/' . $version->attribute( 'version' )
         );
         return $result;
     }

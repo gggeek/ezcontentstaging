@@ -234,9 +234,11 @@ class eZContentStagingField
                     /// @todo !important suppress errors in the loadXML call?
                     if ( $xmlString != '' && $doc->loadXML( $xmlString ) )
                     {
-                        /* For all links found in the XML, do the following:
-                           * - add "href" attribute fetching it from ezurl table.
-                           * - remove "id" attribute.
+                        /** For all links found in the XML, do the following:
+                        * - add "href" attribute fetching it from ezurl table.
+                        * - remove "id" attribute.
+                        * For embeds, objects, embeds-inline, replace id with remote_id
+                        * @see eZXMLTextType::serializeContentObjectAttribute
                         */
                         $links = $doc->getElementsByTagName( 'link' );
                         $embeds = $doc->getElementsByTagName( 'embed' );
@@ -502,8 +504,8 @@ class eZContentStagingField
                 /// @todo !important suppress errors in the loadXML call?
                 if ( $doc->loadXML( $value ) )
                 {
-                    // we only need to fix links, as embeds, objects, embedsinline
-                    // are ok with a remote id instead of a source id
+                    // fix 1st link objects
+                    /// @see eZXMLTextType::unserializeContentObjectAttribute
                     $links = $doc->getElementsByTagName( 'link' );
                     foreach ( $links as $linkNode )
                     {
@@ -521,10 +523,20 @@ class eZContentStagingField
                         $linkNode->removeAttribute( 'href' );
                         $linkNode->setAttribute( 'url_id', $urlObj->attribute( 'id' ) );
                         $urlObjectLink = eZURLObjectLink::create( $urlObj->attribute( 'id' ),
-                                                                  $objectAttribute->attribute( 'id' ),
-                                                                  $objectAttribute->attribute( 'version' ) );
+                                                                  $attribute->attribute( 'id' ),
+                                                                  $attribute->attribute( 'version' ) );
                         $urlObjectLink->store();
                     }
+
+                    // then all remote ids
+                    $embeds = $doc->getElementsByTagName( 'embed' );
+                    $objects = $doc->getElementsByTagName( 'object' );
+                    $embedsInline = $doc->getElementsByTagName( 'embed-inline' );
+
+                    self::transformRemoteLinksToLinks( $links, $attribute );
+                    self::transformRemoteLinksToLinks( $embeds, $attribute );
+                    self::transformRemoteLinksToLinks( $objects, $attribute );
+                    self::transformRemoteLinksToLinks( $embedsInline, $attribute );
                 }
                 else
                 {
@@ -551,8 +563,8 @@ class eZContentStagingField
         return $ok;
     }
 
-    /// Takan from eZXMLTextType::transformLinksToRemoteLinks
-    protected function transformLinksToRemoteLinks( DOMNodeList $nodeList, $ridGenerator )
+    /// Taken from eZXMLTextType::transformLinksToRemoteLinks
+    protected static function transformLinksToRemoteLinks( DOMNodeList $nodeList, $ridGenerator )
     {
         foreach ( $nodeList as $node )
         {
@@ -605,4 +617,62 @@ class eZContentStagingField
         }
     }
 
+    /// Taken from eZXMLTextType::transformRemoteLinksToLinks
+    protected static function transformRemoteLinksToLinks( DOMNodeList $nodeList, eZContentObjectAttribute $attribute )
+    {
+        //$modified = false;
+
+        $contentObject = $attribute->attribute( 'object' );
+        foreach ( $nodeList as $node )
+        {
+            $objectRemoteID = $node->getAttribute( 'object_remote_id' );
+            $nodeRemoteID = $node->getAttribute( 'node_remote_id' );
+            if ( $objectRemoteID )
+            {
+                $objectArray = eZContentObject::fetchByRemoteID( $objectRemoteID, false );
+                if ( !is_array( $objectArray ) )
+                {
+                    eZDebug::writeWarning( "Can't fetch object with remoteID = $objectRemoteID", __METHOD__ );
+                    continue;
+                }
+
+                $objectID = $objectArray['id'];
+                if ( $node->localName == 'object' )
+                    $node->setAttribute( 'id', $objectID );
+                else
+                    $node->setAttribute( 'object_id', $objectID );
+                $node->removeAttribute( 'object_remote_id' );
+                //$modified = true;
+
+                // add as related object
+                if ( $contentObject )
+                {
+                    $relationType = $node->localName == 'link' ? eZContentObject::RELATION_LINK : eZContentObject::RELATION_EMBED;
+                    $contentObject->addContentObjectRelation( $objectID, $attribute->attribute( 'version' ), 0, $relationType );
+                }
+            }
+            elseif ( $nodeRemoteID )
+            {
+                $nodeArray = eZContentObjectTreeNode::fetchByRemoteID( $nodeRemoteID, false );
+                if ( !is_array( $nodeArray ) )
+                {
+                    eZDebug::writeWarning( "Can't fetch node with remoteID = $nodeRemoteID", __METHOD__ );
+                    continue;
+                }
+
+                $node->setAttribute( 'node_id', $nodeArray['node_id'] );
+                $node->removeAttribute( 'node_remote_id' );
+                //$modified = true;
+
+                // add as related object
+                if ( $contentObject )
+                {
+                    $relationType = $node->nodeName == 'link' ? eZContentObject::RELATION_LINK : eZContentObject::RELATION_EMBED;
+                    $contentObject->addContentObjectRelation( $nodeArray['contentobject_id'], $attribute->attribute( 'version' ), 0, $relationType );
+                }
+            }
+        }
+
+        //return $modified;
+    }
 }
