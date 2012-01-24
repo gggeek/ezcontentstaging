@@ -452,12 +452,12 @@ class eZContentStagingContent extends contentStagingBase
         if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
         {
             $operationResult = eZOperationHandler::execute( 'content', 'updateobjectstate',
-            array( 'object_id'     => $objectID,
-                   'state_id_list' => $selectedStateIDList ) );
+            array( 'object_id'     => $object->attribute( 'id' ),
+                   'state_id_list' => $states ) );
         }
         else
         {
-            eZContentOperationCollection::updateObjectState( $objectID, $selectedStateIDList );
+            eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), $states );
         }
     }
 

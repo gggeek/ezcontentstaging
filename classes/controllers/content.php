@@ -145,6 +145,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $sectionId = null;
         if ( isset( $this->request->get['sectionId'] ) )
         {
+            /// @todo validate that section exists!
             $sectionId = (int) $this->request->get['sectionId'];
         }
 
@@ -438,7 +439,29 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        eZContentStagingContent::updateStates( $object, array() );
+        $states = array();
+        foreach( $this->request->inputVariables as $stategroup => $state )
+        {
+            $groupObj = eZContentObjectStateGroup::fetchByIdentifier( $stategroup );
+            if ( $groupObj )
+            {
+                $stateObj = $groupObj->stateByIdentifier( $state );
+                if ( $stateObj )
+                {
+                    $states[$groupObj->attribute( 'id' )] = $stateObj->attribute( 'id' );
+                }
+                else
+                {
+                    return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "State '$state' not found in group '$stategroup'" );
+                }
+            }
+            else
+            {
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "State group '$stategroup' not found" );
+            }
+        }
+
+        eZContentStagingContent::updateStates( $object, $states );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
