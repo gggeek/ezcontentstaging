@@ -3,21 +3,25 @@
 . principle: look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
   - binary datatypes -> we need better support than fromstring/tostring do natively to encode more metadata
-  - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format
+  - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format (longterm goal)
 
 . status:
   - object relations(s): ok with remote ids, use json arrays for non-remote ids too
+    to do: test if root-node for picking relation targets is correctly translated
   - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
-  - ezpage: seems to be OK by usage of native xml serialization (would be too hard to use json-encoded, move it to phase 2)
+  - ezpage:
+    test more for correctness of manual blocks
+    need to translate node_ids when they are set in auto/custom blocks parameters
+    replace the xml serialization of attribute with pure json (phase 2 or 3)	
   - date/datetime/time: use iso8601 format instead of timestamp?
   - check for ezfloat: encode as json native float but using arbitrary precision
   - ezstarrating: we only transfer is_enabled, not actual ratings
   - ezuser: we transfer both enabled and disabled accounts as long as account login != ''
-  - export+import to be done for ezuser
+  - export+import to be done for ezuser (???)
   - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments
   - all other types that do not serialize to a single scalar value: ...
 
-. add support for sending in object creation/modification requests the remote_id of creator user;
+. add support for sending in object creation/modification requests the remote_id of creator user
   - add support for importing that data into target system
 
 
@@ -26,7 +30,7 @@
 . source server: finish missing events:
   - swap
 
-. test all events
+. test all events: do they play nice if a "wait until" event is placed 1st in their workflow?
 
 . handling of dependencies between events
   - source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
@@ -40,7 +44,6 @@
 3 - REST API
 
 . target server: finish actions:
-  - set obj state
   - swap
 
 . test all actions
