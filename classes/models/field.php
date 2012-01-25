@@ -186,6 +186,46 @@ class eZContentStagingField
                 }
                 break;
 
+            case 'ezpage':
+                // default toString() call encodes block data, not block contents
+                $page = $attribute->attribute( 'content' );
+
+                $blockItems = array();
+                foreach( $page->attribute( 'zones' ) as $zone )
+                {
+                    $blocks = $zone->attribute( 'blocks' );
+                    if ( is_array( $blocks ) )
+                    {
+                        foreach ( $blocks as  $block )
+                        {
+                            // if block type is manual, we need to transport over its items
+                            $blockType = $block->attribute( 'type' );
+                            $ini = eZINI::instance( 'block.ini' );
+                            if ( $ini->hasGroup( $blockType ) )
+                            {
+                                if ( $ini->hasVariable( $blockType, 'ManualAddingOfItems' ) && $ini->variable( $blockType, 'ManualAddingOfItems' ) == 'enabled' )
+                                {
+                                    /// q: shall we also encode archived nodes?
+                                    $blockItems[$block->attribute( 'id' )] = array(
+                                        'valid' => self:: transformBlockItemsToRemote( $block->attribute( 'valid' ), $ridGenerator ),
+                                        'waiting' => self:: transformBlockItemsToRemote( $block->attribute( 'waiting' ), $ridGenerator )
+                                    );
+                                }
+                            }
+                            else
+                            {
+                                eZDebug::writeWarning( "Block type $blockType found for staging export of an ezpage attribute, but no block definition in block.ini", __METHOD__ );
+                            }
+                        }
+                    }
+                }
+                /// @todo in the future, the xml should also be replaced with nested data
+                $this->value = array(
+                    'xml' => $attribute->toString(),
+                    'block_items' => $blockItems
+                );
+                break;
+
             case 'ezselection':
                 $this->value = explode( '|', $attribute->toString() );
                 break;
@@ -422,6 +462,151 @@ class eZContentStagingField
                 }
                 break;
 
+            case 'ezpage':
+                /// @todo fixup in parameters the source of node ids
+
+                // load in the datatype the xml representation of the blocks
+                $attribute->fromString( $value['xml'] );
+
+                $db = eZDB::instance();
+                $db->begin();
+
+                $currObject = $attribute->attribute( 'object' );
+                $pageZones = $attribute->attribute( 'content' )->attribute( 'zones' );
+                foreach( $pageZones as $pageZone )
+                {
+                    // 1: create missing blocks in the ezm_block table / update them if existing
+                    $zoneBlocksIds = array();
+                    $zoneBlocks = $pageZone->attribute( 'blocks' );
+                    if ( is_array( $zoneBlocks ) )
+                    {
+                        foreach ( $zoneBlocks as $zoneBlock )
+                        {
+                            $zoneBlockId = $zoneBlock->attribute( 'id' );
+                            $zoneBlocksIds[] = $zoneBlockId;
+                            // We do not use eZPageBlock::fetch because it is brain dead
+                            $flowBlock = eZFlowBlock::fetch( $zoneBlockId );
+                            if ( !$flowBlock )
+                            {
+                                $rotation = $zoneBlock->attribute( 'rotation' );
+                                $flowBlock = new eZFlowBlock( array(
+                                    'id' => $zoneBlockId,
+                                    'zone_id' => $pageZone->attribute( 'id' ),
+                                    'name' => $zoneBlock->attribute( 'name' ),
+                                    /// @bug we should actually link the block to current node, not to main one. What if object is multipositioned?
+                                    /// @bug what if this is obj creation and there is no node yet?
+                                    'node_id' => $currObject->attribute( 'main_node_id' ),
+                                    'overflow_id' => $zoneBlock->attribute( 'overflow_id' ),
+                                    //'last_update' => '',
+                                    'block_type' => $zoneBlock->attribute( 'type' ),
+                                    'fetch_params' => $zoneBlock->attribute( 'fetch_params' ),
+                                    'rotation_type' => isset( $rotation['type'] ) ? $rotation['type'] : 0,
+                                    'rotation_interval' => isset( $rotation['interval'] ) ? $rotation['interval'] : 0,
+                                    //'is_removed' => ''
+                                ) );
+                                $flowBlock->store();
+                            }
+                            else
+                            {
+                                // we assume block id, zone_id, block_type can not be changed - as well as current node
+                                $flowBlock->setAttribute( 'name', $zoneBlock->attribute( 'name' ) );
+                                $flowBlock->setAttribute( 'overflow_id', $zoneBlock->attribute( 'overflow_id' ) );
+                                $flowBlock->setAttribute( 'fetch_params', $zoneBlock->attribute( 'fetch_params' ) );
+                                $flowBlock->setAttribute( 'rotation_type', isset( $rotation['type'] ) ? $rotation['type'] : 0 );
+                                $flowBlock->setAttribute( 'rotation_interval', isset( $rotation['interval'] ) ? $rotation['interval'] : 0 );
+                                $flowBlock->store();
+                            }
+                        }
+                    }
+
+                    // 1.1: delete from ezm_block those that are in current zone but actually not there anymore
+                    /// @todo move to eZPO calls
+                    if ( count( $zoneBlocksIds ) )
+                    {
+                        foreach ( $zoneBlocksIds as $i => $v  )
+                        {
+                            $zoneBlocksIds[$i] = $db->escapeString( $v );
+                        }
+                        $db->query( "DELETE from ezm_block WHERE zone_id='" . $db->escapeString( $pageZone->attribute( 'id' ) ) . "' AND id NOT IN ('" . implode( "', '", $zoneBlocksIds ). "')" );
+                    }
+                    else
+                    {
+                        eZPersistentObject::removeObject( eZFlowBlock::definition(), array( 'zone_id' => $pageZone->attribute( 'id' ) ) );
+                    }
+
+                }
+
+                // 2. then add missing items in the ezm_pool table
+                if ( isset( $value['block_items'] ) )
+                {
+                    foreach( $value['block_items'] as $blockId => $blockItems )
+                    {
+                        // 2.1 preliminary step: check if this block is really part of the page zones
+                        $zoneBlock = false;
+                        $pageZone = false;
+                        foreach( $pageZones as $zone )
+                        {
+                            $pageZone = $zone;
+                            $blocks = $zone->attribute( 'blocks' );
+                            if ( is_array( $blocks ) )
+                            {
+                                foreach ( $blocks as $block )
+                                {
+                                    if ( $block->attribute( 'id' ) == $blockId )
+                                    {
+                                        $zoneBlock = $block;
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                        if ( !$zoneBlock )
+                        {
+                            eZDebug::writeWarning( "Can not import in ezpage items for block $blockId. It is not in the attribute serialized xml", __METHOD__ );
+                            continue;
+                        }
+
+                        // 2.2 reset block items: remove all existing (we assume block is manual)
+                        eZPersistentObject::removeObject( eZFlowPoolItem::definition(), array( 'block_id' => $blockId ) );
+
+                        // 2.3 then add new ones
+                        $goodItems = array();
+                        foreach( $blockItems as $type => $typeArrary )
+                        {
+                            foreach( $typeArrary as $i => $blockItem )
+                            {
+                                $node = $object = false;
+                                if ( isset( $blockItem['remote_node_id'] ) && isset( $blockItem['remote_object_id'] ) )
+                                {
+                                    $node = eZContentObjectTreeNode::fetchByRemoteID( $blockItem['remote_node_id'] );
+                                    $object = eZContentObject::fetchByRemoteID( $blockItem['remote_object_id'] );
+                                }
+                                if ( !$node || !$object || $node->attribute( 'contentobject_id' ) != $object->attribute( 'id' ) )
+                                {
+                                    eZDebug::writeWarning( "Can not import in ezpage block node. remote Id: '{$blockItem['remote_node_id']}', obj remote Id: '{$blockItem['remote_object_id']}'", __METHOD__ );
+                                    continue;
+                                }
+
+                                $goodItems[] = array(
+                                    'blockID' => $i,
+                                    'nodeID' => $node->attribute( 'node_id' ),
+                                    'objectID' => $object->attribute( 'id' ),
+                                    'priority' => $blockItem['priority'],
+                                    'timestamp' => $blockItem['ts_publication']
+                                );
+                            }
+                        }
+                        if ( count( $goodItems ) )
+                        {
+                            eZDebug::writeDebug( 'Inserting items' );
+                            eZFlowPool::insertItems( $goodItems );
+                        }
+                    }
+                }
+
+                $db->commit();
+                break;
+
             case 'ezselection':
                 $attribute->fromString( implode( '|', $value ) );
                 break;
@@ -556,11 +741,11 @@ class eZContentStagingField
         }
 
         // nb: most fromstring calls return null...
-        if ( $ok !== false )
+        /*if ( $ok !== false )
         {
             $attribute->store();
         }
-        return $ok;
+        return $ok;*/
     }
 
     /// Taken from eZXMLTextType::transformLinksToRemoteLinks
@@ -674,5 +859,50 @@ class eZContentStagingField
         }
 
         //return $modified;
+    }
+
+    /**
+    * @param array $items array of array
+    */
+    protected static function transformBlockItemsToRemote( $items, $ridGenerator )
+    {
+        $out = array();
+        foreach( $items as $i => $item )
+        {
+            $array = array();
+            foreach( $item->attributes() as $key )
+            {
+                if ( $key != 'node_id' && $key != 'object_id' && $key != 'block_id' )
+                {
+                    $array[$key] = $item->attribute( $key );
+                }
+            }
+
+            $node = eZContentObjectTreeNode::fetch( $item->attribute( 'node_id' ) );
+            if ( $node )
+            {
+                $array['remote_node_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
+            }
+            else
+            {
+                eZDebug::writeWarning( "Node {$item['node_id']} not found for staging export of an ezpage attribute, block " . $block->attribute( 'id' ), __METHOD__ );
+            }
+
+            $object = eZContentObject::fetch( $item->attribute( 'object_id' ) );
+            if ( $object )
+            {
+                $array['remote_object_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'object_id' ), $object->attribute( 'remote_id' ), 'object' );
+            }
+            else
+            {
+                eZDebug::writeWarning( "Object {$item['object_id']} not found for staging export of an ezpage attribute, block " . $block->attribute( 'id' ), __METHOD__ );
+            }
+
+            if ( $node && $object )
+            {
+                $out[] = $array;
+            }
+        }
+        return $out;
     }
 }
