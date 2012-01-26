@@ -110,6 +110,8 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
             }
+            // we have to reload the node to pick up the change
+            $modified = true;
         }
 
         if ( isset( $this->request->inputVariables['priority'] ) )

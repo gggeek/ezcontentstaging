@@ -202,7 +202,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                     'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
                     );
                 $out = $this->restCall( $method, $url, $payload );
-                if ( !is_array( $out ) || !isset( $out['sortField'] ) )
+                if ( !is_array( $out ) || !isset( $out['sortField'] ) || !isset( $out['sortOrder'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
@@ -210,7 +210,7 @@ class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
                 {
                     throw new Exception( "sortField in response does not match what was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
-                if ( $out['sortOrder'] != eZContentStagingLocation::encodeSortField( $data['sortOrder'] ) )
+                if ( $out['sortOrder'] != eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] ) )
                 {
                     throw new Exception( "sortOrder in response does not match what was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
