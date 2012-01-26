@@ -12,10 +12,10 @@
     test more for correctness of manual blocks
     need to translate node_ids when they are set in auto/custom blocks parameters
     replace the xml serialization of attribute with pure json (phase 2 or 3)	
-  - date/datetime/time: use iso8601 format instead of timestamp?
-  - check for ezfloat: encode as json native float but using arbitrary precision
-  - ezstarrating: we only transfer is_enabled, not actual ratings
-  - ezuser: we transfer both enabled and disabled accounts as long as account login != ''
+  - date/datetime/time: ok. should use iso8601 format instead of timestamp?
+  - ezfloat: ok. check if it is possible to encode as json native float but using arbitrary precision
+  - ezstarrating: ok. we only transfer is_enabled, not actual ratings
+  - ezuser: ok. we transfer both enabled and disabled accounts as long as account login != ''
   - export+import to be done for ezuser (???)
   - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments
   - all other types that do not serialize to a single scalar value: ...
@@ -38,6 +38,8 @@
     => warn editor (on delete or on sync?), remove pending events, or... ?
   - source server: when sending creation event for an object but creation events for parent(s) are pending, warn user
   - source server: when sending creation/update event for an object but creation events for related objects are pending, warn user
+  - source server: when sending update-visibility event for an object but there are more earlier update-visibility events pending in the queue, warn user (as sending the eralier ones afterwards will not do)
+  -                same as above for section, sorting, etc...
   - etc...
 
 
@@ -55,6 +57,9 @@
   - sorting_of_children change does not seem to expire view cache of obj
   - priority change does not seem to expire view cache of parent node
   - setting section does not seem to expire view cache of obj
+  - add location: ok (on node; parents not tested)
+  - remove location: ok (on node; parents not tested)
+  - publish: ok
 
 . test: what happens when sending completely bogus data? test for
   remote id
