@@ -13,7 +13,7 @@
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
 */
 
-class eZRestApiGGWSClientStagingTransport implements eZContentStagingTransport
+class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport implements eZContentStagingTransport
 {
     // so far only used to speed up node checking. remote node node_id => local node node_id
     protected static $remoteNodesNodeIdcache = array();

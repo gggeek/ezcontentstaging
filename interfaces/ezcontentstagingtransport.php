@@ -13,19 +13,6 @@
 
 interface eZContentStagingTransport
 {
-    const DIFF_TRANSPORTERROR = 1;
-
-    const DIFF_NODE_MISSING = 2;
-    const DIFF_NODE_PARENT = 4;
-    const DIFF_NODE_VISIBILITY = 8;
-    const DIFF_NODE_SORTFIELD = 16;
-    const DIFF_NODE_SORTORDER = 32;
-
-    const DIFF_OBJECT_MISSING = 64;
-    const DIFF_OBJECT_SECTION = 128;
-    const DIFF_OBJECT_STATE = 256;
-    const DIFF_OBJECT_ALWAYSAVAILABLE = 1024;
-
     function __construct( eZContentStagingTarget $target );
 
     /**
@@ -40,12 +27,14 @@ interface eZContentStagingTransport
 
     /**
     * Checks a local node vs. a remote one and returns a bitmask of differences
+    * @see eZBaseStagingTransport for codes
     * @return integer
     */
     function checkNode( eZContentObjectTreeNode $node );
 
     /**
      * Checks a local node vs. a remote one and returns a bitmask of differences
+     * @see eZBaseStagingTransport for codes
      * @return integer
      */
     function checkObject( eZContentObject $object );

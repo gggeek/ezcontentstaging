@@ -16,6 +16,7 @@ $targetId = $Params['target_id'];
 
 $checkErrors = '';
 $checkResults = -1;
+$target = null;
 $node = eZContentObjectTreeNode::fetch( $nodeId );
 if ( $node )
 {
@@ -23,7 +24,7 @@ if ( $node )
     if ( $target )
     {
         $checkResults = $target->checkNode( $node, false );
-        $checkResults = $checkResults[$nodeId];
+        $checkResults = eZBaseStagingTransport::diffmask2array( $checkResults[$nodeId] );
     }
     else
     {
@@ -40,7 +41,7 @@ else
 
 $tpl = eZTemplate::factory();
 $tpl->setVariable( 'current_node', $node );
-$tpl->setVariable( 'target_id', $targetId );
+$tpl->setVariable( 'feed', $target );
 $tpl->setVariable( 'check_errors', $checkErrors );
 $tpl->setVariable( 'check_results', $checkResults );
 
