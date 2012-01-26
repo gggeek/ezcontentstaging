@@ -64,7 +64,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                }
                $removedNodeRemoteIDList[$removedNode->attribute( 'path_string' )] = array(
                    "nodeID" => $removedNode->attribute( 'node_id' ),
-                   "remoteNodeID" => $removedNode->attribute( 'remote_id' ),
+                   "nodeRemoteID" => $removedNode->attribute( 'remote_id' ),
                    "trash" => $trash );
             }
         }
