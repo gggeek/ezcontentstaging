@@ -30,7 +30,8 @@
 . source server: finish missing events:
   - swap
 
-. test all events: do they play nice if a "wait until" event is placed 1st in their workflow?
+. test all events:
+  . do they play nice if a "wait until" event is placed 1st in their workflow?
 
 . handling of dependencies between events
   - source server: when sending an event of type delete (no trash), we should also remove from local queue all pending events for the given object (and maybe warn user too before doing so)
@@ -51,6 +52,15 @@
   - review all operations that check for user perms vs. those that do not, implement proper perms checking
 
 . test: is view cache expired correctly on all occasions when updating an object?
+  - object state change does not seem to expire view cache of obj
+  - sorting_of_children change does not seem to expire view cache of obj
+  - priority change does not seem to expire view cache of parent node
+
+. test: what happens when sending completely bogus data? test for
+  remote id
+  sorting
+  priority
+  ...
 
 . target server: test content creation/modification triggers used on target server too, to make server chaining possible
 

@@ -101,28 +101,22 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( isset( $this->request->inputVariables['sortField'] )
                 && isset( $this->request->inputVariables['sortOrder'] ) )
         {
-            if ( ( $result = eZContentStagingLocation::updateSort(
-                      $node,
-                      $this->request->inputVariables['sortField'],
-                      $this->request->inputVariables['sortOrder']
-                      )
-                 ) !== 0 )
-            {
-                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
-            }
+            eZContentStagingLocation::updateSort(
+                $node,
+                $this->request->inputVariables['sortField'],
+                $this->request->inputVariables['sortOrder']
+            );
             // we have to reload the node to pick up the change
             $modified = true;
         }
 
         if ( isset( $this->request->inputVariables['priority'] ) )
         {
-            if ( ( $result = eZContentStagingLocation::updatePriority(
-                    $node,
-                    (int)$this->request->inputVariables['priority'] )
-                ) !== 0 )
-            {
-                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
-            }
+            eZContentStagingLocation::updatePriority(
+                $node,
+                (int)$this->request->inputVariables['priority'] );
+            // we have to reload the node to pick up the change
+            $modified = true;
         }
 
         if ( isset( $this->request->inputVariables['remoteId'] ) )
@@ -134,6 +128,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
             }
+            $modified = true;
         }
 
         if ( isset( $this->request->inputVariables['mainLocationRemoteId'] ) )
