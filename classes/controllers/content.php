@@ -101,7 +101,12 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Translation in '{$this->language}' not found in the content '$objectId'" );
         }
 
-        eZContentStagingContent::removeTranslations( $object, array( $this->language ) );
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
+        $lang = $languages[$this->language];
+        eZContentStagingContent::removeTranslations( $object, array( $lang->attribute( 'id' ) ) );
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );

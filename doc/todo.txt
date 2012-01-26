@@ -7,7 +7,6 @@
 
 . status:
   - object relations(s): ok with remote ids, use json arrays for non-remote ids too
-    to do: test if root-node for picking relation targets is correctly translated
   - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
   - ezpage:
     test more for correctness of manual blocks
@@ -55,11 +54,13 @@
   - object state change does not seem to expire view cache of obj
   - sorting_of_children change does not seem to expire view cache of obj
   - priority change does not seem to expire view cache of parent node
+  - setting section does not seem to expire view cache of obj
 
 . test: what happens when sending completely bogus data? test for
   remote id
   sorting
   priority
+  section
   ...
 
 . target server: test content creation/modification triggers used on target server too, to make server chaining possible
