@@ -10,7 +10,7 @@
   - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
   - ezpage:
     test more for correctness of manual blocks
-    need to translate node_ids when they are set in auto/custom blocks parameters
+    need to finish: translation of node_ids when they are set in auto/custom blocks parameters (ok for encoding, needs decoding)
     replace the xml serialization of attribute with pure json (phase 2 or 3)	
   - date/datetime/time: ok. should use iso8601 format instead of timestamp?
   - ezfloat: ok. check if it is possible to encode as json native float but using arbitrary precision

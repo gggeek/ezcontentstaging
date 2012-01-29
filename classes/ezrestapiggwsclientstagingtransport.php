@@ -592,10 +592,14 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         $ridGenerator = $this->getRemoteIdGenerator();
         foreach( $version->contentObjectAttributes( $locale ) as $attribute )
         {
-            if ( !$attribute->attribute( 'has_content' ) )
+            // we always need to send all attributes, even empty ones, as they
+            // might have had values in the past, and we need to clear those values
+            // (eg: making a string empty that was not empty before)
+            /// @todo optimization - for 1st version only send non-empty attributes
+            /*if ( !$attribute->attribute( 'has_content' ) )
             {
                 continue;
-            }
+            }*/
 
             $name = $attribute->attribute( 'contentclass_attribute_identifier' );
             $out['fields'][$name] = (array) new eZContentStagingField( $attribute, $locale, $ridGenerator );
