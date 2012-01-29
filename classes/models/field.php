@@ -32,7 +32,7 @@ class eZContentStagingField
     *      for datatypes that need special treatment
     * @see http://issues.ez.no/IssueList.php?Search=tostring&SearchIn=1
     * @todo implement this conversion within the datatypes themselves:
-    *       it is a much better idea... (check datatypes that support a fromHash method, use it)
+    *       it is a much better idea... (check datatypes that support a fromHash (fromJson?) method, use it)
     */
     function __construct( eZContentObjectAttribute $attribute, $locale, $ridGenerator )
     {
@@ -146,7 +146,7 @@ class eZContentStagingField
                 {
                     if ( $ridGenerator )
                     {
-                        $this->value = array( 'remoteId' => $ridGenerator->buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' ) );
+                        $this->value = 'remoteId:' . $ridGenerator->buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' );
                     }
                     else
                     {
@@ -176,7 +176,7 @@ class eZContentStagingField
                             eZDebug::writeError( "Cannot encode attribute for push to staging server: related object {$relatedObjectInfo['contentobject_id']} not found for attribute in lang $locale", __METHOD__ );
                             continue;
                         }
-                        $values[] = array( 'remoteId' => $ridGenerator->buildRemoteId( $relatedObjectInfo['contentobject_id'], $relatedObjectInfo['contentobject_remote_id'], 'object' ) );
+                        $values[] = 'remoteId:' . $ridGenerator->buildRemoteId( $relatedObjectInfo['contentobject_id'], $relatedObjectInfo['contentobject_remote_id'], 'object' );
                     }
                     $this->value = $values;
                 }
@@ -187,30 +187,119 @@ class eZContentStagingField
                 break;
 
             case 'ezpage':
-                // default toString() call encodes block data, not block contents
-                $page = $attribute->attribute( 'content' );
-
+                // Default toString() call encodes block definitions, not block contents,
+                // so we encode by hand definition of all block items; this is necessary for manual blocks.
+                // Also we need to patch in the block parameters the node ids with remote ids
+                $zones = array();
                 $blockItems = array();
+                $attributes = array();
+
+                // 1. encode all (scalar) page attributes
+                $page = $attribute->attribute( 'content' );
+                foreach( $page->attributes() as $attrname )
+                {
+                    if ( $attrname != 'zones' )
+                    {
+                        $attributes[$attrname] = $page->attribute( $attrname );
+                    }
+                }
+
+                // 2. encode zones
                 foreach( $page->attribute( 'zones' ) as $zone )
                 {
+                    // 2.1 all (scalar) attributes
+                    $zoneArray = array();
+                    foreach( $zone->attributes() as $attrname )
+                    {
+                        if ( $attrname != 'id' && $attrname != 'blocks' )
+                        {
+                            $zoneArray[$attrname] = $zone->attribute( $attrname );
+                        }
+                    }
+
+                    // 2.2 encode zone blocks
+                    $zoneBlocks = array();
                     $blocks = $zone->attribute( 'blocks' );
                     if ( is_array( $blocks ) )
                     {
                         foreach ( $blocks as  $block )
                         {
-                            // if block type is manual, we need to transport over its items
+                            $blockArray = array();
+
                             $blockType = $block->attribute( 'type' );
                             $ini = eZINI::instance( 'block.ini' );
                             if ( $ini->hasGroup( $blockType ) )
                             {
+                                // 2.2.1 if block type is manual, we need to transport over its items
                                 if ( $ini->hasVariable( $blockType, 'ManualAddingOfItems' ) && $ini->variable( $blockType, 'ManualAddingOfItems' ) == 'enabled' )
                                 {
                                     /// q: shall we also encode archived nodes?
                                     $blockItems[$block->attribute( 'id' )] = array(
-                                        'valid' => self:: transformBlockItemsToRemote( $block->attribute( 'valid' ), $ridGenerator ),
-                                        'waiting' => self:: transformBlockItemsToRemote( $block->attribute( 'waiting' ), $ridGenerator )
+                                        'valid' => self::transformBlockItemsToRemote( $block->attribute( 'valid' ), $ridGenerator ),
+                                        'waiting' => self::transformBlockItemsToRemote( $block->attribute( 'waiting' ), $ridGenerator )
                                     );
+                                    $manual = true;
                                 }
+                                else
+                                {
+                                    $manual = false;
+                                }
+
+                                // 2.2.2 encode block params - transcoding any which is a node id
+                                foreach( $block->attributes() as $attrname )
+                                {
+                                    if ( !in_array( $attrname, array( 'id', 'items', 'zone_id', 'waiting', 'valid', 'valid_nodes', 'archived', 'view_template', 'edit_template', 'last_valid_item' ) ) )
+                                    {
+                                        if ( $attrname == 'fetch_params' && $ridGenerator)
+                                        {
+                                            $params = unserialize( $block->attribute( $attrname ) );
+                                            $paramTypes = $ini->hasVariable( $blockType, 'FetchParameters' ) ? $ini->variable( $blockType, 'FetchParameters' ) : array();
+                                            foreach ( $params as $name => $value )
+                                            {
+                                                if ( isset( $paramTypes[$name] ) && $paramTypes[$name] == 'NodeID' )
+                                                {
+                                                    $node = eZContentObjectTreeNode::fetch( $value );
+                                                    if ( $node )
+                                                    {
+                                                        $params[$name] = 'remoteId:' . $ridGenerator->buildRemoteId( $value, $node->attribute( 'remote_id' ) );
+                                                    }
+                                                    else
+                                                    {
+                                                        eZDebug::writeError( '', __METHOD__ );
+                                                    }
+                                                }
+                                            }
+                                            $blockArray[$attrname] = serialize( $params );
+                                        }
+                                        else if ( $attrname == 'custom_attributes' && $ridGenerator )
+                                        {
+                                            $params = $block->attribute( $attrname );
+                                            $paramTypes = $ini->hasVariable( $blockType, 'UseBrowseMode' ) ? $ini->variable( $blockType, 'UseBrowseMode' ) : array();
+                                            foreach ( $params as $name => $value  )
+                                            {
+                                                if ( isset( $paramTypes[$name] ) && $paramTypes[$name] == 'true' )
+                                                {
+                                                    $node = eZContentObjectTreeNode::fetch( $value );
+                                                    if ( $node )
+                                                    {
+                                                        $params[$name] = 'remoteId:' . $ridGenerator->buildRemoteId( $value, $node->attribute( 'remote_id' ) );
+                                                    }
+                                                    else
+                                                    {
+                                                        eZDebug::writeError( '', __METHOD__ );
+                                                    }
+                                                }
+                                            }
+                                            $blockArray[$attrname] = $params;
+                                        }
+                                        else
+                                        {
+                                            $blockArray[$attrname] = $block->attribute( $attrname );
+                                        }
+                                    }
+                                }
+
+                                $zoneBlocks[$block->attribute( 'id' )] = $blockArray;
                             }
                             else
                             {
@@ -218,10 +307,16 @@ class eZContentStagingField
                             }
                         }
                     }
+                    $zoneArray['blocks'] = $zoneBlocks;
+
+                    $zones[$zone->attribute( 'id' )] = $zoneArray;
                 }
-                /// @todo in the future, the xml should also be replaced with nested data
+
+                /// @todo the xml should be abandoned in favor of nested data
                 $this->value = array(
                     'xml' => $attribute->toString(),
+                    'attributes' => $attributes,
+                    'zones' => $zones,
                     'block_items' => $blockItems
                 );
                 break;
@@ -296,7 +391,7 @@ class eZContentStagingField
                     }
                     else
                     {
-                        /// @todo log a warning
+                        eZDebug::writeError( "Cannot encode attribute for push to staging server: invalid xml", __METHOD__ );
                         $parser = new eZXMLInputParser();
                         $doc = $parser->createRootNode();
                         //$xmlText = eZXMLTextType::domString( $doc );
@@ -407,9 +502,10 @@ class eZContentStagingField
                 break;
 
             case 'ezobjectrelation':
-                if ( is_array( $value ) && isset( $value['remoteId'] ) )
+                if ( strpos( 'remoteId:', $value ) == 0 )
                 {
-                    $object = eZContentObject::fetchByRemoteId( $value['remoteId'] );
+                    $value = substr( $value, 9 );
+                    $object = eZContentObject::fetchByRemoteId( $value );
                     if ( $object )
                     {
                         // avoid going via fromstring for a small speed gain
@@ -419,7 +515,7 @@ class eZContentStagingField
                     else
                     {
                         $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
-                        eZDebug::writeWarning( "Can not create relation because object with remote id {$value['remoteId']} is missing in attribute $attrname", __METHOD__ );
+                        eZDebug::writeWarning( "Can not create relation because object with remote id {$value} is missing in attribute $attrname", __METHOD__ );
                         $ok = false;
                     }
                 }
@@ -433,9 +529,10 @@ class eZContentStagingField
                 $localIds = array();
                 foreach( $value as $key => $item )
                 {
-                    if ( is_array( $item ) && isset( $item['remoteId'] ) )
+                    if ( strpos( 'remoteId:', $item ) == 0 )
                     {
-                        $object = eZContentObject::fetchByRemoteId( $item['remoteId'] );
+                        $item = substr( $item, 9 );
+                        $object = eZContentObject::fetchByRemoteId( $item );
                         if ( $object )
                         {
                             $localIds[] = $object->attribute( 'id' );
@@ -443,7 +540,7 @@ class eZContentStagingField
                         else
                         {
                             $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
-                            eZDebug::writeWarning( "Can not create relation because object with remote id {$item['remoteId']} is missing in attribute $attrname", __METHOD__ );
+                            eZDebug::writeWarning( "Can not create relation because object with remote id {$item} is missing in attribute $attrname", __METHOD__ );
                         }
                     }
                     else
@@ -463,9 +560,8 @@ class eZContentStagingField
                 break;
 
             case 'ezpage':
-                /// @todo fixup in parameters the source of node ids
-
                 // load in the datatype the xml representation of the blocks
+                /// @todo fixup in parameters the source of node ids - use json representation to rebuild the xml
                 $attribute->fromString( $value['xml'] );
 
                 $db = eZDB::instance();
