@@ -837,11 +837,11 @@ class eZContentStagingField
         }
 
         // nb: most fromstring calls return null...
-        /*if ( $ok !== false )
+        if ( $ok !== false )
         {
             $attribute->store();
         }
-        return $ok;*/
+        /*return $ok;*/
     }
 
     /// Taken from eZXMLTextType::transformLinksToRemoteLinks
