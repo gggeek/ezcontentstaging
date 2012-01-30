@@ -708,7 +708,7 @@ class eZContentStagingField
                 break;
 
             case 'ezsrrating':
-                $attribute>setAttribute( 'data_int', $value['can_rate'] );
+                $attribute->setAttribute( 'data_int', $value['can_rate'] );
                 break;
 
 
