@@ -147,20 +147,36 @@ class eZContentStagingContent extends contentStagingBase
         foreach ( $attributes as $attribute )
         {
             $identifier = $attribute->attribute( 'contentclass_attribute_identifier' );
+            $required = $attribute->attribute( 'is_required' );
+            $type = $attribute->attribute( 'data_type_string' );
             if ( !isset( $fields[$identifier] ) )
             {
-                if ( $attribute->attribute( 'is_required') )
+                // This check is just preliminary, eg. what if we get
+                // in json an empty string for a string field, or no blocks
+                // for an ezpage attribute? we check it later on
+                if ( $required )
                 {
                     throw new Exception( "Missing required attribute '$identifier'" );
                 }
                 continue;
             }
-            $type = $attribute->attribute( 'data_type_string' );
+            if ( !isset( $fields[$identifier]['fieldDef'] ) )
+            {
+                throw new Exception( "Unknown type for field '$identifier'" );
+            }
             if ( $type != $fields[$identifier]['fieldDef'] )
             {
                  throw new Exception( "Attribute '$identifier' should be of type $type, not '{$fields[$identifier]['fieldDef']}'" );
             }
+            if ( !isset( $fields[$identifier]['value'] ) )
+            {
+                throw new Exception( "Missing value for field '$identifier'" );
+            }
             eZContentStagingField::decodeValue( $attribute, $fields[$identifier]['value'] );
+            if ( $required && !$attribute->attribute( 'has_content' ) )
+            {
+                throw new Exception( "Required attribute '$identifier' does not have a value" );
+            }
         }
     }
 
@@ -197,7 +213,9 @@ class eZContentStagingContent extends contentStagingBase
 
             $db->begin();
 
+            /// @todo what if initial language does not exist?
             $content = $class->instantiateIn( $input['initialLanguage'] );
+            /// @todo if remote_id is not set, just leave it as it is (will be filled by random value?)
             $content->setAttribute( 'remote_id', $input['remoteId'] );
             // the date set here is normally not reset during the publication process
             if ( $creationdate )
