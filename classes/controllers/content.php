@@ -261,9 +261,9 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      */
     public function doAddVersion()
     {
-        if ( !isset(  $this->request->inputVariables['fields'] ) )
+        if ( !isset(  $this->request->inputVariables['fields'] ) || !is_array( $this->request->inputVariables['fields'] ) )
         {
-            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "fields" parameters is missing' );
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "fields" parameters is missing or not an array' );
         }
 
         $object = $this->object();
@@ -272,20 +272,14 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return $object;
         }
 
-        if ( isset( $this->request->inputVariables['fields'] )
-            && count( $this->request->inputVariables['fields'] ) > 0 )
+        // workaround to be able to publish (bug #018337)
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
+        $version = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
+        if ( !$version instanceof eZContentObjectVersion )
         {
-            // whole update
-
-            // workaround to be able to publish (bug #018337)
-            $moduleRepositories = eZModule::activeModuleRepositories();
-            eZModule::setGlobalPathList( $moduleRepositories );
-
-            $version = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
-            if ( !$version instanceof eZContentObjectVersion )
-            {
-                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
-            }
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $version );
         }
 
         $result = new ezpRestMvcResult();
