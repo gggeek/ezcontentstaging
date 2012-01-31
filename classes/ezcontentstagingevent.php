@@ -536,17 +536,12 @@ class eZContentStagingEvent extends eZPersistentObject
 
     /**
     * Adds an event to the queue.
-    * @return integer id of the event created
+    * @return integer id of the event created or null if event was filtered out
     * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
     *       do not add show but remove hide, etc...
     */
     static function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array(), $langMask=null )
     {
-        if ( count( $nodeIds ) )
-        {
-            $db = eZDB::instance();
-            $db->begin();
-        }
         $event = new eZContentStagingEvent( array(
             'target_id' => $targetId,
             'object_id' => $objectId,
@@ -555,6 +550,31 @@ class eZContentStagingEvent extends eZPersistentObject
             'data_text' => json_encode( $data ),
             'language_mask' => $langMask
             ) );
+
+        // allow filtering to happen
+        $ini = eZINI::instance( 'contentstagingsource.ini' );
+        if ( $ini->hasVariable( 'Target_' . $targetId, 'EventCreationFilters' ) )
+        {
+            foreach( $ini->variable( 'Target_' . $targetId, 'EventCreationFilters' ) as $filterClass )
+            {
+                if ( !class_exists( $filterClass ) || !is_subclass_of( $filterClass, 'eZContentStagingEventCreationFilter' ) )
+                {
+                    eZDebug::writeError( "Class $filterClass not found or not exposing correct interface, can not use as event creation filter", __METHOD__ );
+                    continue;
+                }
+                $filter = new $filterClass();
+                if ( !$filter->accept( $event, $nodeIds ) )
+                {
+                    return null;
+                }
+            }
+        }
+
+        if ( count( $nodeIds ) )
+        {
+            $db = eZDB::instance();
+            $db->begin();
+        }
         $event->store();
         $id = $event->ID;
         if ( count( $nodeIds ) )

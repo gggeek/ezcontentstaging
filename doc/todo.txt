@@ -6,22 +6,22 @@
   - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format (longterm goal)
 
 . status:
-  - object relations(s): ok with remote ids, use json arrays for non-remote ids too
+  - object relations(s): ok; uses RemoteId:<xxx> syntax for remote ids too
   - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
   - ezpage:
     test more for correctness of manual blocks
     need to finish: translation of node_ids when they are set in auto/custom blocks parameters (ok for encoding, needs decoding)
-    replace the xml serialization of attribute with pure json (phase 2 or 3)	
-  - date/datetime/time: ok. should use iso8601 format instead of timestamp?
-  - ezfloat: ok. check if it is possible to encode as json native float but using arbitrary precision
-  - ezstarrating: ok. we only transfer is_enabled, not actual ratings
-  - ezuser: ok. we transfer both enabled and disabled accounts as long as account login != ''
+    replace the xml serialization of attribute with pure json (phase 2 or 3?)
+  - date/datetime/time: ok. should use iso8601 format instead of timestamp? (phase 2 or 3?)
+  - ezfloat: ok. check if it is possible to encode as json native float but using arbitrary precision (phase 2 or 3?)
+  - ezstarrating: ok; we only transfer is_enabled, not actual ratings
+  - ezuser: ok; we transfer both enabled and disabled accounts as long as account login != ''
   - export+import to be done for ezuser (???)
-  - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments
+  - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments, ezmbpaex
   - all other types that do not serialize to a single scalar value: ...
 
 . add support for sending in object creation/modification requests the remote_id of creator user
-  - add support for importing that data into target system
+  - add support for importing that data into target system (this means NOT having to connect uisng every different user account to the target server)
 
 
 2 - EVENTS
@@ -91,7 +91,7 @@
 
 . source server: in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
-. language deletion events: show deleted language ina dmin interface panel?
+. language deletion events: show deleted language in admin interface panel?
 
 
 5 - MISC
@@ -123,14 +123,14 @@ Phase 1.5 (move to phase 2 ?)
 
 . source server: refactor diffing of content in separate classes
 
-. source server: more readable output of checknode view - also make it available via ezjscore
+. source server: output of checknode view - make it available via ezjscore
 
 
 Phase 2:
 
 . rest server: fix bug: when using basic auth, eZ sends 2 session cookies
 . source server: allow sync items that fail 3 consecutive sync attempts to be set to "suspended" state
-. source server: allow finer grained permissions (sync per feed)
+. source server: allow finer grained permissions (sync per feed, also sync only events that you have generated)
 . source server: cronjob that passes and removes/resets sync items that have been in sync status for too long
 . source server: coalescing of sync events
 . add a sync-to-localhost transport class, that copies data to separate content trees without going through rest calls
@@ -152,14 +152,14 @@ Phase 2:
 Phase 3:
 
 . rest protocol: have source server use the "Fields" param in query string to limit data returned by target server and reduce bandwidth usage
-. add opportunity to add custom filters on outgoing events (pre-queueing, at-sending, more?)
+. add opportunity to add custom filters on outgoing events (eg. to remove some data attributes when sending)
 . add script that inits a feed with a non-empty target server (creates init-node events based eg. on node paths)
 . add setup-wizard to create and init targets
 . allow targets to be in "auto" mode, ie. sync events as soon as they are created, and in "delayed" mode too (sync via cronjob)
 . add xmlrpc and soap service layers
-. review separation of checking inputs between controllers and models
+. review separation of checking inputs between controllers and models classes
 . review usage of return codes vs. exceptions
-. allow a target server not to execute existing content triggers when importing objects
+. test mode allowing a target server not to execute existing content triggers when importing objects - also set a class variable to tell when content/publish operation is executed in context of this extension
 . tackle problem of not-atomic operations, eg. when a node-create-on-target fails, it might have
   in fact created the node but not set the remote-id. How (if) to rollback?
 . enforce stricter checking rules for datatypes when updating content via rest, eg. min/max limits for integers etc...
@@ -167,3 +167,4 @@ Phase 3:
 . allow checknode view to reset/sanitize the existing events for a node if they do not match the existing ones
 . state sync event: it would be nice if changing one state would not need for other states definitions to be present on target server
 . add support for custom tags (in xmltext datatype) that store node/object id
+. add a new view listing nodes to be sent in hierarchical fashion (content tree)

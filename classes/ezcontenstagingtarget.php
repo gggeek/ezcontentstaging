@@ -212,7 +212,7 @@ class eZContentStagingTarget
                 array( $nodeID )
             );
 
-            if ( $doexecute )
+            if ( $doexecute && $evtID )
             {
                 $ok = eZContentStagingEvent::syncEvents( array( $evtID ) );
                 $out[] = $ok[$evtID];
