@@ -338,7 +338,9 @@ class eZContentStagingContent extends contentStagingBase
         {
             $newNode = false;
 
-            if ( eZOperationHandler::operationIsAvailable( 'content_addlocation' ) )
+            $ini = eZINI::instance( 'contentstagingtarget.ini' );
+            $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+            if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_addlocation' ) )
             {
                 /// @todo what if this triggers a reported action (eg. approval?)
                 $operationResult = eZOperationHandler::execute(
@@ -438,7 +440,9 @@ class eZContentStagingContent extends contentStagingBase
      */
     static function updateSection( eZContentObject $object, $sectionId )
     {
-        if ( eZOperationHandler::operationIsAvailable( 'content_updatesection' ) )
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
+        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatesection' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -467,7 +471,9 @@ class eZContentStagingContent extends contentStagingBase
     */
     static function updateStates( eZContentObject $object, $states )
     {
-        if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
+        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
         {
             $operationResult = eZOperationHandler::execute( 'content', 'updateobjectstate',
             array( 'object_id'     => $object->attribute( 'id' ),
@@ -494,7 +500,9 @@ class eZContentStagingContent extends contentStagingBase
         {
             $nodeIDs[] = $node->attribute( 'node_id' );
         }
-        if ( eZOperationHandler::operationIsAvailable( 'content_delete' ) )
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
+        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_delete' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -517,7 +525,9 @@ class eZContentStagingContent extends contentStagingBase
      */
     static function updateInitialLanguage( eZContentObject $object, $initialLanguage )
     {
-        if ( eZOperationHandler::operationIsAvailable( 'content_updateinitiallanguage' ) )
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
+        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+        if ( $dotriggers && operationIsAvailable( 'content_updateinitiallanguage' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -543,7 +553,9 @@ class eZContentStagingContent extends contentStagingBase
      */
     static function updateAlwaysAvailable( eZContentObject $object, $alwaysAvailable )
     {
-        if ( eZOperationHandler::operationIsAvailable( 'content_updatealwaysavailable' ) )
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
+        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatealwaysavailable' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -595,7 +607,9 @@ class eZContentStagingContent extends contentStagingBase
     */
     static function removeTranslations( eZContentObject $object, $translations )
     {
-        if ( eZOperationHandler::operationIsAvailable( 'content_removetranslation' ) )
+        $ini = eZINI::instance( 'contentstagingtarget.ini' );
+        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
+        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_removetranslation' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
