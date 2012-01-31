@@ -27,7 +27,7 @@ $targets = $options['targets'];
 
 if ( $targets == '' )
 {
-    $ini = eZINI::instance( 'contentstaging.ini' );
+    $ini = eZINI::instance( 'contentstagingsource.ini' );
     $targets = $ini->variable( 'GeneralSettings', 'TargetList' );
 }
 else

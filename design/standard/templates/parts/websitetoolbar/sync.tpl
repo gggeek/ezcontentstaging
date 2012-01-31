@@ -24,7 +24,7 @@
     {/if}
     <div id="ezwt-stagingaction" class="ezwt-actiongroup">
 
-    {foreach ezini( 'GeneralSettings', 'TargetList', 'contentstaging.ini' ) as $target}
+    {foreach ezini( 'GeneralSettings', 'TargetList', 'contentstagingsource.ini' ) as $target}
         {* @todo use feed name, not id *}
         {set $title = concat( 'Feed: ', $target, ' - ' )}
         {*$target}
