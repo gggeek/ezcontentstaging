@@ -427,7 +427,7 @@ class eZContentStagingField
     * @todo check datatypes that support a fromHash method, use it instead of hard-coded conversion here
     *
     * @see eZDataType::unserializeContentObjectAttribute
-    * @see eZDataType::fromstring
+    * @see eZDataType::fromString
     * @see http://issues.ez.no/IssueList.php?Search=fromstring
     */
     static function decodeValue( $attribute, $value )
@@ -437,6 +437,7 @@ class eZContentStagingField
         {
             case 'ezauthor':
                 $author = new eZAuthor( );
+                /// @todo check datatype: are email/name mandatory?
                 foreach ( $value as $authorData )
                 {
                     $author->addAuthor( -1, $authorData['name'], $authorData['email'] );
@@ -486,6 +487,7 @@ class eZContentStagingField
 
             // serialized as array instead of single string
             case 'ezgmaplocation':
+                /// @todo test what happens when we receive no data
                 $location = new eZGmapLocation( array(
                     'contentobject_attribute_id' => $attribute->attribute( 'id' ),
                     'contentobject_version' => $attribute->attribute( 'version' ),
@@ -661,7 +663,6 @@ class eZContentStagingField
                             eZDebug::writeWarning( "Can not import in ezpage items for block $blockId. It is not in the attribute serialized xml", __METHOD__ );
                             continue;
                         }
-
                         // 2.2 reset block items: remove all existing (we assume block is manual)
                         eZPersistentObject::removeObject( eZFlowPoolItem::definition(), array( 'block_id' => $blockId ) );
 
@@ -682,9 +683,8 @@ class eZContentStagingField
                                     eZDebug::writeWarning( "Can not import in ezpage block node. remote Id: '{$blockItem['remote_node_id']}', obj remote Id: '{$blockItem['remote_object_id']}'", __METHOD__ );
                                     continue;
                                 }
-
                                 $goodItems[] = array(
-                                    'blockID' => $i,
+                                    'blockID' => $blockId,
                                     'nodeID' => $node->attribute( 'node_id' ),
                                     'objectID' => $object->attribute( 'id' ),
                                     'priority' => $blockItem['priority'],
@@ -694,7 +694,6 @@ class eZContentStagingField
                         }
                         if ( count( $goodItems ) )
                         {
-                            eZDebug::writeDebug( 'Inserting items' );
                             eZFlowPool::insertItems( $goodItems );
                         }
                     }
@@ -713,6 +712,7 @@ class eZContentStagingField
 
 
             case 'ezurl':
+                /// @todo test that we get the 'url' parameter? verofy datatype definition
                 $urlID = eZURL::registerURL( $value['url'] );
                 $attribute->setAttribute( 'data_int', $urlID );
                 if( isset( $value['text'] ) )
@@ -841,7 +841,7 @@ class eZContentStagingField
         {
             $attribute->store();
         }
-        /*return $ok;*/
+        return $ok;
     }
 
     /// Taken from eZXMLTextType::transformLinksToRemoteLinks
