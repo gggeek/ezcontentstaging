@@ -13,7 +13,7 @@
 
 class eZContentStagingEventCreationLoggingFilter implements eZContentStagingEventCreationFilter
 {
-    public static function accept( eZContentStagingEvent $event, $nodeIds )
+    public function accept( eZContentStagingEvent $event, $nodeIds )
     {
         eZDebug::writeDebug( var_export( $event, true ), 'Content staging event created' );
         return true;

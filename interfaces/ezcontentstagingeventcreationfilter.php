@@ -22,5 +22,5 @@ interface eZContentStagingEventCreationFilter
      *
      * @return bool true if the event can be queued false if it shouldn't
      */
-    static public function accept( eZContentStagingEvent $event, $nodeIds );
+    public function accept( eZContentStagingEvent $event, $nodeIds );
 }
