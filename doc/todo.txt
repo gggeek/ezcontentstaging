@@ -17,7 +17,9 @@
   - ezstarrating: ok; we only transfer is_enabled, not actual ratings
   - ezuser: ok; we transfer both enabled and disabled accounts as long as account login != ''
   - export+import to be done for ezuser (???)
-  - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments, ezmbpaex
+  - to be done: matrix, ezcomments, ezmbpaex
+  - to be done: webshop datatypes: multioption2, multiprice, option, price, product category, range option
+  - to be done? deprecated datatypes:  enum, inisetting, multioption, package, subtree subscription
   - all other types that do not serialize to a single scalar value: ...
 
   - see also the notes in the specs spreadsheet

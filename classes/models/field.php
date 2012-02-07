@@ -570,6 +570,10 @@ class eZContentStagingField
 
                 break;
 
+            /// @todo validate format: either isbn13 or 10
+            //case 'ezisbn':
+            //    break;
+
             case 'ezkeyword':
                 $attribute->fromString( implode( ',', $value ) );
                 break;
@@ -785,6 +789,9 @@ class eZContentStagingField
                 $attribute->setAttribute( 'data_int', $value['can_rate'] );
                 break;
 
+            /// @todo validate max string length
+            //case 'ezstring':
+            //  break;
 
             case 'ezurl':
                 if ( $value && @$value['url'] != '' )
