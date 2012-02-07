@@ -365,9 +365,6 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     {
         $out = 0;
 
-        //eZDebug::writeDebug( "Cheking node: " . $node->attribute( 'node_id' ), __METHOD__ );
-//echo "Cheking node: " . $node->attribute( 'node_id' ) . "\n";
-
         $nodeId = $node->attribute( 'node_id' );
         $RemoteNodeRemoteID = $this->buildRemoteId( $node->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
         $method = 'GET';
@@ -590,19 +587,24 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
             );
 
         $ridGenerator = $this->getRemoteIdGenerator();
+        $fieldFilter = $this->getFieldFilter();
         foreach( $version->contentObjectAttributes( $locale ) as $attribute )
         {
-            // we always need to send all attributes, even empty ones, as they
+            // Note: we always need to send all attributes, even empty ones, as they
             // might have had values in the past, and we need to clear those values
             // (eg: making a string empty that was not empty before)
             /// @todo optimization - for 1st version only send non-empty attributes
-            /*if ( !$attribute->attribute( 'has_content' ) )
+
+            // in case of filter misconfig, play it safe: send no data
+            if ( $fieldFilter === false )
             {
                 continue;
-            }*/
-
-            $name = $attribute->attribute( 'contentclass_attribute_identifier' );
-            $out['fields'][$name] = (array) new eZContentStagingField( $attribute, $locale, $ridGenerator );
+            }
+            elseif( $fieldFilter === true || $fieldFilter->accept( $attribute ) )
+            {
+                $name = $attribute->attribute( 'contentclass_attribute_identifier' );
+                $out['fields'][$name] = (array) new eZContentStagingField( $attribute, $locale, $ridGenerator );
+            }
         }
 
         if ( $isupdate )
@@ -657,12 +659,9 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         return $generator ? $generator->buildRemoteId( $sourceId, $sourceRemoteId, $type ) : $sourceRemoteId ;
     }
 
-    /**
-     * @todo !important this function should possibly be calling a handler for greater flexibility
-     */
     protected function getRemoteIdGenerator()
     {
-        $ini = eZINI::instance( 'contentsatging.ini' );
+        $ini = eZINI::instance( 'contentstagingsource.ini' );
         $targetId = $this->target->attribute( 'id' );
         if ( $ini->hasVariable( "Target_" . $targetId,  'RemoteIdGeneratorClass' ) )
         {
@@ -674,10 +673,45 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
         if ( !class_exists( $class ) )
         {
-            eZDebug::writeError( "Cannot generate remote id for object/node for target feed $feedId: class $class not found", __METHOD__ );
+            eZDebug::writeError( "Cannot generate remote ids for objects/nodes for target feed $targetId: class $class not found", __METHOD__ );
             return null;
         }
-        return new $class( $targetId );
+        $generator = new $class( $targetId );
+        if ( !is_a( $generator, 'eZContentStagingRemoteIdGenerator' ) )
+        {
+            eZDebug::writeWarning( "Probable problems ahead generating remote ids for objects/nodes for target feed $targetId: class $class has wrong interface", __METHOD__ );
+        }
+        return $generator;
+    }
+
+    /**
+     * @return bool|object true if no filtering is needed, false if there is a  filter class error, or the filter obj instance
+     */
+    protected function getFieldFilter()
+    {
+        $ini = eZINI::instance( 'contentstagingsource.ini' );
+        $targetId = $this->target->attribute( 'id' );
+        $class = '';
+        if ( $ini->hasVariable( "Target_" . $targetId,  'FieldFilterClass' ) )
+        {
+            $class = $ini->variable( "Target_" . $targetId,  'FieldFilterClass' );
+        }
+        if ( $class == '' )
+        {
+            return true;
+        }
+        if ( !class_exists( $class ) )
+        {
+            eZDebug::writeError( "Cannot filter fields when serializing for target feed $targetId: class $class not found", __METHOD__ );
+            return false;
+        }
+        /// @todo check for interface
+        $filter = new $class( $targetId );
+        if ( !is_a( $filter, 'eZContentStagingFieldFilter' ) )
+        {
+            eZDebug::writeWarning( "Probable problems ahead filtering fields when serializing for target feed $targetId: class $class has wrong interface", __METHOD__ );
+        }
+        return $filter;
     }
 }
 

@@ -1,13 +1,20 @@
-1 - DATATYPE MANAGEMENT
+1 - DATATYPE ENCODING
 
 . principle: look for package creation/import code for every datatype to find out where a transcoding of data is needed:
   - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
   - binary datatypes -> we need better support than fromstring/tostring do natively to encode more metadata
-  - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format (longterm goal)
+  - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format
+  - note that many fromString() methods assume they will only be called at object creation time and not at object update time:
+    when tehy receive an emoty string, they do not update the existing attribute value. It is thus impossible to use
+	a fromString() call to remove the value of an ezurl attribute if it has been previously set
+  - implement (later on) proper attribute validation from content class definition, eg. max string length or integer min/max range
+  - when an object creation/update call is received by the target server, not all fields are required to be present
+    in the request. All missing fields will be left "as is" (default value for 1st version, previous value for successive versions).
+	Otoh all fields sent but with a null value will be updated to not contain any data (if allowed by the datatype)
 
 . status:
-  - object relations(s): ok; uses RemoteId:<xxx> syntax for remote ids too
-  - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezauthor: ok
+  - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezselection: ok
+  - object relations(s): ok; also accepts RemoteId:<xxx> syntax for remote ids
   - ezpage:
     test more for correctness of manual blocks
     need to finish: translation of node_ids when they are set in auto/custom blocks parameters (ok for encoding, needs decoding)
@@ -17,12 +24,9 @@
   - ezstarrating: ok; we only transfer is_enabled, not actual ratings
   - ezuser: ok; we transfer both enabled and disabled accounts as long as account login != ''
   - ezidentifier: ok; if an empty one is sent a new identifier is generated
-  - ezselection: ok
-  - export+import to be done for ezuser (???)
   - to be done: matrix, ezcomments, ezmbpaex
   - to be done: webshop datatypes: multioption2, multiprice, option, price, product category, range option
   - to be done? deprecated datatypes:  enum, inisetting, multioption, package, subtree subscription
-  - all other types that do not serialize to a single scalar value: ...
 
   - see also the notes in the specs spreadsheet
   
@@ -150,7 +154,6 @@ Phase 2:
 Phase 3:
 
 . rest protocol: have source server use the "Fields" param in query string to limit data returned by target server and reduce bandwidth usage
-. add opportunity to add custom filters on outgoing events (eg. to remove some data attributes when sending)
 . add script that inits a feed with a non-empty target server (creates init-node events based eg. on node paths)
 . add setup-wizard to create and init targets
 . allow targets to be in "auto" mode, ie. sync events as soon as they are created, and in "delayed" mode too (sync via cronjob)
