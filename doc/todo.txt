@@ -20,6 +20,8 @@
   - to be done: enum, inisetting, isbn, matrix, multioption, multioption2, multiprice, option, package, price, product category, range option, subtree selection, ezcomments, ezmbpaex
   - all other types that do not serialize to a single scalar value: ...
 
+  - see also the notes in the specs spreadsheet
+  
 . add support for sending in object creation/modification requests the remote_id of creator user
   - add support for importing that data into target system (this means NOT having to connect uisng every different user account to the target server)
 
@@ -94,14 +96,6 @@
 . language deletion events: show deleted language in admin interface panel?
 
 
-5 - MISC
-
-. create some documentation: a table of all events, and for each one:
-  - the nodes affected (in terms of feeds that will have to be notified)
-  - the nodes affected (in terms of which nodes in the ezwt toolbar should show a "sync" icon)
-  - details of complex cases (where this logic is not straightforward)
-
-
 Phase 1.5 (move to phase 2 ?)
 
 . source server: allow admin user to delete events in pending status too (after confirmation dialog or via cli script)
@@ -156,8 +150,8 @@ Phase 3:
 . add script that inits a feed with a non-empty target server (creates init-node events based eg. on node paths)
 . add setup-wizard to create and init targets
 . allow targets to be in "auto" mode, ie. sync events as soon as they are created, and in "delayed" mode too (sync via cronjob)
-. add xmlrpc and soap service layers
-. review separation of checking inputs between controllers and models classes
+. add xmlrpc (?) and soap service layers
+. review separation of checking inputs between controllers and models classes in target server
 . review usage of return codes vs. exceptions
 . test mode allowing a target server not to execute existing content triggers when importing objects - also set a class variable to tell when content/publish operation is executed in context of this extension
 . tackle problem of not-atomic operations, eg. when a node-create-on-target fails, it might have

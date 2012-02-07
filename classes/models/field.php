@@ -74,6 +74,13 @@ class eZContentStagingField
                 $this->value = (bool) $attribute->toString();
                 break;
 
+            case 'ezcountry':
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $this->value = explode( ',', $attribute->toString() );
+                }
+                break;
+
             /// @todo shall we use iso 8601 format for dates?
             case 'ezdate':
             case 'ezdatetime':
@@ -85,6 +92,10 @@ class eZContentStagingField
                 if ( $attribute->attribute( 'has_content' ) )
                 {
                     $this->value = $attribute->toString();
+                }
+                else
+                {
+                    $this->value = array();
                 }
                 break;
 
@@ -520,6 +531,23 @@ class eZContentStagingField
                 eZDir::recursiveDelete( $tmpDir, false );
                 break;
 
+            case 'ezcountry':
+                if ( $value == null )
+                {
+                     $contentObjectAttribute->setAttribute( 'data_text', '' );
+                }
+                else
+                {
+                    /// @todo check we received an array
+                    /// @todo we should not allow the array to have more than 1 country, based on call definition
+                    $attribute->fromString( implode( ",", $value ) );
+                }
+                break;
+
+            /// @todo add min, max validation
+            //case 'ezfloat':
+            //  break;
+
             // serialized as array instead of single string
             case 'ezgmaplocation':
                 if ( $value == null )
@@ -545,6 +573,10 @@ class eZContentStagingField
             case 'ezkeyword':
                 $attribute->fromString( implode( ',', $value ) );
                 break;
+
+            /// @todo add min, max validation
+            //case 'ezinteger':
+            //  break;
 
             case 'ezobjectrelation':
                 if ( strpos( 'remoteId:', $value ) == 0 )
