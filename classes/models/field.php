@@ -111,6 +111,17 @@ class eZContentStagingField
                 }
                 break;
 
+            case 'ezidentifier':
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $this->value = $attribute->toString();
+                }
+                else
+                {
+                    $this->value = "";
+                }
+                break;
+
             // serialized as a struct
             case 'ezimage':
                 if ( $attribute->attribute( 'has_content' ) )
@@ -570,6 +581,20 @@ class eZContentStagingField
 
                 break;
 
+            case 'ezidentifier':
+                if ( $value == null )
+                {
+                    $contentClassAttribute = $attribute->attribute( 'contentclass_attribute' );
+                    /// @todo test if all went well
+                    $ok = eZIdentifierType::assignValue( $contentClassAttribute, $attribute );
+                }
+                else
+                {
+                    /// @todo check for uniqueness, format conformance
+                   $attribute->fromString( $value );
+                }
+                break;
+
             /// @todo validate format: either isbn13 or 10
             //case 'ezisbn':
             //    break;
@@ -583,26 +608,35 @@ class eZContentStagingField
             //  break;
 
             case 'ezobjectrelation':
-                if ( strpos( 'remoteId:', $value ) == 0 )
+                if ( $value ==  null )
                 {
-                    $value = substr( $value, 9 );
-                    $object = eZContentObject::fetchByRemoteId( $value );
-                    if ( $object )
-                    {
-                        // avoid going via fromstring for a small speed gain
-                        $attribute->setAttribute( 'data_int', $object->attribute( 'id' ) );
-                        $ok = true;
-                    }
-                    else
-                    {
-                        $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
-                        eZDebug::writeWarning( "Can not create relation because object with remote id {$value} is missing in attribute $attrname", __METHOD__ );
-                        $ok = false;
-                    }
+                    // native fromstring does not reset to non-linked status
+                    $attribute->setAttribute( 'data_int', 0 );
                 }
                 else
                 {
-                    $ok = $attribute->fromString( $value );
+                    /// @todo throw exception instead of returning false
+                    if ( strpos( 'remoteId:', $value ) == 0 )
+                    {
+                        $value = substr( $value, 9 );
+                        $object = eZContentObject::fetchByRemoteId( $value );
+                        if ( $object )
+                        {
+                            // avoid going via fromstring for a small speed gain
+                            $attribute->setAttribute( 'data_int', $object->attribute( 'id' ) );
+                            $ok = true;
+                        }
+                        else
+                        {
+                            $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                            eZDebug::writeWarning( "Can not create relation because object with remote id {$value} is missing in attribute $attrname", __METHOD__ );
+                            $ok = false;
+                        }
+                    }
+                    else
+                    {
+                        $ok = $attribute->fromString( $value );
+                    }
                 }
                 break;
 
@@ -782,6 +816,8 @@ class eZContentStagingField
                 break;
 
             case 'ezselection':
+                /// @todo validate the uniqueness of the selection value as defined in content class
+                /// @todo the fromString method silently discards all invalid selection keys. Shall we error out instead?
                 $attribute->fromString( implode( '|', $value ) );
                 break;
 

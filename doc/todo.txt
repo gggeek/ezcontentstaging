@@ -16,6 +16,7 @@
   - ezfloat: ok. check if it is possible to encode as json native float but using arbitrary precision (phase 2 or 3?)
   - ezstarrating: ok; we only transfer is_enabled, not actual ratings
   - ezuser: ok; we transfer both enabled and disabled accounts as long as account login != ''
+  - ezidentifier: ok; if an empty one is sent a new identifier is generated
   - export+import to be done for ezuser (???)
   - to be done: matrix, ezcomments, ezmbpaex
   - to be done: webshop datatypes: multioption2, multiprice, option, price, product category, range option
