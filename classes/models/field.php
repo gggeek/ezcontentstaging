@@ -56,17 +56,21 @@ class eZContentStagingField
 
                 // serialized as a struct
             case 'ezbinaryfile':
-                $content = $attribute->attribute( 'content' );
-                $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
-                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
-                $this->value = array(
-                    'fileSize' => (int)$content->attribute( 'filesize' ),
-                    'fileName' => $content->attribute( 'original_filename' ),
-                    'content' => base64_encode( $file->fetchContents() )
-                    );
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $content = $attribute->attribute( 'content' );
+                    $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
+                    /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
+                    $this->value = array(
+                        'fileSize' => (int)$content->attribute( 'filesize' ),
+                        'fileName' => $content->attribute( 'original_filename' ),
+                        'content' => base64_encode( $file->fetchContents() )
+                        );
+                }
                 break;
 
             case 'ezboolean':
+                // nb: the ezbbolean datatype does not support 'not having' content
                 $this->value = (bool) $attribute->toString();
                 break;
 
@@ -77,36 +81,47 @@ class eZContentStagingField
                 break;
 
             /// @todo serialize with wanted precision, using json native float type
-            //case 'ezfloat':
-            //    $this->value = ...;
-            //    break;
+            case 'ezfloat':
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $this->value = $attribute->toString();
+                }
+                break;
 
             case 'ezgmaplocation':
-                /// @todo shall we double check that data is valid, ie attribute( 'data_int' ) == 1 ?
-                $gmaplocation = $attribute->attribute( 'content' );
-                $this->value = array(
-                    "latitude" => $gmaplocation->attribute( 'latitude' ),
-                    "longitude" =>  $gmaplocation->attribute( 'longitude' ),
-                    "address" =>  $gmaplocation->attribute( 'address' )
-                );
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $gmaplocation = $attribute->attribute( 'content' );
+                    $this->value = array(
+                        "latitude" => $gmaplocation->attribute( 'latitude' ),
+                        "longitude" =>  $gmaplocation->attribute( 'longitude' ),
+                        "address" =>  $gmaplocation->attribute( 'address' )
+                    );
+                }
                 break;
 
             // serialized as a struct
             case 'ezimage':
-                $content = $attribute->attribute( 'content' );
-                $original = $content->attribute( 'original' );
-                $file = eZClusterFileHandler::instance( $original['url'] );
-                /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
-                $this->value = array(
-                    'fileSize' => (int)$original['filesize'],
-                    'fileName' => $original['original_filename'],
-                    'alternativeText' => $original['alternative_text'],
-                    'content' => base64_encode( $file->fetchContents() )
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $content = $attribute->attribute( 'content' );
+                    $original = $content->attribute( 'original' );
+                    $file = eZClusterFileHandler::instance( $original['url'] );
+                    /// @todo for big files, we should do piecewise base64 encoding, or we might go over memory limit
+                    $this->value = array(
+                        'fileSize' => (int)$original['filesize'],
+                        'fileName' => $original['original_filename'],
+                        'alternativeText' => $original['alternative_text'],
+                        'content' => base64_encode( $file->fetchContents() )
                     );
+                }
                 break;
 
             case 'ezinteger':
-                $this->value = (int) $attribute->toString();
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $this->value = (int) $attribute->toString();
+                }
                 break;
 
             // serialize as structured array instead of string:
@@ -119,44 +134,50 @@ class eZContentStagingField
                 // serialized as a struct
                 // nb: this datatype has, as of eZ 4.5, a broken toString method
             case 'ezmedia':
-                $content = $attribute->attribute( 'content' );
-                $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
-                /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
-                $this->value = array(
-                    'fileSize' => (int)$content->attribute( 'filesize' ),
-                    'fileName' => $content->attribute( 'original_filename' ),
-                    'width' => $content->attribute( 'width' ),
-                    'height' => $content->attribute( 'height' ),
-                    'hasController' => (bool)$content->attribute( 'has_controller' ),
-                    'controls' => (bool)$content->attribute( 'controls' ),
-                    'isAutoplay' => (bool)$content->attribute( 'is_autoplay' ),
-                    'pluginsPage' => $content->attribute( 'pluginspage' ),
-                    'quality' => $content->attribute( 'quality' ),
-                    'isLoop' => (bool)$content->attribute( 'is_loop' ),
-                    'content' => base64_encode( $file->fetchContents() )
-                    );
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $content = $attribute->attribute( 'content' );
+                    $file = eZClusterFileHandler::instance( $content->attribute( 'filepath' ) );
+                    /// @todo for big files, we should do piecewise base64 encoding, or we go over memory limit
+                    $this->value = array(
+                        'fileSize' => (int)$content->attribute( 'filesize' ),
+                        'fileName' => $content->attribute( 'original_filename' ),
+                        'width' => $content->attribute( 'width' ),
+                        'height' => $content->attribute( 'height' ),
+                        'hasController' => (bool)$content->attribute( 'has_controller' ),
+                        'controls' => (bool)$content->attribute( 'controls' ),
+                        'isAutoplay' => (bool)$content->attribute( 'is_autoplay' ),
+                        'pluginsPage' => $content->attribute( 'pluginspage' ),
+                        'quality' => $content->attribute( 'quality' ),
+                        'isLoop' => (bool)$content->attribute( 'is_loop' ),
+                        'content' => base64_encode( $file->fetchContents() )
+                        );
+                }
                 break;
 
             // serialized as a single string of either local or remote id
             case 'ezobjectrelation':
                 // slightly more intelligent than base "toString" method: we always check for presence of related object
                 $relatedObjectID = $attribute->attribute( 'data_int' );
-                $relatedObject = eZContentObject::fetch( $relatedObjectID );
-                if ( $relatedObject )
+                if ( $relatedObjectID )
                 {
-                    if ( $ridGenerator )
+                    $relatedObject = eZContentObject::fetch( $relatedObjectID );
+                    if ( $relatedObject )
                     {
-                        $this->value = 'remoteId:' . $ridGenerator->buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' );
+                        if ( $ridGenerator )
+                        {
+                            $this->value = 'remoteId:' . $ridGenerator->buildRemoteId( $relatedObjectID, $relatedObject->attribute( 'remote_id' ), 'object' );
+                        }
+                        else
+                        {
+                            $this->value = $relatedObjectID;
+                        }
                     }
                     else
                     {
-                        $this->value = $relatedObjectID;
+                        eZDebug::writeError( "Cannot encode attribute - related object $relatedObjectID not found for attribute in lang $locale", __METHOD__ );
+                        $this->value = null;
                     }
-                }
-                else
-                {
-                    eZDebug::writeError( "Cannot encode attribute - related object $relatedObjectID not found for attribute in lang $locale", __METHOD__ );
-                    $this->value = null;
                 }
                 break;
 
@@ -405,9 +426,12 @@ class eZContentStagingField
                 break;
 
             case 'ezurl':
-                $this->value = array(
-                    'url' => eZURL::url( $attribute->attribute( 'data_int' ) ),
-                    'text' => $attribute->attribute( 'data_text' ) );
+                if ( $attribute->attribute( 'has_content' ) )
+                {
+                    $this->value = array(
+                        'url' => eZURL::url( $attribute->attribute( 'data_int' ) ),
+                        'text' => $attribute->attribute( 'data_text' ) );
+                }
                 break;
 
             // known bug in ezuser serialization: #018609
@@ -432,6 +456,8 @@ class eZContentStagingField
     */
     static function decodeValue( $attribute, $value )
     {
+        $ok = true;
+
         $type = $attribute->attribute( 'data_type_string' );
         switch( $type )
         {
@@ -448,7 +474,16 @@ class eZContentStagingField
             case 'ezbinaryfile':
             case 'ezmedia':
             case 'ezimage':
-                if ( !is_array( $value ) || !isset( $value['fileName'] ) || !isset( $value['content'] ) )
+                if ( !$value )
+                {
+                    $version = $attribute->attribute( "version" );
+                    $type = ( $type == 'ezbinaryfile' ? new eZBinaryFileType() : ( $type == 'ezmedia' ? new eZMediaType() : new eZImageType() ) );
+                    $type->deleteStoredObjectAttribute( $attribute, $version );
+                    break;
+                }
+
+                /// @todo convert to exception
+                if ( !isset( $value['fileName'] ) || !isset( $value['content'] ) )
                 {
                     $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
                     eZDebug::writeWarning( "Can not create binary file because fileName or content is missing in attribute $attrname", __METHOD__ );
@@ -487,16 +522,24 @@ class eZContentStagingField
 
             // serialized as array instead of single string
             case 'ezgmaplocation':
-                /// @todo test what happens when we receive no data
-                $location = new eZGmapLocation( array(
-                    'contentobject_attribute_id' => $attribute->attribute( 'id' ),
-                    'contentobject_version' => $attribute->attribute( 'version' ),
-                    'latitude' => $value['latitude'],
-                    'longitude' => $value['longitude'],
-                    'address' => $value['address']
-                ) );
-                $attribute->setContent( $location );
-                $attribute->setAttribute( 'data_int', 1 );
+                if ( $value == null )
+                {
+                    $attribute->setAttribute( 'data_int', 0 );
+                }
+                else
+                {
+                    /// @todo check for presence and format of the 3 fields
+                    $location = new eZGmapLocation( array(
+                        'contentobject_attribute_id' => $attribute->attribute( 'id' ),
+                        'contentobject_version' => $attribute->attribute( 'version' ),
+                        'latitude' => $value['latitude'],
+                        'longitude' => $value['longitude'],
+                        'address' => $value['address']
+                    ) );
+                    $attribute->setContent( $location );
+                    $attribute->setAttribute( 'data_int', 1 );
+                }
+
                 break;
 
             case 'ezkeyword':
@@ -712,12 +755,22 @@ class eZContentStagingField
 
 
             case 'ezurl':
-                /// @todo test that we get the 'url' parameter? verofy datatype definition
-                $urlID = eZURL::registerURL( $value['url'] );
-                $attribute->setAttribute( 'data_int', $urlID );
-                if( isset( $value['text'] ) )
+                if ( $value && @$value['url'] != '' )
                 {
-                    $attribute->setAttribute( 'data_text', $value['text'] );
+                    /// @todo reject requests without the 'url' parameter?
+                    $urlID = eZURL::registerURL( $value['url'] );
+                    $attribute->setAttribute( 'data_int', $urlID );
+                    if( array_key_exists( 'text', $value ) )
+                    {
+                        $attribute->setAttribute( 'data_text', $value['text'] );
+                    }
+                }
+                else
+                {
+                    // we do not delete url/urlobjectlink even if any was set previously,
+                    // as this is done on publishing anyway...
+                    $attribute->setAttribute( 'data_int', 0 );
+                    $attribute->setAttribute( 'data_text', '' );
                 }
                 break;
 
