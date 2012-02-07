@@ -154,7 +154,7 @@ class eZContentStagingContent extends contentStagingBase
                 // This check is just preliminary, eg. what if we get
                 // in json an empty string for a string field, or no blocks
                 // for an ezpage attribute? we check it later on
-                if ( $required )
+                if ( $required && !$attribute->attribute( 'has_content' ) )
                 {
                     throw new Exception( "Missing required attribute '$identifier'" );
                 }
@@ -168,7 +168,8 @@ class eZContentStagingContent extends contentStagingBase
             {
                  throw new Exception( "Attribute '$identifier' should be of type $type, not '{$fields[$identifier]['fieldDef']}'" );
             }
-            if ( !isset( $fields[$identifier]['value'] ) )
+            // nb: can not use isset here
+            if ( !array_key_exists( 'value', $fields[$identifier] ) )
             {
                 throw new Exception( "Missing value for field '$identifier'" );
             }
@@ -203,20 +204,36 @@ class eZContentStagingContent extends contentStagingBase
         $dbhandling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
-            /// @todo log an error and maybe abort instead of continuing if bad date format?
+            /// @todo maybe abort instead of continuing if bad date format?
             /// @todo add a check that date is not in the future?
             $creationdate = null;
             if ( isset( $input['created'] ) )
             {
                 $creationdate = self::decodeDatetIme( $input['created'] );
+                if ( !$creationdate )
+                {
+                    eZDebug::writeWarning( 'Object creation date not valid: ' . $input['created'], __METHOD__ );
+                }
             }
 
             $db->begin();
 
-            /// @todo what if initial language does not exist?
-            $content = $class->instantiateIn( $input['initialLanguage'] );
-            /// @todo if remote_id is not set, just leave it as it is (will be filled by random value?)
-            $content->setAttribute( 'remote_id', $input['remoteId'] );
+            if ( isset( $input['initialLanguage'] ) )
+            {
+                /// @todo what if initial language does not exist?
+                $content = $class->instantiateIn( $input['initialLanguage'] );
+            }
+            else
+            {
+                 $content = $class->instantiate();
+            }
+
+            // if remote_id is not set, just leave it as it is (will be filled by random value?)
+            if ( isset( $input['remoteId'] ) )
+            {
+                $content->setAttribute( 'remote_id', $input['remoteId'] );
+            }
+
             // the date set here is normally not reset during the publication process
             if ( $creationdate )
             {
@@ -241,10 +258,9 @@ class eZContentStagingContent extends contentStagingBase
             // in order not to make it appear as if it was created after object publication
             if ( $creationdate )
             {
-                $version->setAttribute( 'created', $time );
+                $version->setAttribute( 'created', $creationdate );
             }
             // Version modification time is taken as current time at version creation.
-            // For now we do not allow syncing it
             /*else
             {
                 $version->setAttribute( 'modified', time() );
