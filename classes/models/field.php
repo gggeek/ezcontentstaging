@@ -466,11 +466,14 @@ class eZContentStagingField
 
     /**
     * NB: we assume that someone else has checked for proper type matching between attr. and value
-    * NB: we assume that attributes are not empty here - we leave the test for .has_content to the caller
+    * This method supports receiving a null value to clear the current attribute
+    * (eg. when used in updating an object to version 2, removing the url from
+    * an ezurl attribute or the link from an ezobjectrelation attribute)
     *
     * @todo implement all missing validation that does not happen when we go via fromString...
     * @todo decide: shall we throw an exception if data does not validate or just emit a warning?
     * @todo check datatypes that support a fromHash method, use it instead of hard-coded conversion here
+    *       (but the name of that method should not exist yet anywhere in the wild for extensions...)
     *
     * @see eZDataType::unserializeContentObjectAttribute
     * @see eZDataType::fromString

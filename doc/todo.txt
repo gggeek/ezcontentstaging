@@ -17,6 +17,7 @@
   - ezstarrating: ok; we only transfer is_enabled, not actual ratings
   - ezuser: ok; we transfer both enabled and disabled accounts as long as account login != ''
   - ezidentifier: ok; if an empty one is sent a new identifier is generated
+  - ezselection: ok
   - export+import to be done for ezuser (???)
   - to be done: matrix, ezcomments, ezmbpaex
   - to be done: webshop datatypes: multioption2, multiprice, option, price, product category, range option

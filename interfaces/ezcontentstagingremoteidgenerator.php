@@ -1,6 +1,10 @@
 <?php
 /**
-* Interface for classes implementing generation of remote ids
+* Interface for classes implementing generation of remote ids.
+* The idea is that for every node and object in the local db, the remote_id
+* field is used to map to the same node/object in the remote db.
+* But in some cases the two remote ids will be identical, while in some other
+* cases we might have more complex mappings.
 *
 * @package ezcontentstaging
 *
@@ -17,6 +21,8 @@ interface eZContentStagingRemoteIdGenerator
 
     /**
     * @return string
+    * @todo This interface is crappy. Let's receive an object instead, and get the
+    *       remote_id from it...
     */
     function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' );
 }
