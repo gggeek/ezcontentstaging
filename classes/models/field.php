@@ -914,7 +914,7 @@ class eZContentStagingField
             case 'ezxmltext':
                 $doc = new DOMDocument( '1.0', 'utf-8' );
                 /// @todo !important suppress errors in the loadXML call?
-                if ( $doc->loadXML( $value ) )
+                if ( $value != "" && $doc->loadXML( $value ) )
                 {
                     // fix 1st link objects
                     /// @see eZXMLTextType::unserializeContentObjectAttribute
@@ -952,8 +952,11 @@ class eZContentStagingField
                 }
                 else
                 {
-                    $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
-                    eZDebug::writeWarning( "Can not import xml text because content is not valid xml in attribute $attrname", __METHOD__ );
+                    if ( $value != "" )
+                    {
+                        $attrname = $attribute->attribute( 'contentclass_attribute_identifier' );
+                        eZDebug::writeWarning( "Can not import xml text because content is not valid xml in attribute $attrname", __METHOD__ );
+                    }
 
                     $parser = new eZXMLInputParser();
                     $doc = $parser->createRootNode();
