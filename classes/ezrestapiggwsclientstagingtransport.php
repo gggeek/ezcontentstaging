@@ -71,7 +71,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 }
                 if ( $out['Location']['remoteId'] != $RemoteNodeRemoteID )
                 {
-                    throw new Exception( "Remote id of created node does not match waht was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                    throw new Exception( "Remote id of created node does not match what was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
                 return 0;
 
@@ -616,6 +616,8 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
         else
         {
+            // so far, when sending a version-1 object, the following data are not taken into account:
+            // alwaysAvailable, sectionId, ownerId
             $out['initialLanguage'] = $object->attribute( 'initial_language_code' );
             $out['alwaysAvailable'] = $object->attribute( 'always_available' );
             $out['remoteId'] = $RemoteObjRemoteID;
