@@ -1,0 +1,13 @@
+1. if there is a php crash while synchronizing an event, the admin will not be able to delete the "pending" event anymore - a manual db update is required
+
+2. if a target feed is not a copy of a complete website but only a part of it, and on source server an existing node is moved into the subtree synced to the target,
+   not all content data is transferred over (in short: we only support at 100% functionality full site copies for now)
+
+3. See the todo.txt file for more problems, as there are currently MANY known limitations, such as
+   - deprecated datatypes are not well supported (see doc.ez.no for a list)
+   - webshop datatypes are not well supported (see doc.ez.no for a list)
+   - only http basic auth is supported, not oauth
+   - the "swap object" event is not replicated at all to target servers
+   - target server chaining is untested and most likely not working
+
+4. when "undefining" an existing feed, its events are still shown on dashboard block - gg, 2012.2.9
