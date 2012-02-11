@@ -1,0 +1,24 @@
+extension:
+    name: ezcontenstaging
+
+version:
+    major: 0
+    minor: 1
+    release: 0
+
+ezp:
+    version:
+        major: 4
+        minor: 5
+        release: 0
+
+git:
+    url: https://github.com/gggeek/ezcontentstaging.git
+
+create:
+    tarball: no
+    zip: yes
+    doxygen_doc: yes
+
+releasenr:
+    separator: .
