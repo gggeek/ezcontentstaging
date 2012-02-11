@@ -127,6 +127,14 @@ Phase 1.5 (move to phase 2 ?)
 
 . source server: output of checknode view - make it available via ezjscore
 
+. add setup-wizard to create and init targets
+
+. as part of the work done by the stup wizard (source server), there needs to be a call to get the exact version of the rest-api found on the target server,
+  so that if we have a target server implementing a slightly different api, we can pick the correct transport class to use
+  (q: shall we rely on version nr in url or provide a method to get it ?)
+
+. make it easier to subclass both the transport class and the filed-encoding class to change just a bit of them
+  (refactor away the huge switch calls)
 
 Phase 2:
 
@@ -155,7 +163,6 @@ Phase 3:
 
 . rest protocol: have source server use the "Fields" param in query string to limit data returned by target server and reduce bandwidth usage
 . add script that inits a feed with a non-empty target server (creates init-node events based eg. on node paths)
-. add setup-wizard to create and init targets
 . allow targets to be in "auto" mode, ie. sync events as soon as they are created, and in "delayed" mode too (sync via cronjob)
 . add xmlrpc (?) and soap service layers
 . review separation of checking inputs between controllers and models classes in target server

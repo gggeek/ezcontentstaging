@@ -1,9 +1,16 @@
 Technical specifications
 ========================
 
+Architecture diagram
+--------------------
+
 (To be done...)
+
+
+Detail specifications
+---------------------
 
 See:
 
-. specs.odt
+. specs.odt file
 . REST API doc: https://github.com/ezsystems/ezpublish-ee/wiki/REST-API-V2
