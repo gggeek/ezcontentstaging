@@ -25,22 +25,22 @@
     		{/if}
 
     		<table class="list">
-        	<tr><th>{'Feed'|i18n('contentstaging')}</th><th>{'To synchronize'}</th><th>{'Verify status on target server'|i18n('contentstaging')}</th></tr>
+        	<tr><th>{'Feed'|i18n('ezcontentstaging')}</th><th>{'To synchronize'}</th><th>{'Verify status on target server'|i18n('ezcontentstaging')}</th></tr>
             {foreach $feeds as $feedid => $feed}
                 <tr><td>{$feed.name|wash()}</td>
                 <td>{if is_set($needs_sync.$feedid)}
                     {foreach $needs_sync.$feedid as $i => $event}
-                        {$event.to_sync_string|i18n('contentstaging')}
+                        {$event.to_sync_string|i18n('ezcontentstaging')}
                         {delimiter}, {/delimiter}
                     {/foreach}
                 {else}
                     -
                 {/if}</td>
-                <td><a href={concat('contentstaging/checknode/', $assignment.node_id, '/', $feedid)|ezurl()} class="">{'Check'|i18n('contentstaging')}</a></td></tr>
+                <td><a href={concat('contentstaging/checknode/', $assignment.node_id, '/', $feedid)|ezurl()} class="">{'Check'|i18n('ezcontentstaging')}</a></td></tr>
             {/foreach}
             </table>
         {if $feeds|count()|not()}
-            {'This location does not have to be synchronized to any feed'|i18n('contentstaging')}
+            {'This location does not have to be synchronized to any feed'|i18n('ezcontentstaging')}
         {/if}
         {undef $needs_sync $create_sync_access $feeds}
 

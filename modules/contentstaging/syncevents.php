@@ -11,7 +11,7 @@
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
 */
 
-$http = eZHTTPTool::instance(); 
+$http = eZHTTPTool::instance();
 $targetId=$http->postVariable('TargetId');
 $syncErrors = array();
 $syncResults = array();
@@ -37,10 +37,10 @@ if ( $http->hasPostVariable('NodeID') )
 			$current_node_events[$event->attribute( 'id' )] = $event;
 		}
 	}
-	
+
 	//collecte related objects
 	$relatedObjectList = $currentObject->relatedContentObjectList();
-		
+
 	//Check if we need to sync related object
 	$relatedObjectNeedingSync = $eventList = array();
 	foreach ($relatedObjectList as $relatedObject){
@@ -62,14 +62,14 @@ if ( $http->hasPostVariable('NodeID') )
 			echo $relatedObjectNode->attribute('node_id');
 		}
 		*/
-		
+
 	}
 }
 
 if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton'))
 {
 	if(count($relatedObjectNeedingSync) > 0){
-		$syncErrors[] = ezpI18n::tr( 'contentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
+		$syncErrors[] = ezpI18n::tr( 'ezcontentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
 	}else{
 		$syncErrors = null;
 	}
@@ -124,7 +124,7 @@ $tpl->setVariable( 'sync_results', $syncResults );
 
 $Result['content'] = $tpl->fetch( 'design:contentstaging/syncevents.tpl' );
 
-$Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
-								'url' => 'contentstaging/syncnode' ) );									
+$Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
+								'url' => 'contentstaging/syncnode' ) );
 
 ?>

@@ -15,7 +15,7 @@ class eZStageDeleteType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage delete' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage delete' ) );
         $this->setTriggerTypes( array( 'content' => array( 'delete' => array( 'before' ) ) ) );
     }
 

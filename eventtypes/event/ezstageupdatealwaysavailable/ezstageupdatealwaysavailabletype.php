@@ -6,7 +6,7 @@ class eZStageUpdateAlwaysavailableType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage translation always available' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage translation always available' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updatealwaysavailable' => array( 'before' ) ) ) );
     }
 

@@ -17,7 +17,7 @@
 <div class="content-sync">
 <div class="attribute-header">
     <h1 class="long">
-        {"Node synchronisation to the target "|i18n("contentstaging")} "{$target_id}"
+        {"Node synchronisation to the target "|i18n("ezcontentstaging")} "{$target_id}"
     </h1>
 </div>
 {if or(is_set( $sync_results ), is_set( $sync_errors ))}
@@ -50,13 +50,13 @@
 <input type="hidden" name="TargetId" value="{$target_id}" />
 
 {if and($create_sync_access, count($current_node_events)|gt(0) ) }
-<h2>{"Current node details"|i18n("contentstaging")} :</h2>
+<h2>{"Current node details"|i18n('ezcontentstaging')} :</h2>
 <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
-        <th width="30%">{"Name"|i18n("contentstaging")}</th>
-        <th width="25%">{"Language..."|i18n("contentstaging")}</th>
-        <th width="15%">{"Date"|i18n("contentstaging")}</th>
-        <th width="30%">{"Events"|i18n("contentstaging")}</th>
+        <th width="30%">{"Name"|i18n('ezcontentstaging')}</th>
+        <th width="25%">{"Language..."|i18n('ezcontentstaging')}</th>
+        <th width="15%">{"Date"|i18n('ezcontentstaging')}</th>
+        <th width="30%">{"Events"|i18n('ezcontentstaging')}</th>
     </tr>
     <tr class="{$style}">
         <td>
@@ -74,17 +74,17 @@
             {/foreach}
         </td>
     </tr>
-</table>        
+</table>
 {/if}
 
 {if and(count($sync_related_objects)|gt(0), $create_sync_access, count($related_node_events)|gt(0) ) }
-<h2>{"Related node details"|i18n("contentstaging")} :</h2>
+<h2>{"Related node details"|i18n('ezcontentstaging')} :</h2>
 <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
-        <th width="30%">{"Name"|i18n("contentstaging")}</th>
-        <th width="25%">{"Language..."|i18n("contentstaging")}</th>
-        <th width="15%">{"Date"|i18n("contentstaging")}</th>
-        <th width="30%">{"Events"|i18n("contentstaging")}</th>
+        <th width="30%">{"Name"|i18n('ezcontentstaging')}</th>
+        <th width="25%">{"Language..."|i18n('ezcontentstaging')}</th>
+        <th width="15%">{"Date"|i18n('ezcontentstaging')}</th>
+        <th width="30%">{"Events"|i18n('ezcontentstaging')}</th>
     </tr>
     {foreach $sync_related_objects as $sync_related_object sequence array( 'bglight', 'bgdark' ) as $style}
     <tr class="{$style}">
@@ -108,12 +108,12 @@
 {/if}
 
 {if and($create_sync_access, count($current_node_events)|gt(0))}
-    <input class="button" name="ConfirmSyncButton" type="submit" value="{'Confirm the synchronization of all above contents'|i18n(' ')}" />
-    <input class="button" name="CancelButton" type="submit" value="{'Cancel the synchronisation'|i18n(' ')}" />
+    <input class="button" name="ConfirmSyncButton" type="submit" value="{'Confirm the synchronization of all above contents'|i18n("ezcontentstaging")}" />
+    <input class="button" name="CancelButton" type="submit" value="{'Cancel the synchronisation'|i18n("ezcontentstaging")}" />
 {/if}
 </form>
 {else}
-    <a href={$current_node.url_alias|ezurl()} title="{$current_node.name}">{"Back to the content "|i18n("contentstaging")}"{$current_node.name}"</a>
+    <a href={$current_node.url_alias|ezurl()} title="{$current_node.name}">{"Back to the content "|i18n("ezcontentstaging")}"{$current_node.name}"</a>
 {/if}
 {undef $create_sync_access}
 

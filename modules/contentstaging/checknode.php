@@ -47,9 +47,9 @@ $tpl->setVariable( 'check_results', $checkResults );
 
 $Result['content'] = $tpl->fetch( 'design:contentstaging/checknode.tpl' );
 
-$Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
+$Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
 								'url' => 'contentstaging/feeds' ),
-                         array( 'text' => ezpI18n::tr( 'staging', 'Node status check' ),
+                         array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Node status check' ),
                                 'url' => false ) );
 
 ?>

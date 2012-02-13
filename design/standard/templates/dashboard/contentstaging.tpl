@@ -12,7 +12,7 @@
      $sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
      $sync_events_obj = false()}
 
-<h2>{'Content to be synchronized'|i18n( 'contentstaging' )}</h2>
+<h2>{'Content to be synchronized'|i18n( 'ezcontentstaging' )}</h2>
 {if $sync_event_objs}
 
 <table class="list" cellpadding="0" cellspacing="0" border="0">
@@ -72,7 +72,7 @@
 </table>
 
 {else}
-    <p>{'Content synchronisation list is empty.'|i18n( 'contentstaging' )}</p>
+    <p>{'Content synchronisation list is empty.'|i18n( 'ezcontentstaging' )}</p>
 {/if}
 
 {undef $sync_event_objs $sync_access $sync_events_obj}

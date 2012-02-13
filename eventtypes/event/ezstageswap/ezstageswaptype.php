@@ -6,7 +6,7 @@ class eZStageSwapType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage node swap' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage node swap' ) );
         $this->setTriggerTypes( array( 'content' => array( 'swap' => array( 'before' ) ) ) );
     }
 

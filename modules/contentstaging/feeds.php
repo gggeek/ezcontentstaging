@@ -153,6 +153,6 @@ elseif ( $module->isCurrentAction( 'InitializeFeeds' ) )
 $tpl->setVariable( 'feeds', eZContentStagingTarget::fetchList() );
 
 $Result['content'] = $tpl->fetch( 'design:contentstaging/feeds.tpl' );
-$Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
+$Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
                                 'url' => false ) );
 ?>

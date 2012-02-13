@@ -75,8 +75,6 @@
 
 . settle on list of cols available in feed view and in dashboard block; make sure that it works ok for items relating to deleted nodes (showing enough info)
 
-. source server: reset all calls to ez18n to use a single namespace: "contentstating"
-
 . source server: in wt tpl, try to filter out items in syncing status (show a different icon, do not allow to sync)
 
 . language deletion events: show deleted language in admin interface panel?

@@ -35,7 +35,7 @@
                 {if $i|gt( 0 )}
                     {set $title = $title|append( ', ' ) }
                 {/if}
-                {set $title = $title|append( $event.to_sync_string|i18n( 'contentstaging' ) ) }
+                {set $title = $title|append( $event.to_sync_string|i18n( 'ezcontentstaging' ) ) }
             {/foreach}
             {if $create_sync_access}
             <form method="post" action={"/contentstaging/syncevents"|ezurl} class="right">
@@ -48,7 +48,7 @@
                <img src={'sync.gif'|ezimage()} alt="{$title|wash()}" title="{$title|wash()}" />
             {/if}
         {else}
-            {set $title = $title|append( 'no need to synchronize node'|i18n( 'contentstaging' ) )}
+            {set $title = $title|append( 'no need to synchronize node'|i18n( 'ezcontentstaging' ) )}
             <img src={'sync-disabled.gif'|ezimage()} alt="{$title|wash()}" title="{$title|wash()}" />
         {/if}
     {/foreach}

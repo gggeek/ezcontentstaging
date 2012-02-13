@@ -17,7 +17,7 @@ class eZStageHideType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage hide/unhide' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage hide/unhide' ) );
         $this->setTriggerTypes( array( 'content' => array( 'hide' => array( 'before' ) ) ) );
     }
 

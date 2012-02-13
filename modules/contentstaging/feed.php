@@ -69,7 +69,7 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
     else
     {
         eZDebug::writeError( "No list of events to be syncronised received. Pen testing? tsk tsk tsk", __METHOD__ );
-        $actionErrors[] = ezpI18n::tr( "staging", "No object to synchronize" );
+        $actionErrors[] = ezpI18n::tr( 'ezcontentstaging', "No object to synchronize" );
     }
     /// @todo decide format for these 2 variables: let translation happen here or in tpl?
     $tpl->setVariable( 'action_errors', $actionErrors );
@@ -142,17 +142,17 @@ $tpl->setVariable( 'view_parameters', array( 'offset' => (int)$Params['Offset'] 
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/feed.tpl' );
-$Result['path'] = array( array( 'text' => ezpI18n::tr( 'staging', 'Content synchronization' ),
+$Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
                                 'url' => 'contentstaging/feeds' ) );
 if ( $targetId == null )
 {
-    $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', 'All feeds' ),
+    $Result['path'][] = array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'All feeds' ),
                                'url' => false );
 }
 else
 {
     /// @todo use the name of the feed, not its id
-    $Result['path'][] = array( 'text' => ezpI18n::tr( 'staging', "Feed: $targetId" ),
+    $Result['path'][] = array( 'text' => ezpI18n::tr( 'ezcontentstaging', "Feed: $targetId" ),
                                'url' => 'contentstaging/feed/' . $targetId );
 }
 

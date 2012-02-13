@@ -6,7 +6,7 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
 
     function __construct()
     {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'extension/ezcontentstaging/eventtypes', 'Stage update priority' ) );
+        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage update priority' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updatepriority' => array( 'before' ) ) ) );
     }
 
