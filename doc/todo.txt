@@ -1,35 +1,13 @@
 1 - DATATYPE ENCODING
-
-. principle: look for package creation/import code for every datatype to find out where a transcoding of data is needed:
-  - object relation(s), xml block, etc... -> we need to tranform object ids into their remote equivalent
-  - binary datatypes -> we need better support than fromstring/tostring do natively to encode more metadata
-  - all other datatypes that do not serialize to a single scalar value -> use structured json instead of toString() format
-  - note that many fromString() methods assume they will only be called at object creation time and not at object update time:
-    when tehy receive an emoty string, they do not update the existing attribute value. It is thus impossible to use
-	a fromString() call to remove the value of an ezurl attribute if it has been previously set
-  - implement (later on) proper attribute validation from content class definition, eg. max string length or integer min/max range
-  - when an object creation/update call is received by the target server, not all fields are required to be present
-    in the request. All missing fields will be left "as is" (default value for 1st version, previous value for successive versions).
-	Otoh all fields sent but with a null value will be updated to not contain any data (if allowed by the datatype)
-
-. status:
-  - binary files, xml block, ezauthor, ezkeywords, ezgmaplocation, ezselection: ok
-  - object relations(s): ok; also accepts RemoteId:<xxx> syntax for remote ids
+. finish serialization/deserialization support of all datatypes:
   - ezpage:
     test more for correctness of manual blocks
     need to finish: translation of node_ids when they are set in auto/custom blocks parameters (ok for encoding, needs decoding)
     replace the xml serialization of attribute with pure json (phase 2 or 3?)
-  - date/datetime/time: ok. should use iso8601 format instead of timestamp? (phase 2 or 3?)
-  - ezfloat: ok. check if it is possible to encode as json native float but using arbitrary precision (phase 2 or 3?)
-  - ezstarrating: ok; we only transfer is_enabled, not actual ratings
-  - ezuser: ok; we transfer both enabled and disabled accounts as long as account login != ''
-  - ezidentifier: ok; if an empty one is sent a new identifier is generated
-  - to be done: matrix, ezcomments, ezmbpaex
-  - to be done: webshop datatypes: multioption2, multiprice, option, price, product category, range option
-  - to be done? deprecated datatypes:  enum, inisetting, multioption, package, subtree subscription
+  - matrix, ezcomments, ezmbpaex
+  - webshop datatypes: multioption2, multiprice, option, price, product category, range option
+  - deprecated datatypes: enum, inisetting, multioption, package, subtree subscription
 
-  - see also the notes in the specs spreadsheet
-  
 . add support for sending in object creation/modification requests the remote_id of creator user
   - add support for importing that data into target system (this means NOT having to connect uisng every different user account to the target server)
 
@@ -49,7 +27,7 @@
   - source server: when sending creation event for an object but creation events for parent(s) are pending, warn user
   - source server: when sending creation/update event for an object but creation events for related objects are pending, warn user
   - source server: when sending update-visibility event for an object but there are more earlier update-visibility events pending in the queue, warn user (as sending the eralier ones afterwards will not do)
-  -                same as above for section, sorting, etc...
+  - same as above for section, sorting, etc...
   - etc...
 
 
@@ -131,10 +109,10 @@ Phase 1.5 (move to phase 2 ?)
 
 . as part of the work done by the stup wizard (source server), there needs to be a call to get the exact version of the rest-api found on the target server,
   so that if we have a target server implementing a slightly different api, we can pick the correct transport class to use
-  (q: shall we rely on version nr in url or provide a method to get it ?)
 
-. make it easier to subclass both the transport class and the filed-encoding class to change just a bit of them
+. make it easier to subclass both the transport class and the field-encoding class to change just a bit of them
   (refactor away the huge switch calls)
+
 
 Phase 2:
 
@@ -154,7 +132,7 @@ Phase 2:
   Try to move them to "after" (eventually, patch operations: content/hide, ), or set up a two-phase logic:
   1. before action events sets up the sync-event in an "unconfirmed" state
   2. after action event moves the sync-event to "confirmed" state
-. refactor error condition management so that we get both a number and a string across the whole chain from the transport layer to the templates
+. refactor error condition management so that we get both a number and a string across the whole chain from the transport layer to the templates (both source and target servers)
 . fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
 . use the same class to encode/decode objects on both source and target (90% there)
 
