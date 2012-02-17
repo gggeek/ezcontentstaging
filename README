@@ -24,6 +24,11 @@ Communication between the servers
 . the communication between the source and target servers happens via REST calls
 . the extension needs to be installed on both source and target servers
 
+Installation
+------------
+
+Read the INSTALL file for both requirements and instructions
+
 FAQ
 ---
 . q: can a feed be defined on a subtree of already existing content? a: not yet. It is recommended to have no content for either source or target feed sources
