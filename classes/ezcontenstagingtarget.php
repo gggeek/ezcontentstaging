@@ -59,12 +59,12 @@ class eZContentStagingTarget
     static function fetchList()
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );
+        $out = array();
         foreach( $ini->variable( 'GeneralSettings', 'TargetList' ) as $id )
         {
             $out[$id] = new eZContentStagingTarget( array_merge( $ini->group( 'Target_' . $id ), array( 'id' => $id ) ) );
         }
         return $out;
-
     }
 
     static function fetch( $id )
