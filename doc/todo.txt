@@ -152,3 +152,4 @@ Phase 3:
 . state sync event: it would be nice if changing one state would not need for other states definitions to be present on target server
 . add support for custom tags (in xmltext datatype) that store node/object id
 . add a new view listing nodes to be sent in hierarchical fashion (content tree)
+. add a php stream wrapper to allow easy access via php (non REST) to the API
