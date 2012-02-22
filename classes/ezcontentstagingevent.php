@@ -302,14 +302,16 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $custom_conds .= ' AND ' . self::languagesSQLFilter( $language );
         }
+        $fields = self::definition();
+        $fields = array_keys( $fields['fields'] );
         return self::fetchObjectList( self::definition(),
                                       null,
                                       $conds,
                                       null,
                                       null,
                                       $asObject,
-                                      /// @todo oracle support: all fields in select list should be in group by
-                                      array( 'id' ),
+                                      // oracle support: all fields in select list should be in group by
+                                      $fields,
                                       null,
                                       array( 'ezcontentstaging_event_node' ),
                                       $custom_conds );
