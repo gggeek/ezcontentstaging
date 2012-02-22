@@ -5,7 +5,7 @@ CREATE TABLE ezcontentstaging_event (
   language_mask INTEGER, -- non null only for publishing events
   to_sync INTEGER NOT NULL, -- bit field indicating what to sync
   modified INTEGER NOT NULL, -- creation date of this item
-  data_text BLOB,
+  data_text CLOB,
   status INTEGER DEFAULT 0 NOT NULL, -- 0: to sync, 1: syncing, 2: suspended,
   sync_begin_date INTEGER
 );
