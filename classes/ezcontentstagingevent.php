@@ -297,23 +297,22 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $conds['target_id'] = $target_id;
         }
-        $custom_conds = ' AND ezcontentstaging_event_node.node_id = ' . (int)$nodeId . ' AND ezcontentstaging_event_node.event_id = id';
+        $custom_conds = ' AND id IN ( SELECT node_id FROM ezcontentstaging_event_node WHERE node_id = ' . (int)$nodeId . ' )';
         if ( $language != null )
         {
             $custom_conds .= ' AND ' . self::languagesSQLFilter( $language );
         }
-        $fields = self::definition();
-        $fields = array_keys( $fields['fields'] );
+        //$fields = self::definition();
+        //$fields = array_keys( $fields['fields'] );
         return self::fetchObjectList( self::definition(),
                                       null,
                                       $conds,
                                       null,
                                       null,
                                       $asObject,
-                                      // oracle support: all fields in select list should be in group by
-                                      $fields,
+                                      null, // $fields,
                                       null,
-                                      array( 'ezcontentstaging_event_node' ),
+                                      null, //array( 'ezcontentstaging_event_node' ),
                                       $custom_conds );
     }
 
@@ -375,7 +374,7 @@ class eZContentStagingEvent extends eZPersistentObject
         foreach( self::fetchObjectList( self::definition(),
                                         array( 'object_id' ),
                                         $conditions,
-                                        null,
+                                        array(),
                                         $limits,
                                         false,
                                         array( 'object_id' ),
