@@ -32,7 +32,8 @@ YUI( YUI3_config ).use( 'node', 'event', 'io-ez', function( Y )
             }
             else if ( data.already_rated  )
                 Y.all('#ezsr_has_rated_' + data.id).removeClass('hide');
-            //else alert('Invalid input variables, could not rate!'); */
+            //else alert('Invalid input variables, could not rate!');
+            */
         }
         else
         {
