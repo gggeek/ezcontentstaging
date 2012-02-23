@@ -31,10 +31,21 @@ Read the INSTALL file for both requirements and instructions
 
 FAQ
 ---
-. q: can a feed be defined on a subtree of already existing content? a: not yet. It is recommended to have no content for either source or target feed sources
-. q: can content sync happen immediately without intervention of the editor? a: not yet
-. q: can content sync happen via a cronjob? a: yes
-. q: are all datatypes supported? a: the extension support all datatypes from eZ Publish, plus datatypes that support fully toString(), fromString() calls and do not rely on object_id/node_id or other database data
-. q: are custom tags for rich text supported? a: all tags that do not rely on object_id/node_id or other database data should be fine
-. q: is the REST protocol used for communication between the two servers documented? a: yes. It is in fact a "preview" version of the protocol that will be the official next version of the ezrest api
-. q: how does the extension cope with synchronization of "dictionary" data, such as sections, object states, content class definitin? a: so far, this is left to manual synchronization
+. q: can a feed be defined on a subtree of already existing content?
+  a: not yet. It is recommended to have no content for either source or target feed sources when creating the feed
+. q: can content sync happen immediately without intervention of the editor?
+  a: not yet
+. q: can content sync happen via a cronjob?
+  a: yes
+. q: are all datatypes supported?
+  a: the extension support all datatypes from eZ Publish, plus datatypes that support fully toString(), fromString() calls and do not rely on object_id/node_id or other database data
+. q: are custom tags for rich text supported?
+  a: all tags that do not rely on object_id/node_id or other database data should be fine
+. q: is the REST protocol used for communication between the two servers documented?
+  a: yes. It is in fact a "preview" version of the protocol that will be the official next version of the ezrest api
+. q: how does the extension cope with synchronization of "dictionary" data, such as sections, object states, content class definitin?
+  a: so far, this is left to manual synchronization
+. q: can I use the REST API in this extension independently of a staging context, and have AJAX clients use it to edit content on a single eZ Publish server?
+  a: yes. This has not been extensively tested, but it should work. The main hurdle is setting up teh REST layer to use the current eZ session cookie for auth purposes;
+  to this end you should set in rest.ini AuthenticationStyle=ezpRestSessionAuthStyle.
+  NB: doing so means that the "anonymous user" can access all methods available via the REST api - take care if there are some such methods that do not enforce proper policy checking
