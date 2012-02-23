@@ -154,3 +154,4 @@ Phase 3:
 . add a new view listing nodes to be sent in hierarchical fashion (content tree)
 . add a php stream wrapper to allow easy access via php (non REST) to the API
 . add rest routes to access single content fields
+. realign the REST API with the final version of the eZ REST API v.2
