@@ -114,7 +114,7 @@ Phase 1.5 (move to phase 2 ?)
 
 Phase 2:
 
-. rest server: fix bug: when using basic auth, eZ sends 2 session cookies
+. rest server: fix bug: when using basic auth, eZ sends 2 session cookies (see bug #18752)
 . source server: allow sync items that fail 3 consecutive sync attempts to be set to "suspended" state
 . source server: allow finer grained permissions (sync per feed, also sync only events that you have generated)
 . source server: cronjob that passes and removes/resets sync items that have been in sync status for too long
