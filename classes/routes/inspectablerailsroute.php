@@ -1,10 +1,12 @@
 <?php
 /**
- *
- *
- * @version $Id$
- * @copyright 2012
- */
+* @package ezcontentstaging
+*
+* @author
+* @copyright
+* @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+*/
+
 
 class ezpRestInspectableRailsRoute extends ezpMvcRailsRoute implements ezpRestInspectableRoute
 {

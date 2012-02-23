@@ -2,9 +2,7 @@
 /**
 * Description
 *
-* @package
-*
-* @version $Id$;
+* @package ezcontentstaging
 *
 * @author
 * @copyright
