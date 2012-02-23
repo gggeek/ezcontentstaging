@@ -317,6 +317,32 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                 $this->getVersionNumber()
             ),
 
+            // user management (implemented here waiting for REST API to catch up)
+
+            'userCreateSession' => new ezpRestInspectableVersionedRoute(
+                new ezpRestInspectableRailsRoute(
+                    '/user/sessions',
+                    'eZContentStagingRestUserController',
+                    'createSession',
+                    array(),
+                    'http-post'
+                ),
+                $this->getVersionNumber()
+            ),
+
+            'userDeleteSession' => new ezpRestInspectableVersionedRoute(
+                new ezpRestInspectableRailsRoute(
+                    '/user/sessions/:sessionId',
+                    'eZContentStagingRestUserController',
+                    'deleteSession',
+                    array(),
+                    'http-delete'
+                ),
+                $this->getVersionNumber()
+            ),
+
+            // helper calls
+
             'apiVersionList' => new ezpRestInspectableVersionedRoute(
                 new ezpRestInspectableRailsRoute(
                     '/api/versions',
