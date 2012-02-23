@@ -317,6 +317,8 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                 $this->getVersionNumber()
             ),
 
+            // helper calls
+
             'apiVersionList' => new ezpRestInspectableVersionedRoute(
                 new ezpRestInspectableRailsRoute(
                     '/api/versions',
