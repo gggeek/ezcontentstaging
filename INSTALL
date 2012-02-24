@@ -66,7 +66,7 @@ Source server:
     Name=<A descriptive name for this export feed>
 	TransportClass=eZRestApiGGWSClientStagingTransport
     RemoteIdGeneratorClass=eZContentStagingLocalAsRemoteIdGenerator
-    Server=<server_feedname> note: this can be the same or different from feedname, but haas to be the same as used in wsproviders.ini
+    Server=<server_feedname> note: this can be the same or different from feedname, but has to be the same as used in wsproviders.ini
     Subtrees[]=<local_root_node_id>
     RemoteSubtrees[]=<target_root_node_id>
 
