@@ -66,7 +66,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
         $out = array();
         foreach( array_unique( $versions ) as $version )
         {
-            $out = array( 'version' => $version, 'href' => str_replace( '/:version', "/$version", $patternprefix ) );
+            $out[] = array( 'version' => $version, 'href' => str_replace( '/:version', "/$version", $patternprefix ) );
         }
 
         $result = new ezpRestMvcResult();
