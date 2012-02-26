@@ -17,7 +17,7 @@ class ezpRestInspectableVersionedRoute extends ezpRestVersionedRoute implements 
     /// @todo check that base route is inspectable
     public function getPattern()
     {
-        return 'v' . $this->version . '/' . $this->route->getPattern();
+        return 'v' . $this->version . '/' . ltrim( $this->route->getPattern(), '/' );
     }
 
     /// @todo check that base route is inspectable
