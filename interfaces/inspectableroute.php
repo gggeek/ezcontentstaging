@@ -27,7 +27,9 @@ interface ezpRestInspectableRoute
     /// returns human-readable docs
     public function getDescription();
 
+    public function getControllerClassName();
 
+    public function getAction();
 }
 
 ?>

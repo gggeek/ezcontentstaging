@@ -29,16 +29,48 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
 
         $provider = $this->getProviderClass();
         $provider = new $provider();
+        // use a dynamic way to build the href to "versions/x" by finding the route that maps to eZContentStagingRestProviderAnalyzer::doDescribeVersion
+        $versionDescribeRoute = false;
         foreach( $provider->getRoutes() as $route )
         {
             if ( is_a( $route, 'ezpRestInspectableRoute' ) )
             {
                 $versions[] = $route->getVersion();
+                if ( $route->getControllerClassName() == 'eZContentStagingRestProviderAnalyzer' &&
+                    $route->getAction() == 'describeVersion' )
+                {
+                    $versionDescribeRoute = $route;
+                }
             }
         }
 
+        $patternprefix = '';
+        if ( $versionDescribeRoute )
+        {
+            // Work around the fact that a route does not know which provider it has
+            // been bound to
+            $providerClass = $this->getProviderClass();
+
+            $ini = eZINI::instance( 'rest.ini' );
+            foreach( $ini->variable( 'ApiProvider', 'ProviderClass' ) as $prefix => $class )
+            {
+                if ( $class == $providerClass )
+                {
+                    $patternprefix = $prefix . '/';
+                    break;
+                }
+            }
+            $patternprefix .= $versionDescribeRoute->getPattern();
+        }
+
+        $out = array();
+        foreach( array_unique( $versions ) as $version )
+        {
+            $out = array( 'version' => $version, 'href' => str_replace( '/:version', "/$version", $patternprefix ) );
+        }
+
         $result = new ezpRestMvcResult();
-        $result->variables = array_unique( $versions );
+        $result->variables = $out;
         return $result;
     }
 

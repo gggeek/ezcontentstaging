@@ -32,6 +32,17 @@ class ezpRestInspectableRailsRoute extends ezpMvcRailsRoute implements ezpRestIn
         return str_replace( 'http-', '', $this->protocol );
     }
 
+    public function getControllerClassName()
+    {
+        return $this->controllerClassName;
+    }
+
+    /// @todo check that base route is inspectable
+    public function getAction()
+    {
+        return $this->action;
+    }
+
     /// @todo use php introspection + phpdoc parsing
     public function getDescription()
     {

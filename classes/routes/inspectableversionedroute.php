@@ -31,6 +31,18 @@ class ezpRestInspectableVersionedRoute extends ezpRestVersionedRoute implements 
     {
         return $this->route->getDescription();
     }
+
+    /// @todo check that base route is inspectable
+    public function getControllerClassName()
+    {
+        return $this->route->getControllerClassName();
+    }
+
+    /// @todo check that base route is inspectable
+    public function getAction()
+    {
+        return $this->route->getAction();
+    }
 }
 
 ?>
