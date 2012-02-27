@@ -39,7 +39,7 @@ class eZContentStagingContent extends contentStagingBase
         $this->ownerId = (int)$object->attribute( 'owner_id' );
         $this->sectionId = (int)$object->attribute( 'section_id' );
 
-        switch( $object->attribute( 'status' ) )
+        switch ( $object->attribute( 'status' ) )
         {
             case eZContentObject::STATUS_DRAFT:
                 $this->state = 'DRAFT';

@@ -36,7 +36,7 @@ class eZContentStagingField
         $this->fieldDef = $attribute->attribute( 'data_type_string' );
         $this->language = $locale;
 
-        switch( $this->fieldDef )
+        switch ( $this->fieldDef )
         {
             case 'ezauthor':
                 $ezauthor = $attribute->attribute( 'content' );
@@ -481,7 +481,7 @@ class eZContentStagingField
         $ok = true;
 
         $type = $attribute->attribute( 'data_type_string' );
-        switch( $type )
+        switch ( $type )
         {
             case 'ezauthor':
                 $author = new eZAuthor( );

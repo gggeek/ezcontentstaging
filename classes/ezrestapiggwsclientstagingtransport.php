@@ -46,7 +46,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     protected function syncEvent( $event )
     {
         $data = $event->getData();
-        switch( $event->attribute( 'to_sync' ) )
+        switch ( $event->attribute( 'to_sync' ) )
         {
             case eZContentStagingEvent::ACTION_ADDLOCATION:
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
