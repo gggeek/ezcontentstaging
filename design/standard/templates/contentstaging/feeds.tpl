@@ -45,6 +45,7 @@
         <th>{'Events'|i18n('ezcontentstaging')}</th>
         <th>{'Sources'|i18n('ezcontentstaging')}</th>
         <th>{'Description'|i18n('ezcontentstaging')}</th>
+        <th>{'Status'|i18n('ezcontentstaging')}</th>
     </tr>
     {foreach $feeds as $id => $feed sequence array( 'bglight', 'bgdark' ) as $style}
         {set $events_count = fetch( 'contentstaging', 'sync_events_count', hash( 'target_id', $id ) )}
@@ -67,6 +68,7 @@
                 {/foreach}
             </td>
             <td>{$feed.description|wash()}</td>
+            <td><a href={concat('contentstaging/checkfeed/', $id)|ezurl()}>{'check'|i18n('ezcontentsatging')}</a></td>
         </tr>
     {/foreach}
 </table>

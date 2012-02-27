@@ -150,7 +150,7 @@ if ( $targetId == null )
 else
 {
     /// @todo use the name of the feed, not its id
-    $Result['path'][] = array( 'text' => ezpI18n::tr( 'ezcontentstaging', "Feed: $targetId" ),
+    $Result['path'][] = array( 'text' => ezpI18n::tr( 'ezcontentstaging', "Feed" ) . ': ' . $targetId,
                                'url' => 'contentstaging/feed/' . $targetId );
 }
 
