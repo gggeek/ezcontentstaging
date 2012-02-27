@@ -38,9 +38,9 @@ class eZBaseStagingTransport
     );
 
     /**
-    * Decodes the bitmask of possible differences to an aray (easier to manipulate in templates)
-    * @return array code => description
-    */
+     * Decodes the bitmask of possible differences to an aray (easier to manipulate in templates)
+     * @return array code => description
+     */
     static public function diffmask2array( $bitmask )
     {
         $diffs = array();

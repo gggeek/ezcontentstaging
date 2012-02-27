@@ -208,8 +208,8 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Returns a stings, with a comma separated list of the changes happened with this event
-    */
+     * Returns a stings, with a comma separated list of the changes happened with this event
+     */
     function getSyncString()
     {
         $out = array();
@@ -227,9 +227,9 @@ class eZContentStagingEvent extends eZPersistentObject
     // *** fetches ***
 
     /**
-    * fetch a specific sync event
-    * @return eZContentStagingEvent or null
-    */
+     * fetch a specific sync event
+     * @return eZContentStagingEvent or null
+     */
     static function fetch( $id, $asObject = true )
     {
         return self::fetchObject( self::definition(),
@@ -272,11 +272,11 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Fetch all pending events for a given node, optionally filtered by feed.
-    * 2nd param is there for optimal resource usage
-    * @return array of eZContentStagingEvent
-    * @todo refactor: asObject as last param
-    */
+     * Fetch all pending events for a given node, optionally filtered by feed.
+     * 2nd param is there for optimal resource usage
+     * @return array of eZContentStagingEvent
+     * @todo refactor: asObject as last param
+     */
     static function fetchByNode( $nodeId, $objectId=null, $target_id=null, $asObject=true, $language=null )
     {
         if ( $objectId == null )
@@ -314,10 +314,10 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Fetch all pending events for a given node, return them grouped in an
-    * array where the key is the feed id
-    * @return array of array of eZContentStagingEvent
-    */
+     * Fetch all pending events for a given node, return them grouped in an
+     * array where the key is the feed id
+     * @return array of array of eZContentStagingEvent
+     */
     static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null, $language=null )
     {
         $targets = array();
@@ -330,8 +330,8 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * @todo refactor: asObject as last param
-    */
+     * @todo refactor: asObject as last param
+     */
     static function fetchListGroupedByObject( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
     {
         $conditions = array();
@@ -395,11 +395,11 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Fetch all events that need to be synced to a given feed (or all of them)
-    * @return array of eZContentStagingEvent
-    *
-    * @todo refactor: asObject as last param
-    */
+     * Fetch all events that need to be synced to a given feed (or all of them)
+     * @return array of eZContentStagingEvent
+     *
+     * @todo refactor: asObject as last param
+     */
     static function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null, $status=null )
     {
         $conditions = array();
@@ -446,13 +446,13 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
 
-	/**
-    * Fetch all items that need to be synced to a given server (or all of them)
-	* en send back only one event per ObjectId and event category
-    * @return array of eZContentStagingEvent
-    *
-    * @todo refactor: asObject as last param
-    * /
+    /**
+     * Fetch all items that need to be synced to a given server (or all of them)
+     * en send back only one event per ObjectId and event category
+     * @return array of eZContentStagingEvent
+     *
+     * @todo refactor: asObject as last param
+     * /
     static function fetchSumUpList( $target_id=false, $asObject = true, $offset = false, $limit = false )
     {
         $conditions = array();
@@ -487,9 +487,9 @@ class eZContentStagingEvent extends eZPersistentObject
     }*/
 
     /**
-    * Returns count of events to sync to a given server
-    * @return integer
-    */
+     * Returns count of events to sync to a given server
+     * @return integer
+     */
     static function fetchListCount( $target_id=null, $language=null, $status=null )
     {
         $conditions = array();
@@ -541,11 +541,11 @@ class eZContentStagingEvent extends eZPersistentObject
     // *** other actions ***
 
     /**
-    * Adds an event to the queue.
-    * @return integer id of the event created or null if event was filtered out
-    * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
-    *       do not add show but remove hide, etc...
-    */
+     * Adds an event to the queue.
+     * @return integer id of the event created or null if event was filtered out
+     * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
+     *       do not add show but remove hide, etc...
+     */
     static function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array(), $langMask=null )
     {
         $event = new eZContentStagingEvent( array(
@@ -595,14 +595,14 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Syncs events to their respsective targets, then deletes them.
-    * If events are already in syncing status, they are skipped.
-    * If syncing succeeds, they are deleted, otherwise not
-    * @return array of integer associative array, with event id as key. Values: 0 on sucess
-    * @todo after 3 consecutive errors, suspend sync?
-    * @todo figure out if we can be faster by batching events in calls to $transport::syncEvents
-    *       while still maintaining correct ordering
-    */
+     * Syncs events to their respsective targets, then deletes them.
+     * If events are already in syncing status, they are skipped.
+     * If syncing succeeds, they are deleted, otherwise not
+     * @return array of integer associative array, with event id as key. Values: 0 on sucess
+     * @todo after 3 consecutive errors, suspend sync?
+     * @todo figure out if we can be faster by batching events in calls to $transport::syncEvents
+     *       while still maintaining correct ordering
+     */
     static function syncEvents( array $events, $iterator=null )
     {
         $results = array();
@@ -701,11 +701,11 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Removes a list of events given their ids
-    * @return integer number of deleted events
-    *
-    * @todo return real number of deleted events - this is not really atomic...
-    */
+     * Removes a list of events given their ids
+     * @return integer number of deleted events
+     *
+     * @todo return real number of deleted events - this is not really atomic...
+     */
     static function removeEvents( $eventIDList, $also_syncing=false )
     {
         $db = eZDB::instance();
@@ -759,12 +759,12 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-    * Removes useless events from array if any atre found
-    * cases:
-    * . a hide+unhide chain (event with other events in the middle)
-    * . a setsection chain with no node add/remove/delete/swap in the middle
-    * @todo ...
-    */
+     * Removes useless events from array if any atre found
+     * cases:
+     * . a hide+unhide chain (event with other events in the middle)
+     * . a setsection chain with no node add/remove/delete/swap in the middle
+     * @todo ...
+     */
     static protected function coalesceEvents( array &$events, array &$results )
     {
 
@@ -777,10 +777,10 @@ class eZContentStagingEvent extends eZPersistentObject
     }*/
 
     /**
-    * Helper function - returns the list of ndoes an obj relates to, saving on resources
-    * Funny that something similar not implemented in eZContentObject...
-    * @return array of string node_id => path_string
-    */
+     * Helper function - returns the list of ndoes an obj relates to, saving on resources
+     * Funny that something similar not implemented in eZContentObject...
+     * @return array of string node_id => path_string
+     */
     static function assignedNodeIds( $objectId )
     {
         $db = eZDB::instance();

@@ -13,20 +13,20 @@ interface eZContentStagingTransport
     function __construct( eZContentStagingTarget $target );
 
     /**
-    * This method takes an array of events becasue some transports might have
-    * optimized ways of sending them in a single call instead of making one call
-    * per event
-    *
-    * @param array of eZContentStagingEvent $events
-    * @return array values: 0 on sucess, a string (or other int?) on error
-    */
+     * This method takes an array of events becasue some transports might have
+     * optimized ways of sending them in a single call instead of making one call
+     * per event
+     *
+     * @param array of eZContentStagingEvent $events
+     * @return array values: 0 on sucess, a string (or other int?) on error
+     */
     function syncEvents( array $events );
 
     /**
-    * Checks a local node vs. a remote one and returns a bitmask of differences
-    * @see eZBaseStagingTransport for codes
-    * @return integer
-    */
+     * Checks a local node vs. a remote one and returns a bitmask of differences
+     * @see eZBaseStagingTransport for codes
+     * @return integer
+     */
     function checkNode( eZContentObjectTreeNode $node );
 
     /**
@@ -37,9 +37,9 @@ interface eZContentStagingTransport
     function checkObject( eZContentObject $object );
 
     /**
-    * Checks if configuration (eg ini parameters) is ok for this transport
-    * @return array of string with error messages
-    */
+     * Checks if configuration (eg ini parameters) is ok for this transport
+     * @return array of string with error messages
+     */
     function checkConfiguration();
 
     /**

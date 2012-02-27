@@ -17,11 +17,11 @@ class eZStageDeleteType extends eZWorkflowEventType
     }
 
     /**
-    * @todo test when this event gets triggered and when removelocation gets triggered instead
-    * @todo test that it is correct: we get a node_id, we do not check for notification all feeds that relate
-    *       to all nodes of the object, but only to current node. We assume thus
-    *       a single node is left when this is triggered?
-    */
+     * @todo test when this event gets triggered and when removelocation gets triggered instead
+     * @todo test that it is correct: we get a node_id, we do not check for notification all feeds that relate
+     *       to all nodes of the object, but only to current node. We assume thus
+     *       a single node is left when this is triggered?
+     */
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );

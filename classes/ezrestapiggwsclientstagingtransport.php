@@ -39,10 +39,10 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * Excutes a single event synchronization
-    * @throws exception on error
-    * @todo fix api: either throw exceptions OR return values != 0 on errors
-    */
+     * Excutes a single event synchronization
+     * @throws exception on error
+     * @todo fix api: either throw exceptions OR return values != 0 on errors
+     */
     protected function syncEvent( $event )
     {
         $data = $event->getData();
@@ -509,8 +509,8 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * A helper function used to interact with error responses from ggws client
-    */
+     * A helper function used to interact with error responses from ggws client
+     */
     protected static function getHTTPErrorCode( exception $e )
     {
         if ( $e->getCode() != ggWebservicesClient::ERROR_NON_200_RESPONSE )
@@ -525,12 +525,12 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * Wrapper for the REST calls.
-    * Throws an exception on any protocol error
-    *
-    * @return mixed
-    * @todo implement result checking and error code parsing ...
-    */
+     * Wrapper for the REST calls.
+     * Throws an exception on any protocol error
+     *
+     * @return mixed
+     * @todo implement result checking and error code parsing ...
+     */
     protected function restCall( $method, $url, $payload=array() )
     {
         if ( !class_exists( 'ggeZWebservicesClient' ) )
@@ -561,15 +561,15 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * Encodes an object's version (single language) to be sent to the remote server
-    *
-    * @todo move fully to the 'content' external model class ???
-    *
-    * @todo miss creator_id for updates
-    * @todo owner_id for 1st version should be remote id, not plain obj id
-    * @todo miss object state info (both create and update)
-    *
-    */
+     * Encodes an object's version (single language) to be sent to the remote server
+     *
+     * @todo move fully to the 'content' external model class ???
+     *
+     * @todo miss creator_id for updates
+     * @todo owner_id for 1st version should be remote id, not plain obj id
+     * @todo miss object state info (both create and update)
+     *
+     */
     protected function encodeObject( $objectID, $versionNr, $locale, $isupdate=false, $RemoteObjRemoteID=false, $syncdate=false )
     {
         $object = eZContentObject::fetch( $objectID );
@@ -655,8 +655,8 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * @todo !important implement factory pattern - store $generator for speed
-    */
+     * @todo !important implement factory pattern - store $generator for speed
+     */
     protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
     {
         $generator = $this->getRemoteIdGenerator();
@@ -719,9 +719,9 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * These tests should be pushed down into ggeZWebservicesClient, but while we
-    * wait for it, we do them here
-    */
+     * These tests should be pushed down into ggeZWebservicesClient, but while we
+     * wait for it, we do them here
+     */
     function checkConfiguration()
     {
         $out = array();
@@ -755,8 +755,8 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     /**
-    * NB: what if later on we add API version numbers like 1.1 or 1.0.1?
-    */
+     * NB: what if later on we add API version numbers like 1.1 or 1.0.1?
+     */
     function checkConnection()
     {
         $out = array();

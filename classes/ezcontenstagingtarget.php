@@ -43,10 +43,10 @@ class eZContentStagingTarget
     }
 
     /**
-    * Returns list of target hosts defined in the system
-    *
-    * @return array
-    */
+     * Returns list of target hosts defined in the system
+     *
+     * @return array
+     */
     /*static function fetchIDList()
     {
         $ini = ezini( 'contentstagingsource.ini' );
@@ -76,10 +76,10 @@ class eZContentStagingTarget
     }
 
     /**
-    * Returns list of targets that should be notified of a given node
-    * (assuming that there are events for that node)
-    * @param int|eZContentObjectTreeNode $node
-    */
+     * Returns list of targets that should be notified of a given node
+     * (assuming that there are events for that node)
+     * @param int|eZContentObjectTreeNode $node
+     */
     static function fetchByNode( $node )
     {
         if ( is_numeric( $node ) )
@@ -103,8 +103,8 @@ class eZContentStagingTarget
     }
 
     /**
-    * @return boolean
-    */
+     * @return boolean
+     */
     function includesNode( eZContentObjectTreeNode $node )
     {
         $nodepath = $node->attribute( 'path_string' );
@@ -134,10 +134,10 @@ class eZContentStagingTarget
     }
 
     /**
-    * Given an array of nodes, returns the list of those which are part of the feed
-    * @param array $nodepathsarray node_id => node_path
-    * @return array fileterd, in same format: node_id => node_path
-    */
+     * Given an array of nodes, returns the list of those which are part of the feed
+     * @param array $nodepathsarray node_id => node_path
+     * @return array fileterd, in same format: node_id => node_path
+     */
     function includedNodesByPath( $nodepathsarray )
     {
         $out = array();
@@ -166,11 +166,11 @@ class eZContentStagingTarget
     }
 
     /**
-    * Initializes a target by creating the necessary events and optionally syncing them:
-    * - for all top level nodes, we need to sync in remote server the object-remote-id
-    *   and node-remote-id
-    * @return array for every source node, 0 for ok, or an error code
-    */
+     * Initializes a target by creating the necessary events and optionally syncing them:
+     * - for all top level nodes, we need to sync in remote server the object-remote-id
+     *   and node-remote-id
+     * @return array for every source node, 0 for ok, or an error code
+     */
     function initializeRootItems( $doexecute=true )
     {
         $out = array();
@@ -235,12 +235,12 @@ class eZContentStagingTarget
     }
 
     /**
-    * Checks sync status for all nodes in the feed
-    * @param callable $iterator
-    * @return array key = noode_id, value = integer
-    *
-    * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
-    */
+     * Checks sync status for all nodes in the feed
+     * @param callable $iterator
+     * @return array key = noode_id, value = integer
+     *
+     * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
+     */
     function checkTarget( $iterator=null )
     {
         $out = array();
@@ -274,13 +274,13 @@ class eZContentStagingTarget
     }
 
     /**
-    * @param callable $iterator
-    * @return array
-    * @todo implement a 'checked object' cache to avoid checaking same obj many times
-    * @todo clear object cache after every N objects
-    * @todo prevent loops
-    * @todo smarter checking: if node x is not there all its children can not be there either
-    */
+     * @param callable $iterator
+     * @return array
+     * @todo implement a 'checked object' cache to avoid checaking same obj many times
+     * @todo clear object cache after every N objects
+     * @todo prevent loops
+     * @todo smarter checking: if node x is not there all its children can not be there either
+     */
     function checkNode( $node, $recursive=true, $iterator=false, $transport=false )
     {
         //static $testedobjects;
@@ -342,9 +342,9 @@ class eZContentStagingTarget
     }
 
     /**
-    * Checks if all configuration for the target is fine
-    * @return array of string (error messages)
-    */
+     * Checks if all configuration for the target is fine
+     * @return array of string (error messages)
+     */
     static function checkConfiguration( $targetId )
     {
         $out = array();
@@ -407,9 +407,9 @@ class eZContentStagingTarget
     }
 
     /**
-    * Checks if the transport layer can connect to the target server
-    * @return array of string (error messages)
-    */
+     * Checks if the transport layer can connect to the target server
+     * @return array of string (error messages)
+     */
     function checkConnection()
     {
         $transport = $this->transport();

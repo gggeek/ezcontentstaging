@@ -17,8 +17,8 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
     }
 
     /**
-    * An event that is set purely to the object, ie. it affects all its nodes
-    */
+     * An event that is set purely to the object, ie. it affects all its nodes
+     */
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );

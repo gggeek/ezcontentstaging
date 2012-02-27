@@ -18,9 +18,9 @@ class eZContentStagingLocalAsRemoteIdGenerator implements eZContentStagingRemote
     }
 
     /**
-    * Uses local id on source as remote id on target server, with a prefix
-    * @todo verify that remote id built is not longer than 32 chars
-    */
+     * Uses local id on source as remote id on target server, with a prefix
+     * @todo verify that remote id built is not longer than 32 chars
+     */
     function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
     {
         return "ezcs:" . $this->target . ':' . $sourceId;

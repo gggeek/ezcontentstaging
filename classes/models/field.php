@@ -20,17 +20,17 @@ class eZContentStagingField
     public $language;
 
     /**
-    * The constructor is where most of the magic happens.
-    * It is called for encoding fields.
-    * NB: if passed a $ridGenerator, all local obj/node ids are substituted with remote ones, otherwise not
-    *
-    * @param eZContentStagingRemoteIdGenerator $ridGenerator (or null)
-    * @see serializeContentObjectAttribute and toString in different datatypes
-    *      for datatypes that need special treatment
-    * @see http://issues.ez.no/IssueList.php?Search=tostring&SearchIn=1
-    * @todo implement this conversion within the datatypes themselves:
-    *       it is a much better idea... (check datatypes that support a fromHash (fromJson?) method, use it)
-    */
+     * The constructor is where most of the magic happens.
+     * It is called for encoding fields.
+     * NB: if passed a $ridGenerator, all local obj/node ids are substituted with remote ones, otherwise not
+     *
+     * @param eZContentStagingRemoteIdGenerator $ridGenerator (or null)
+     * @see serializeContentObjectAttribute and toString in different datatypes
+     *      for datatypes that need special treatment
+     * @see http://issues.ez.no/IssueList.php?Search=tostring&SearchIn=1
+     * @todo implement this conversion within the datatypes themselves:
+     *       it is a much better idea... (check datatypes that support a fromHash (fromJson?) method, use it)
+     */
     function __construct( eZContentObjectAttribute $attribute, $locale, $ridGenerator )
     {
         $this->fieldDef = $attribute->attribute( 'data_type_string' );
@@ -462,20 +462,20 @@ class eZContentStagingField
     }
 
     /**
-    * NB: we assume that someone else has checked for proper type matching between attr. and value
-    * This method supports receiving a null value to clear the current attribute
-    * (eg. when used in updating an object to version 2, removing the url from
-    * an ezurl attribute or the link from an ezobjectrelation attribute)
-    *
-    * @todo implement all missing validation that does not happen when we go via fromString...
-    * @todo decide: shall we throw an exception if data does not validate or just emit a warning?
-    * @todo check datatypes that support a fromHash method, use it instead of hard-coded conversion here
-    *       (but the name of that method should not exist yet anywhere in the wild for extensions...)
-    *
-    * @see eZDataType::unserializeContentObjectAttribute
-    * @see eZDataType::fromString
-    * @see http://issues.ez.no/IssueList.php?Search=fromstring
-    */
+     * NB: we assume that someone else has checked for proper type matching between attr. and value
+     * This method supports receiving a null value to clear the current attribute
+     * (eg. when used in updating an object to version 2, removing the url from
+     * an ezurl attribute or the link from an ezobjectrelation attribute)
+     *
+     * @todo implement all missing validation that does not happen when we go via fromString...
+     * @todo decide: shall we throw an exception if data does not validate or just emit a warning?
+     * @todo check datatypes that support a fromHash method, use it instead of hard-coded conversion here
+     *       (but the name of that method should not exist yet anywhere in the wild for extensions...)
+     *
+     * @see eZDataType::unserializeContentObjectAttribute
+     * @see eZDataType::fromString
+     * @see http://issues.ez.no/IssueList.php?Search=fromstring
+     */
     static function decodeValue( $attribute, $value )
     {
         $ok = true;
@@ -1089,8 +1089,8 @@ class eZContentStagingField
     }
 
     /**
-    * @param array $items array of array
-    */
+     * @param array $items array of array
+     */
     protected static function transformBlockItemsToRemote( $items, $ridGenerator )
     {
         $out = array();

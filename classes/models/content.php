@@ -79,11 +79,11 @@ class eZContentStagingContent extends contentStagingBase
     }
 
     /**
-    * Updates the $object with the provided fields in the request - ie. it creates a new version
-    *
-    * @param eZContentObject $object
-    * @return eZContentObject|string
-    */
+     * Updates the $object with the provided fields in the request - ie. it creates a new version
+     *
+     * @param eZContentObject $object
+     * @return eZContentObject|string
+     */
     static function updateContent( eZContentObject $object, $input )
     {
         $db = eZDB::instance();
@@ -291,9 +291,9 @@ class eZContentStagingContent extends contentStagingBase
     }
 
     /**
-    * @return int 0 on sucess
-    * @todo use exceptions / return more meaningful errors
-    */
+     * @return int 0 on sucess
+     * @todo use exceptions / return more meaningful errors
+     */
     static function publishVersion( eZContentObject $object, eZContentObjectVersion $version )
     {
         // we assume that this operation always exists ;-)
@@ -480,8 +480,8 @@ class eZContentStagingContent extends contentStagingBase
     }
 
     /**
-    * @todo
-    */
+     * @todo
+     */
     static function updateStates( eZContentObject $object, $states )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
@@ -614,10 +614,10 @@ class eZContentStagingContent extends contentStagingBase
     }
 
     /**
-    * @todo return an ok/ko value
-    * @todo add a try/catch block for transactions?
-    * @todo perms checking
-    */
+     * @todo return an ok/ko value
+     * @todo add a try/catch block for transactions?
+     * @todo perms checking
+     */
     static function removeTranslations( eZContentObject $object, $translations )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );

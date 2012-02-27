@@ -17,7 +17,7 @@ interface eZContentStagingFieldFilter
     function __construct( $target );
 
     /**
-    * @return bool true to allow attribute to go through, false if not
-    */
+     * @return bool true to allow attribute to go through, false if not
+     */
     public function accept( eZContentObjectAttribute $attribute );
 }

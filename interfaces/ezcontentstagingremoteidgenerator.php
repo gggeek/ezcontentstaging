@@ -17,9 +17,9 @@ interface eZContentStagingRemoteIdGenerator
     function __construct( $target );
 
     /**
-    * @return string
-    * @todo This interface is crappy. Let's receive an object instead, and get the
-    *       remote_id from it...
-    */
+     * @return string
+     * @todo This interface is crappy. Let's receive an object instead, and get the
+     *       remote_id from it...
+     */
     function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' );
 }

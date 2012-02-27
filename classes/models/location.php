@@ -260,9 +260,9 @@ class eZContentStagingLocation extends contentStagingBase
     }
 
     /**
-    * @todo return false on errors
-    * @todo add perms checking
-    */
+     * @todo return false on errors
+     * @todo add perms checking
+     */
     static function move( eZContentObjectTreeNode $node, eZContentObjectTreeNode $dest )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
@@ -290,9 +290,9 @@ class eZContentStagingLocation extends contentStagingBase
     }
 
     /**
-    * @param bool $totrash
-    * @todo add perms checking
-    */
+     * @param bool $totrash
+     * @todo add perms checking
+     */
     static function remove( eZContentObjectTreeNode $node, $moveToTrash )
     {
         $removeList = array( $node->attribute( 'node_id' ) );
@@ -319,9 +319,9 @@ class eZContentStagingLocation extends contentStagingBase
     }
 
     /**
-    * Checks differences between the current node and another one
-    * @return integer a bitmask of differences
-    * /
+     * Checks differences between the current node and another one
+     * @return integer a bitmask of differences
+     * /
     function checkDifferences( array $otherNode )
     {
         $out = 0;

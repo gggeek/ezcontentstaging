@@ -289,8 +289,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
     }
 
     /**
-    * @todo move logic to model
-    */
+     * @todo move logic to model
+     */
     public function doPublishVersion()
     {
         $object = $this->object();

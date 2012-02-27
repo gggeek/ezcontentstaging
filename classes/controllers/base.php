@@ -10,9 +10,9 @@
 class eZContentStagingRestBaseController extends ezpRestMvcController
 {
     /**
-    * Returns an ezpRestMvcResult with the given http code and (error) message
-    * if $message is an object instead of a string, its class name is returned along with 500 internal error
-    */
+     * Returns an ezpRestMvcResult with the given http code and (error) message
+     * if $message is an object instead of a string, its class name is returned along with 500 internal error
+     */
     protected static function errorResult( $code, $message )
     {
         $result = new ezpRestMvcResult();

@@ -19,9 +19,9 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
     }
 
     /**
-    * Lists all existing versions of the given API by checking version nr for every route.
-    * @todo what about non-versioned routes?
-    */
+     * Lists all existing versions of the given API by checking version nr for every route.
+     * @todo what about non-versioned routes?
+     */
     public function doListVersions()
     {
         $versions = array();

@@ -19,9 +19,9 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
     }
 
     /**
-    * NB: definition of this trigger has changed slightly from 4.1.4 to 4.5:
-    *     parameters node_id, object_id and move_to_trash have been removed from call in content/action
-    */
+     * NB: definition of this trigger has changed slightly from 4.1.4 to 4.5:
+     *     parameters node_id, object_id and move_to_trash have been removed from call in content/action
+     */
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );

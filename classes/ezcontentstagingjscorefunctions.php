@@ -10,11 +10,11 @@
 class eZContentStagingJSCoreFunctions
 {
     /**
-    * @param array $args ( 0 => node_id,  1 => target_id, 2 => language (optional) )
-    * @return array
-    *
-    * @todo add i18n of returned messages
-    */
+     * @param array $args ( 0 => node_id,  1 => target_id, 2 => language (optional) )
+     * @return array
+     *
+     * @todo add i18n of returned messages
+     */
     static function syncnode( $args )
     {
         if ( count( $args ) < 1 )
