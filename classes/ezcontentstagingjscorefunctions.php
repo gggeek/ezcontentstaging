@@ -33,7 +33,7 @@ class eZContentStagingJSCoreFunctions
         {
             $syncErrors = array();
             $syncResults = array();
-            foreach( eZContentStagingEvent::syncEvents( $events ) as $id => $resultCode )
+            foreach ( eZContentStagingEvent::syncEvents( $events ) as $id => $resultCode )
             {
                 $event = $tosync[$id];
                 if ( $resultCode !== 0 )

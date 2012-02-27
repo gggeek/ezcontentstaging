@@ -322,7 +322,7 @@ class eZContentStagingEvent extends eZPersistentObject
     {
         $targets = array();
         $events = self::fetchByNode( $nodeId, $objectId, null, true, $language );
-        foreach( $events as $event )
+        foreach ( $events as $event )
         {
             $targets[$event->TargetID][] = $event;
         }
@@ -368,7 +368,7 @@ class eZContentStagingEvent extends eZPersistentObject
         }
         $out = array();
         $conds = $conditions;
-        foreach( self::fetchObjectList( self::definition(),
+        foreach ( self::fetchObjectList( self::definition(),
                                         array( 'object_id' ),
                                         $conditions,
                                         array(),
@@ -561,7 +561,7 @@ class eZContentStagingEvent extends eZPersistentObject
         $ini = eZINI::instance( 'contentstagingsource.ini' );
         if ( $ini->hasVariable( 'Target_' . $targetId, 'EventCreationFilters' ) )
         {
-            foreach( $ini->variable( 'Target_' . $targetId, 'EventCreationFilters' ) as $filterClass )
+            foreach ( $ini->variable( 'Target_' . $targetId, 'EventCreationFilters' ) as $filterClass )
             {
                 if ( !class_exists( $filterClass ) || !is_subclass_of( $filterClass, 'eZContentStagingEventCreationFilter' ) )
                 {
@@ -585,7 +585,7 @@ class eZContentStagingEvent extends eZPersistentObject
         $id = $event->ID;
         if ( count( $nodeIds ) )
         {
-            foreach( $nodeIds as $nodeId )
+            foreach ( $nodeIds as $nodeId )
             {
                 $db->query( "insert into ezcontentstaging_event_node( event_id, node_id ) values ( $id, $nodeId )" );
             }
@@ -609,7 +609,7 @@ class eZContentStagingEvent extends eZPersistentObject
 
         // optimize usage of transport objects: build only one per target
         $transports = array();
-        foreach( $events as $id => $event )
+        foreach ( $events as $id => $event )
         {
             $target = eZContentStagingTarget::fetch( $event->TargetID );
             if ( !$target )
@@ -639,7 +639,7 @@ class eZContentStagingEvent extends eZPersistentObject
         // coalescing events allows to send fewer of them
         self::coalesceEvents( $events, $results );
 
-        foreach( $events as $event )
+        foreach ( $events as $event )
         {
             if ( $event->Status != self::STATUS_TOSYNC )
             {
@@ -785,7 +785,7 @@ class eZContentStagingEvent extends eZPersistentObject
     {
         $db = eZDB::instance();
         $out = array();
-        foreach( $db->arrayQuery( "SELECT node_id, path_string from ezcontentobject_tree where contentobject_id = $objectId" ) as $row )
+        foreach ( $db->arrayQuery( "SELECT node_id, path_string from ezcontentobject_tree where contentobject_id = $objectId" ) as $row )
         {
             $out[$row['node_id']] = $row['path_string'];
         }

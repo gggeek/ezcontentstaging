@@ -502,7 +502,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         $nodes = $object->attribute( 'assigned_nodes' );
         $inputVariables = $this->getRequestVariables();
-        foreach( $nodes as $node )
+        foreach ( $nodes as $node )
         {
             if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
             {

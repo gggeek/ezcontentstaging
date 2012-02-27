@@ -55,7 +55,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
         /// @todo use eZPO fetchObject function instead of direct eZDB for better abstraction
         ///       maybe these are already in node cache anyway?
         $db = eZDB::instance();
-        foreach( $newParentNodes as $newParentNode )
+        foreach ( $newParentNodes as $newParentNode )
         {
             $sql = "SELECT node_id, remote_id, priority, sort_field, sort_order, path_string FROM ezcontentobject_tree where contentobject_id = '$objectID' AND parent_node_id  = " . $newParentNode->attribute( 'node_id' );
             $data = $db->arrayQuery( $sql );
@@ -78,7 +78,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
         $affectedNodes = array_keys( eZContentStagingEvent::assignedNodeIds( $objectID ) );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            foreach( $newNodesData as $newNodePathString => $newNodeData )
+            foreach ( $newNodesData as $newNodePathString => $newNodeData )
             {
                 if ( $target->includesNodeByPath( $newNodePathString ) )
                 {

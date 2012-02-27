@@ -46,7 +46,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
         $object = $node->attribute( 'object' );*/
 
         $removedNodeRemoteIDList = array();
-        foreach( $removedNodeList as $i => $removedNode )
+        foreach ( $removedNodeList as $i => $removedNode )
         {
             if ( is_numeric( $removedNode ) )
             {
@@ -76,7 +76,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
         $affectedNodes = array_diff( $objectNodes, $removedNodeList );
         foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
         {
-            foreach( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeData )
+            foreach ( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeData )
             {
                 if ( $target->includesNodeByPath( $removedNodePathString ) )
                 {

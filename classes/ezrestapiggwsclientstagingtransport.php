@@ -23,7 +23,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     function syncEvents( array $events )
     {
         $results = array();
-        foreach( $events as $event )
+        foreach ( $events as $event )
         {
             try
             {
@@ -592,7 +592,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
 
         $ridGenerator = $this->getRemoteIdGenerator();
         $fieldFilter = $this->getFieldFilter();
-        foreach( $version->contentObjectAttributes( $locale ) as $attribute )
+        foreach ( $version->contentObjectAttributes( $locale ) as $attribute )
         {
             // Note: we always need to send all attributes, even empty ones, as they
             // might have had values in the past, and we need to clear those values
@@ -776,7 +776,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
             else
             {
                 $found = false;
-                foreach( $resp as $version )
+                foreach ( $resp as $version )
                 {
                     if ( @$version['version'] == 1 )
                     {

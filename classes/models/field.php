@@ -41,7 +41,7 @@ class eZContentStagingField
             case 'ezauthor':
                 $ezauthor = $attribute->attribute( 'content' );
                 $authors = array();
-                foreach( $ezauthor->attribute( 'author_list' ) as $author )
+                foreach ( $ezauthor->attribute( 'author_list' ) as $author )
                 {
                     $authors[] = array(
                         'name' => $author['name'],
@@ -236,7 +236,7 @@ class eZContentStagingField
 
                 // 1. encode all (scalar) page attributes
                 $page = $attribute->attribute( 'content' );
-                foreach( $page->attributes() as $attrname )
+                foreach ( $page->attributes() as $attrname )
                 {
                     if ( $attrname != 'zones' )
                     {
@@ -245,11 +245,11 @@ class eZContentStagingField
                 }
 
                 // 2. encode zones
-                foreach( $page->attribute( 'zones' ) as $zone )
+                foreach ( $page->attribute( 'zones' ) as $zone )
                 {
                     // 2.1 all (scalar) attributes
                     $zoneArray = array();
-                    foreach( $zone->attributes() as $attrname )
+                    foreach ( $zone->attributes() as $attrname )
                     {
                         if ( $attrname != 'id' && $attrname != 'blocks' )
                         {
@@ -286,7 +286,7 @@ class eZContentStagingField
                                 }
 
                                 // 2.2.2 encode block params - transcoding any which is a node id
-                                foreach( $block->attributes() as $attrname )
+                                foreach ( $block->attributes() as $attrname )
                                 {
                                     if ( !in_array( $attrname, array( 'id', 'items', 'zone_id', 'waiting', 'valid', 'valid_nodes', 'archived', 'view_template', 'edit_template', 'last_valid_item' ) ) )
                                     {
@@ -642,7 +642,7 @@ class eZContentStagingField
 
             case 'ezobjectrelationlist':
                 $localIds = array();
-                foreach( $value as $key => $item )
+                foreach ( $value as $key => $item )
                 {
                     if ( strpos( 'remoteId:', $item ) == 0 )
                     {
@@ -684,7 +684,7 @@ class eZContentStagingField
 
                 $currObject = $attribute->attribute( 'object' );
                 $pageZones = $attribute->attribute( 'content' )->attribute( 'zones' );
-                foreach( $pageZones as $pageZone )
+                foreach ( $pageZones as $pageZone )
                 {
                     // 1: create missing blocks in the ezm_block table / update them if existing
                     $zoneBlocksIds = array();
@@ -750,12 +750,12 @@ class eZContentStagingField
                 // 2. then add missing items in the ezm_pool table
                 if ( isset( $value['block_items'] ) )
                 {
-                    foreach( $value['block_items'] as $blockId => $blockItems )
+                    foreach ( $value['block_items'] as $blockId => $blockItems )
                     {
                         // 2.1 preliminary step: check if this block is really part of the page zones
                         $zoneBlock = false;
                         $pageZone = false;
-                        foreach( $pageZones as $zone )
+                        foreach ( $pageZones as $zone )
                         {
                             $pageZone = $zone;
                             $blocks = $zone->attribute( 'blocks' );
@@ -781,9 +781,9 @@ class eZContentStagingField
 
                         // 2.3 then add new ones
                         $goodItems = array();
-                        foreach( $blockItems as $type => $typeArrary )
+                        foreach ( $blockItems as $type => $typeArrary )
                         {
-                            foreach( $typeArrary as $i => $blockItem )
+                            foreach ( $typeArrary as $i => $blockItem )
                             {
                                 $node = $object = false;
                                 if ( isset( $blockItem['remote_node_id'] ) && isset( $blockItem['remote_object_id'] ) )
@@ -1094,10 +1094,10 @@ class eZContentStagingField
     protected static function transformBlockItemsToRemote( $items, $ridGenerator )
     {
         $out = array();
-        foreach( $items as $i => $item )
+        foreach ( $items as $i => $item )
         {
             $array = array();
-            foreach( $item->attributes() as $key )
+            foreach ( $item->attributes() as $key )
             {
                 if ( $key != 'node_id' && $key != 'object_id' && $key != 'block_id' )
                 {

@@ -30,7 +30,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
         $provider = new $provider();
         // use a dynamic way to build the href to "versions/x" by finding the route that maps to eZContentStagingRestProviderAnalyzer::doDescribeVersion
         $versionDescribeRoute = false;
-        foreach( $provider->getRoutes() as $route )
+        foreach ( $provider->getRoutes() as $route )
         {
             if ( is_a( $route, 'ezpRestInspectableRoute' ) )
             {
@@ -51,7 +51,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
             $providerClass = $this->getProviderClass();
 
             $ini = eZINI::instance( 'rest.ini' );
-            foreach( $ini->variable( 'ApiProvider', 'ProviderClass' ) as $prefix => $class )
+            foreach ( $ini->variable( 'ApiProvider', 'ProviderClass' ) as $prefix => $class )
             {
                 if ( $class == $providerClass )
                 {
@@ -63,7 +63,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
         }
 
         $out = array();
-        foreach( array_unique( $versions ) as $version )
+        foreach ( array_unique( $versions ) as $version )
         {
             $out[] = array( 'version' => $version, 'href' => str_replace( '/:version', "/$version", $patternprefix ) );
         }
@@ -88,7 +88,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
         // been bound to
         $patternprefix = '';
         $ini = eZINI::instance( 'rest.ini' );
-        foreach( $ini->variable( 'ApiProvider', 'ProviderClass' ) as $prefix => $class )
+        foreach ( $ini->variable( 'ApiProvider', 'ProviderClass' ) as $prefix => $class )
         {
             if ( $class == $providerClass )
             {
@@ -99,7 +99,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
 
 
         $provider = new $providerClass();
-        foreach( $provider->getRoutes() as $name => $route )
+        foreach ( $provider->getRoutes() as $name => $route )
         {
             if ( is_a( $route, 'ezpRestInspectableRoute' ) )
             {

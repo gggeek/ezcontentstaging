@@ -49,7 +49,7 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
         ksort( $tosync );
         $out = eZContentStagingEvent::syncEvents( $tosync );
         /// @todo apply i18n to messages
-        foreach( $out as $id => $resultCode )
+        foreach ( $out as $id => $resultCode )
         {
             $event = $tosync[$id];
             if ( $resultCode !== 0 )

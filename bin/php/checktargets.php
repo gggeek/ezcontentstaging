@@ -34,7 +34,7 @@ else
     $targets = explode( ',', $targets );
 }
 
-foreach( $targets as $targetId )
+foreach ( $targets as $targetId )
 {
     $target = eZContentStagingTarget::fetch( $targetId );
     if ( $target )
@@ -48,7 +48,7 @@ foreach( $targets as $targetId )
         //$tosync = $target->checkTarget( 'iterate' );
 
         $tosync = $target->checkTarget();
-        foreach( $tosync as $nodeId => $problems )
+        foreach ( $tosync as $nodeId => $problems )
         {
 
             if ( $options['sync'] )

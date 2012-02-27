@@ -28,7 +28,7 @@ if ( $http->hasPostVariable('NodeID') )
     $currentObject = $currentNode->attribute('object');
 
     $eventList = eZContentStagingEvent::fetchByNode($currentNode->attribute('node_id'), $currentNode->attribute( 'contentobject_id' ), $targetId);
-    foreach($eventList as $event){
+    foreach ($eventList as $event){
         if ( $event instanceof eZContentStagingEvent )
         {
 <<<<<<< HEAD
@@ -54,7 +54,7 @@ if ( $http->hasPostVariable('NodeID') )
         $eventList = eZContentStagingEvent::fetchByNode($relatedObject->attribute('main_node_id'), $relatedObject->attribute( 'contentobject_id' ), $targetId);
         if(count($eventList) > 0){
             array_push($relatedObjectNeedingSync, $relatedObject);
-            foreach($eventList as $event){
+            foreach ($eventList as $event){
                 if ( $event instanceof eZContentStagingEvent )
                 {
                     $related_node_events_list[$relatedObject->attribute('id')][$event->attribute( 'id' )] = $event;
@@ -74,7 +74,7 @@ if ( $http->hasPostVariable('NodeID') )
 =======
         /*
         $relatedObjectNodes = $relatedObject->assignedNodes();
-        foreach($relatedObjectNodes as $relatedObjectNode){
+        foreach ($relatedObjectNodes as $relatedObjectNode){
             echo $relatedObjectNode->attribute('node_id');
         }
         */
@@ -95,7 +95,7 @@ if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton
 elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncButton'))
 {
     $to_sync = $current_node_events;
-    foreach($related_node_events_list as $related_node_events ){
+    foreach ($related_node_events_list as $related_node_events ){
 
          $to_sync = $to_sync + $related_node_events;
     }
@@ -104,7 +104,7 @@ elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncBut
     $out = eZContentStagingEvent::syncEvents( $to_sync );
     /// @todo apply i18n to messages
     /// @todo check that current user can sync - with limitations - this event
-    foreach( $out as $id => $resultCode )
+    foreach ( $out as $id => $resultCode )
     {
         $event = $to_sync[$id];
         if ( $resultCode !== 0 )

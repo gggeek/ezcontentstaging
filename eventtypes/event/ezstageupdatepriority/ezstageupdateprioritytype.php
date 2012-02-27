@@ -58,7 +58,7 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
             'nodeID' => $nodeID,
             'nodeRemoteID' => $node->attribute( 'remote_id' ),
             'priorities' => $priorityArrayList );
-        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
             eZContentStagingEvent::addEvent(
                 $target_id,

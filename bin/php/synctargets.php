@@ -31,7 +31,7 @@ else
     $targets = explode( ',', $targets );
 }
 
-foreach( $targets as $targetId )
+foreach ( $targets as $targetId )
 {
     $target = eZContentStagingTarget::fetch( $targetId );
     if ( $target )
@@ -48,7 +48,7 @@ foreach( $targets as $targetId )
         $script->resetIteration( $eventCount, 0 );
 
         /// @todo pass a callable function to show advance progress
-        foreach( eZContentStagingEvent::syncEvents( $events ) as $id => $resp )
+        foreach ( eZContentStagingEvent::syncEvents( $events ) as $id => $resp )
         {
             if ( $resp === 0 )
             {

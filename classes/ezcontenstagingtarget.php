@@ -57,7 +57,7 @@ class eZContentStagingTarget
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );
         $out = array();
-        foreach( $ini->variable( 'GeneralSettings', 'TargetList' ) as $id )
+        foreach ( $ini->variable( 'GeneralSettings', 'TargetList' ) as $id )
         {
             $out[$id] = new eZContentStagingTarget( array_merge( $ini->group( 'Target_' . $id ), array( 'id' => $id ) ) );
         }
@@ -92,7 +92,7 @@ class eZContentStagingTarget
             return array();
         }
         $out = array();
-        foreach( self::fetchList() as $id => $target )
+        foreach ( self::fetchList() as $id => $target )
         {
             if ( $target->includesNode( $node ) )
             {
@@ -108,7 +108,7 @@ class eZContentStagingTarget
     function includesNode( eZContentObjectTreeNode $node )
     {
         $nodepath = $node->attribute( 'path_string' );
-        foreach( $this->_attrs['subtrees'] as $subtreeRoot )
+        foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
         {
             if ( strpos( $nodepath, '/' . $subtreeRoot . '/' ) !== false )
             {
@@ -123,7 +123,7 @@ class eZContentStagingTarget
      */
     function includesNodeByPath( $nodepath )
     {
-        foreach( $this->_attrs['subtrees'] as $subtreeRoot )
+        foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
         {
             if ( strpos( $nodepath, '/' . $subtreeRoot . '/' ) !== false )
             {
@@ -141,7 +141,7 @@ class eZContentStagingTarget
     function includedNodesByPath( $nodepathsarray )
     {
         $out = array();
-        foreach( $this->_attrs['subtrees'] as $subtreeRoot )
+        foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
         {
             foreach ( $nodepathsarray as $nodeid => $nodepath )
             {
@@ -157,7 +157,7 @@ class eZContentStagingTarget
     /// CamelCase to camel_case conversion
     protected function CamelCase2camel_case( $array )
     {
-        foreach( $array as $key => $val )
+        foreach ( $array as $key => $val )
         {
             $name = strtolower( implode( '_', preg_split( '/([[:upper:]][[:lower:]]+)/', $key, null, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY ) ) );
             $out[$name] = $val;
@@ -176,7 +176,7 @@ class eZContentStagingTarget
         $out = array();
 
         $remotenodes = $this->_attrs['remote_subtrees'];
-        foreach( $this->_attrs['subtrees'] as $key => $nodeID )
+        foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
         {
             if ( !isset( $remotenodes[$key] ) )
             {
@@ -248,7 +248,7 @@ class eZContentStagingTarget
         $transport = $this->transport();
 
         $remotenodes = $this->_attrs['remote_subtrees'];
-        foreach( $this->_attrs['subtrees'] as $key => $nodeID )
+        foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
         {
             /*if ( !isset( $remotenodes[$key] ) )
             {

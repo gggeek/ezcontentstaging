@@ -509,7 +509,7 @@ class eZContentStagingContent extends contentStagingBase
     static function remove( eZContentObject $object, $moveToTrash )
     {
         $nodeIDs = array();
-        foreach( $object->attribute( 'assigned_nodes' ) as $node )
+        foreach ( $object->attribute( 'assigned_nodes' ) as $node )
         {
             $nodeIDs[] = $node->attribute( 'node_id' );
         }

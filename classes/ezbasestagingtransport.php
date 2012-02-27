@@ -44,7 +44,7 @@ class eZBaseStagingTransport
     static public function diffmask2array( $bitmask )
     {
         $diffs = array();
-        foreach( self::$diff_descriptions as $code => $desc )
+        foreach ( self::$diff_descriptions as $code => $desc )
         {
             if ( $code & $bitmask )
             {

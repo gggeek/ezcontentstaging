@@ -35,7 +35,7 @@ class eZStageHideType extends eZWorkflowEventType
         $objectId = $node->attribute( 'contentobject_id' );
         $hiddenNodeData = array( 'nodeID' => $nodeID, 'nodeRemoteID' => $node->attribute( 'remote_id' ), 'hide' => !(bool)$node->attribute( 'is_hidden' ) );
         $affectedNodes = array( $nodeID );
-        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
             eZContentStagingEvent::addEvent(
                 $target_id,

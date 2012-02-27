@@ -107,10 +107,10 @@ elseif ( $module->isCurrentAction( 'InitializeFeeds' ) )
 
         if ( count( $toinitialize ) )
         {
-            foreach( $toinitialize as $feed )
+            foreach ( $toinitialize as $feed )
             {
                 $errors = array();
-                foreach( $feed->initializeRootItems() as $result )
+                foreach ( $feed->initializeRootItems() as $result )
                 {
                     if ( $result != 0 )
                     {

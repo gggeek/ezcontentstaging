@@ -66,7 +66,7 @@ class eZStageDeleteType extends eZWorkflowEventType
                     "published" => $object->attribute( 'published' ),
                     "modified" => $object->attribute( 'modified' ),
                     "owner_id" => $object->attribute( 'owner_id' ) ) );
-            foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+            foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
             {
                 eZContentStagingEvent::addEvent(
                     $target_id,

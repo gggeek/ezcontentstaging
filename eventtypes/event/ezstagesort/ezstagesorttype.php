@@ -37,7 +37,7 @@ class eZStageSortType extends eZWorkflowEventType
                     'sortField' => $parameters['sorting_field'],
                     'sortOrder' => $parameters['sorting_order'] );
         $affectedNodes = array( $nodeID );
-        foreach( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
         {
             eZContentStagingEvent::addEvent(
                 $target_id,
