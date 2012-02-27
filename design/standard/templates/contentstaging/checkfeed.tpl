@@ -9,6 +9,7 @@
 <div class="border-ml"><div class="border-mr"><div class="border-mc float-break">
 
 
+{* @todo if feed obj exists, we should use its name, not id *}
 <div class="attribute-header">
 <h1>{'Feed check for feed'|i18n('ezcontentstaging')}: {$target_id|wash()}</h1>
 </div>

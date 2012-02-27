@@ -42,7 +42,10 @@ FAQ
 . q: are custom tags for rich text supported?
   a: all tags that do not rely on object_id/node_id or other database data should be fine
 . q: is the REST protocol used for communication between the two servers documented?
-  a: yes. It is in fact a "preview" version of the protocol that will be the official next version of the ezrest api
+  a: yes. It is in fact a "preview" version of the protocol that will be the official next version of the ezrest api.
+     Documentation is provided:
+     - in the doc/ folder within the extension, in the specs.ods file
+     - automatically-generated via the REST url contentstaging/v1/api/versions
 . q: how does the extension cope with synchronization of "dictionary" data, such as sections, object states, content class definitin?
   a: so far, this is left to manual synchronization
 . q: can I use the REST API in this extension independently of a staging context, and have AJAX clients use it to edit content on a single eZ Publish server?

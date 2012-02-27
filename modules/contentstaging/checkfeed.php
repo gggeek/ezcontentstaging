@@ -1,14 +1,13 @@
 <?php
 /**
-* View used to check one feed
-* Supports pagination
+* View used to check one feed's status (not in terms of events pending, but config/connectivity)
 *
-* @todo add functionality to sync complete feed (all events), not just X events (either here or in feeds view)
+* @todo add functionality to check initialization state of feed
 *
 * @package ezcontentstaging
 *
 * @author
-* @copyright
+* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
 *
 */
@@ -39,6 +38,7 @@ $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/checkfeed.tpl' );
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
                                 'url' => 'contentstaging/feeds' ),
+                         /// @todo use the name of the feed, not its id
                          array( 'text' => ezpI18n::tr( 'ezcontentstaging', "Feed" ) . ': ' . $targetId,
                                 'url' => 'contentstaging/feed/' . $targetId ),
                          array( 'text' => ezpI18n::tr( 'ezcontentstaging', "Status check" ),

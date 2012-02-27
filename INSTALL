@@ -82,11 +82,15 @@ Source server:
 	Options[login]=<username>
 	Options[password]=<password>
 
-6. in the Administration interface, click on the "init feed" button and sync the generated event
+6. in the Administration interface, go to the "Setup" tab, click on the "Content staging" link in the left-col menu.
+   You should see the target feed listed. Click on the "check" link to verify that it is properly set up.
+   Click on "init feed" button and sync the generated event
 
 
 Troubleshooting
 ---------------
+
+. for configuration/connectivity problems, the "check feed" link in the Admin interface page listing feeds is your friend
 
 . if you receive error messages stating "Response received from server is not valid (unsupported format text/html)" when trying to syncronize events,
   a possible cause is that you might have DebugOutput enabled on the target server.

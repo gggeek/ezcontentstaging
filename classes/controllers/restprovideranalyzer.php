@@ -76,7 +76,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
 
     /**
      * Describes all routes for a gievn API version.
-     * @todo return also a filed describing the type of route?
+     * @todo return also a field describing the type of route?
      * @todo return a 404 if version does not exist at all
      */
     public function doDescribeVersion()

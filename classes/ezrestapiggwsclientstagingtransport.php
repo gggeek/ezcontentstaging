@@ -7,7 +7,7 @@
 * @package ezcontentstaging
 *
 * @author
-* @copyright
+* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
 * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
 */
 
@@ -754,6 +754,9 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         return $out;
     }
 
+    /**
+    * NB: what if later on we add API version numbers like 1.1 or 1.0.1?
+    */
     function checkConnection()
     {
         $out = array();
