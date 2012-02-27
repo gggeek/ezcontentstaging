@@ -533,6 +533,12 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     */
     protected function restCall( $method, $url, $payload=array() )
     {
+        if ( !class_exists( 'ggeZWebservicesClient' ) )
+        {
+            /// @todo !important use a specific exception code
+            throw new Exception( "Php class 'ggezwebservicesclient' not found, ggwebservices extension disabled or missing", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+        }
+
         $options = array( 'method' => $method, 'requestType' => 'application/json' );
 
         /// @todo test that ggws is enabled and that there is a server defined
@@ -742,6 +748,8 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         {
             $out[] = "Remote server named '$server' has no URL set in file wsproviders.ini, block '$server', parameter 'providerUri'";
         }
+
+        /// @todo we could test that ggws is enabled...
 
         return $out;
     }
