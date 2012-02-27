@@ -18,25 +18,34 @@ $module = $Params['Module'];
 $related_node_events_list = $current_node_events = $to_sync = array();
 
 if ( $http->hasPostVariable( "CancelButton" ) && $http->hasPostVariable('NodeID')){
-	$currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'));
-	$module->redirectTo( $currentNode->attribute( 'url_alias' ) );
+    $currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'));
+    $module->redirectTo( $currentNode->attribute( 'url_alias' ) );
 }
 
 if ( $http->hasPostVariable('NodeID') )
 {
-	$currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'), $ini->variable('RegionalSettings','ContentObjectLocale'), true);
-	$currentObject = $currentNode->attribute('object');
+    $currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'), $ini->variable('RegionalSettings','ContentObjectLocale'), true);
+    $currentObject = $currentNode->attribute('object');
 
-	$eventList = eZContentStagingEvent::fetchByNode($currentNode->attribute('node_id'), $currentNode->attribute( 'contentobject_id' ), $targetId);
-	foreach($eventList as $event){
+    $eventList = eZContentStagingEvent::fetchByNode($currentNode->attribute('node_id'), $currentNode->attribute( 'contentobject_id' ), $targetId);
+    foreach($eventList as $event){
         if ( $event instanceof eZContentStagingEvent )
         {
+<<<<<<< HEAD
 			$current_node_events[$event->attribute( 'id' )] = $event;
 		}
 	}
 
 	//collecte related objects
 	$relatedObjectList = $currentObject->relatedContentObjectList();
+=======
+            $current_node_events[$event->attribute( 'id' )] = $event;
+        }
+    }
+
+    //collecte related objects
+    $relatedObjectList = $currentObject->relatedContentObjectList();
+>>>>>>> 258f24c... CS: using spaces instead of tabs
 
     //Check if we need to sync related object
     $relatedObjectNeedingSync = $eventList = array();
@@ -53,6 +62,7 @@ if ( $http->hasPostVariable('NodeID') )
             }
         }
 
+<<<<<<< HEAD
 		/*
 		$relatedObjectNodes = $relatedObject->assignedNodes();
 		foreach($relatedObjectNodes as $relatedObjectNode){
@@ -61,6 +71,16 @@ if ( $http->hasPostVariable('NodeID') )
 		*/
 
 	}
+=======
+        /*
+        $relatedObjectNodes = $relatedObject->assignedNodes();
+        foreach($relatedObjectNodes as $relatedObjectNode){
+            echo $relatedObjectNode->attribute('node_id');
+        }
+        */
+
+    }
+>>>>>>> 258f24c... CS: using spaces instead of tabs
 }
 
 if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton'))
@@ -77,7 +97,7 @@ elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncBut
     $to_sync = $current_node_events;
     foreach($related_node_events_list as $related_node_events ){
 
-    	 $to_sync = $to_sync + $related_node_events;
+         $to_sync = $to_sync + $related_node_events;
     }
     ksort( $to_sync );
 
@@ -94,12 +114,17 @@ elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncBut
         else
         {
             $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
+<<<<<<< HEAD
             if (isset($current_node_events[$id])){
             	unset($current_node_events[$id]);
+=======
+            if(isset($current_node_events[$id])){
+                unset($current_node_events[$id]);
+>>>>>>> 258f24c... CS: using spaces instead of tabs
             }elseif(isset($related_node_events_list[$event->attribute( 'object_id' )][$id])){
-            	unset($related_node_events_list[$event->attribute( 'object_id' )][$id]);
+                unset($related_node_events_list[$event->attribute( 'object_id' )][$id]);
             }else{
-            	///Todo
+                ///Todo
             }
         }
     }
@@ -122,4 +147,4 @@ $tpl->setVariable( 'sync_results', $syncResults );
 $Result['content'] = $tpl->fetch( 'design:contentstaging/syncevents.tpl' );
 
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
-								'url' => 'contentstaging/syncnode' ) );
+                                'url' => 'contentstaging/syncnode' ) );

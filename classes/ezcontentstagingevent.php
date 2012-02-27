@@ -482,8 +482,8 @@ class eZContentStagingEvent extends eZPersistentObject
                 eZDebug::writeDebug('Event already exists for ObjectID = '.$syncItem->ObjectID.' & Syncing Event ID = '.$syncItem->ToSync, __METHOD__);
             }
 
-		}
-		return $cleanSyncItems;
+        }
+        return $cleanSyncItems;
     }*/
 
     /**
