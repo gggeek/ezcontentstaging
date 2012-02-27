@@ -25,7 +25,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
 
         // sanity checks
 
-        if( count( $selectNodeIDArray ) == 0 )
+        if ( count( $selectNodeIDArray ) == 0 )
         {
             return eZWorkflowType::STATUS_ACCEPTED;
         }

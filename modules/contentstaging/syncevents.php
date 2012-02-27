@@ -38,20 +38,20 @@ if ( $http->hasPostVariable('NodeID') )
 	//collecte related objects
 	$relatedObjectList = $currentObject->relatedContentObjectList();
 
-	//Check if we need to sync related object
-	$relatedObjectNeedingSync = $eventList = array();
-	foreach ($relatedObjectList as $relatedObject){
-		//$eventList = eZContentStagingEvent::fetchByObject($relatedObject->ID);
-		$eventList = eZContentStagingEvent::fetchByNode($relatedObject->attribute('main_node_id'), $relatedObject->attribute( 'contentobject_id' ), $targetId);
-		if(count($eventList) > 0){
-			array_push($relatedObjectNeedingSync, $relatedObject);
-			foreach($eventList as $event){
-		        if ( $event instanceof eZContentStagingEvent )
-		        {
-					$related_node_events_list[$relatedObject->attribute('id')][$event->attribute( 'id' )] = $event;
-				}
-			}
-		}
+    //Check if we need to sync related object
+    $relatedObjectNeedingSync = $eventList = array();
+    foreach ($relatedObjectList as $relatedObject){
+        //$eventList = eZContentStagingEvent::fetchByObject($relatedObject->ID);
+        $eventList = eZContentStagingEvent::fetchByNode($relatedObject->attribute('main_node_id'), $relatedObject->attribute( 'contentobject_id' ), $targetId);
+        if(count($eventList) > 0){
+            array_push($relatedObjectNeedingSync, $relatedObject);
+            foreach($eventList as $event){
+                if ( $event instanceof eZContentStagingEvent )
+                {
+                    $related_node_events_list[$relatedObject->attribute('id')][$event->attribute( 'id' )] = $event;
+                }
+            }
+        }
 
 		/*
 		$relatedObjectNodes = $relatedObject->assignedNodes();
@@ -65,12 +65,12 @@ if ( $http->hasPostVariable('NodeID') )
 
 if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton'))
 {
-	if(count($relatedObjectNeedingSync) > 0){
-		$syncErrors[] = ezpI18n::tr( 'ezcontentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
-	}else{
-		$syncErrors = null;
-	}
-	$syncResults = null;
+    if(count($relatedObjectNeedingSync) > 0){
+        $syncErrors[] = ezpI18n::tr( 'ezcontentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
+    }else{
+        $syncErrors = null;
+    }
+    $syncResults = null;
 }
 elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncButton'))
 {
@@ -94,7 +94,7 @@ elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncBut
         else
         {
             $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
-            if(isset($current_node_events[$id])){
+            if (isset($current_node_events[$id])){
             	unset($current_node_events[$id]);
             }elseif(isset($related_node_events_list[$event->attribute( 'object_id' )][$id])){
             	unset($related_node_events_list[$event->attribute( 'object_id' )][$id]);

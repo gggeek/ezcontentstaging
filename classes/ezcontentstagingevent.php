@@ -472,15 +472,15 @@ class eZContentStagingEvent extends eZPersistentObject
                                       $limits,
                                       $asObject );
 
-		$cleanSyncItems = array();
-		$existSyncEvent = array();
-		foreach ($syncItems as $syncKey => $syncItem){
-			if(!in_array($syncItem->ObjectID.'-'.$syncItem->ToSync, $existSyncEvent)){
-				array_push($existSyncEvent, $syncItem->ObjectID.'-'.$syncItem->ToSync);
-				array_push($cleanSyncItems, $syncItem);
-			}else{
-				eZDebug::writeDebug('Event already exists for ObjectID = '.$syncItem->ObjectID.' & Syncing Event ID = '.$syncItem->ToSync, __METHOD__);
-			}
+        $cleanSyncItems = array();
+        $existSyncEvent = array();
+        foreach ($syncItems as $syncKey => $syncItem){
+            if(!in_array($syncItem->ObjectID.'-'.$syncItem->ToSync, $existSyncEvent)){
+                array_push($existSyncEvent, $syncItem->ObjectID.'-'.$syncItem->ToSync);
+                array_push($cleanSyncItems, $syncItem);
+            }else{
+                eZDebug::writeDebug('Event already exists for ObjectID = '.$syncItem->ObjectID.' & Syncing Event ID = '.$syncItem->ToSync, __METHOD__);
+            }
 
 		}
 		return $cleanSyncItems;

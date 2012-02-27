@@ -835,7 +835,7 @@ class eZContentStagingField
                     /// @todo reject requests without the 'url' parameter?
                     $urlID = eZURL::registerURL( $value['url'] );
                     $attribute->setAttribute( 'data_int', $urlID );
-                    if( array_key_exists( 'text', $value ) )
+                    if ( array_key_exists( 'text', $value ) )
                     {
                         $attribute->setAttribute( 'data_text', $value['text'] );
                     }
@@ -895,7 +895,7 @@ class eZContentStagingField
                     {
                         $user->setAttribute( 'password_hash_type', eZUser::passwordHashTypeID( $value['password_hash_type'] ) );
                     }
-                    if( isset( $value['is_enabled'] ) )
+                    if ( isset( $value['is_enabled'] ) )
                     {
                         $userSetting = eZUserSetting::fetch(
                             $attribute->attribute( 'contentobject_id' )
