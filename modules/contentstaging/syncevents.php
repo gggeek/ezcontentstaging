@@ -17,7 +17,8 @@ $module = $Params['Module'];
 
 $related_node_events_list = $current_node_events = $to_sync = array();
 
-if ( $http->hasPostVariable( "CancelButton" ) && $http->hasPostVariable('NodeID')){
+if ( $http->hasPostVariable( "CancelButton" ) && $http->hasPostVariable('NodeID'))
+{
     $currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'));
     $module->redirectTo( $currentNode->attribute( 'url_alias' ) );
 }
@@ -28,7 +29,8 @@ if ( $http->hasPostVariable('NodeID') )
     $currentObject = $currentNode->attribute('object');
 
     $eventList = eZContentStagingEvent::fetchByNode($currentNode->attribute('node_id'), $currentNode->attribute( 'contentobject_id' ), $targetId);
-    foreach ($eventList as $event){
+    foreach ($eventList as $event)
+    {
         if ( $event instanceof eZContentStagingEvent )
         {
 <<<<<<< HEAD
@@ -49,12 +51,15 @@ if ( $http->hasPostVariable('NodeID') )
 
     //Check if we need to sync related object
     $relatedObjectNeedingSync = $eventList = array();
-    foreach ($relatedObjectList as $relatedObject){
+    foreach ($relatedObjectList as $relatedObject)
+    {
         //$eventList = eZContentStagingEvent::fetchByObject($relatedObject->ID);
         $eventList = eZContentStagingEvent::fetchByNode($relatedObject->attribute('main_node_id'), $relatedObject->attribute( 'contentobject_id' ), $targetId);
-        if(count($eventList) > 0){
+        if (count($eventList) > 0)
+        {
             array_push($relatedObjectNeedingSync, $relatedObject);
-            foreach ($eventList as $event){
+            foreach ($eventList as $event)
+            {
                 if ( $event instanceof eZContentStagingEvent )
                 {
                     $related_node_events_list[$relatedObject->attribute('id')][$event->attribute( 'id' )] = $event;
@@ -74,7 +79,8 @@ if ( $http->hasPostVariable('NodeID') )
 =======
         /*
         $relatedObjectNodes = $relatedObject->assignedNodes();
-        foreach ($relatedObjectNodes as $relatedObjectNode){
+        foreach ($relatedObjectNodes as $relatedObjectNode)
+        {
             echo $relatedObjectNode->attribute('node_id');
         }
         */
@@ -85,9 +91,12 @@ if ( $http->hasPostVariable('NodeID') )
 
 if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton'))
 {
-    if(count($relatedObjectNeedingSync) > 0){
+    if (count($relatedObjectNeedingSync) > 0)
+    {
         $syncErrors[] = ezpI18n::tr( 'ezcontentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
-    }else{
+    }
+    else
+    {
         $syncErrors = null;
     }
     $syncResults = null;
@@ -95,7 +104,8 @@ if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton
 elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncButton'))
 {
     $to_sync = $current_node_events;
-    foreach ($related_node_events_list as $related_node_events ){
+    foreach ($related_node_events_list as $related_node_events )
+    {
 
          $to_sync = $to_sync + $related_node_events;
     }
@@ -114,16 +124,19 @@ elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncBut
         else
         {
             $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
-<<<<<<< HEAD
-            if (isset($current_node_events[$id])){
+            if (isset($current_node_events[$id]))
+            {
             	unset($current_node_events[$id]);
 =======
             if(isset($current_node_events[$id])){
                 unset($current_node_events[$id]);
->>>>>>> 258f24c... CS: using spaces instead of tabs
-            }elseif(isset($related_node_events_list[$event->attribute( 'object_id' )][$id])){
+            }
+            elseif (isset($related_node_events_list[$event->attribute( 'object_id' )][$id]))
+            {
                 unset($related_node_events_list[$event->attribute( 'object_id' )][$id]);
-            }else{
+            }
+            else
+            {
                 ///Todo
             }
         }
