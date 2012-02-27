@@ -78,5 +78,3 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageUpdateMainAssignmentType::WORKFLOW_TYPE_STRING, 'eZStageUpdateMainAssignmentType' );
-
-?>

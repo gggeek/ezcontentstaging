@@ -99,5 +99,3 @@ class eZStageAddLocationType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageAddLocationType::WORKFLOW_TYPE_STRING, 'eZStageAddLocationType' );
-
-?>

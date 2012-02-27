@@ -49,5 +49,3 @@ class ezpRestInspectableRailsRoute extends ezpMvcRailsRoute implements ezpRestIn
         return "";
     }
 }
-
-?>

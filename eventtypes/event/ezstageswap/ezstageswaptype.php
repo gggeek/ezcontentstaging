@@ -67,5 +67,3 @@ class eZStageSwapType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageSwapType::WORKFLOW_TYPE_STRING, 'eZStageSwapType' );
-
-?>

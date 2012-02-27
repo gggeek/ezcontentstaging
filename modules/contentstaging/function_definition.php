@@ -123,5 +123,3 @@ $FunctionList = array(
                                       'required' => false,
                                       'default'  => null ) ) ),
 );
-
-?>

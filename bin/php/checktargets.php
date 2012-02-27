@@ -81,5 +81,3 @@ foreach( $targets as $targetId )
 }
 
 $script->shutdown( 0 );
-
-?>

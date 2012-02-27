@@ -50,5 +50,3 @@ interface eZContentStagingTransport
     function checkConnection();
 
 }
-
-?>

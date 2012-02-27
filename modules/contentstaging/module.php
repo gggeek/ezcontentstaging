@@ -86,5 +86,3 @@ $FunctionList = array(
     // adds new target hosts, remove them, clear (or init) sync table for a target
     'manage' => array(),
 );
-
-?>

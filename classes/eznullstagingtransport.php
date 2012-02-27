@@ -44,5 +44,3 @@ class eZNullStagingTransport implements eZContentStagingTransport
         return array();
     }
 }
-
-?>

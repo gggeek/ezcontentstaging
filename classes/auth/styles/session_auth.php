@@ -50,4 +50,3 @@ class ezpRestSessionAuthStyle extends ezpRestAuthenticationStyle implements ezpR
         return null;
     }
 }
-?>

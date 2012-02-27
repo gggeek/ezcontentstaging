@@ -112,5 +112,3 @@ class eZStageMoveType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageMoveType::WORKFLOW_TYPE_STRING, 'eZStageMoveType' );
-
-?>

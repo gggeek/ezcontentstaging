@@ -52,5 +52,3 @@ class eZStageHideType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageHideType::WORKFLOW_TYPE_STRING, 'eZStageHideType' );
-
-?>

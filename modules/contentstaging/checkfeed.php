@@ -44,4 +44,3 @@ $Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Cont
                          array( 'text' => ezpI18n::tr( 'ezcontentstaging', "Status check" ),
                                 'url' => 'contentstaging/checkfeed/' . $targetId ) );
 
-?>

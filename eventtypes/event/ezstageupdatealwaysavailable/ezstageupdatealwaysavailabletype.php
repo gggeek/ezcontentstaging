@@ -58,5 +58,3 @@ class eZStageUpdateAlwaysavailableType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageUpdateAlwaysavailableType::WORKFLOW_TYPE_STRING, 'eZStageUpdateAlwaysavailableType' );
-
-?>

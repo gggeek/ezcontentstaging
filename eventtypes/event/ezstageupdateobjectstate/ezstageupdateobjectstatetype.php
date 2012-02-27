@@ -74,5 +74,3 @@ class eZStageUpdateObjectStateType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageUpdateObjectStateType::WORKFLOW_TYPE_STRING, 'eZStageUpdateObjectStateType' );
-
-?>

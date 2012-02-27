@@ -49,5 +49,3 @@ $Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Cont
 								'url' => 'contentstaging/feeds' ),
                          array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Node status check' ),
                                 'url' => false ) );
-
-?>

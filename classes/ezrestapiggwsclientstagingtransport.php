@@ -800,5 +800,3 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         return $out;
     }
 }
-
-?>

@@ -62,5 +62,3 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageUpdateInitialLanguageType::WORKFLOW_TYPE_STRING, 'eZStageUpdateInitialLanguageType' );
-
-?>

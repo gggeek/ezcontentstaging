@@ -58,5 +58,3 @@ class eZStageRemoveTranslationType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageRemoveTranslationType::WORKFLOW_TYPE_STRING, 'eZStageRemoveTranslationType' );
-
-?>

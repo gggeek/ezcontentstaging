@@ -31,5 +31,3 @@ interface ezpRestInspectableRoute
 
     public function getAction();
 }
-
-?>

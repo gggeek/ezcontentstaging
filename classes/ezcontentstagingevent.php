@@ -794,5 +794,3 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
 }
-
-?>

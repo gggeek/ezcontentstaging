@@ -74,5 +74,3 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageUpdatePriorityType::WORKFLOW_TYPE_STRING, 'eZStageUpdatePriorityType' );
-
-?>

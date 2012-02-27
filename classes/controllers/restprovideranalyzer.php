@@ -120,5 +120,3 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
         return $result;
     }
 }
-
-?>

@@ -37,5 +37,3 @@ class eZContentStagingCreatedHttpResponse extends ezpRestHttpResponse
 
 
 }
-
-?>

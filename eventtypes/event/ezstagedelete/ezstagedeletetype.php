@@ -88,5 +88,3 @@ class eZStageDeleteType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageDeleteType::WORKFLOW_TYPE_STRING, 'eZStageDeleteType' );
-
-?>

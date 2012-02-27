@@ -1,6 +1,6 @@
 <?php
 /**
-*  Cronjob used (optionally) to sync all pending events
+* Cronjob used (optionally) to sync all pending events
 *
 * @package ezcontentstaging
 *
@@ -40,4 +40,3 @@ foreach( eZContentStagingTarget::fetchList() as $id => $target )
     }
 }
 
-?>

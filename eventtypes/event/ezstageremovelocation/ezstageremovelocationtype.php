@@ -98,5 +98,3 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageRemoveLocationType::WORKFLOW_TYPE_STRING, 'eZStageRemoveLocationType' );
-
-?>

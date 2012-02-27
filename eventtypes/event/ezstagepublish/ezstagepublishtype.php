@@ -145,5 +145,3 @@ class eZStagePublishType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStagePublishType::WORKFLOW_TYPE_STRING, 'eZStagePublishType' );
-
-?>

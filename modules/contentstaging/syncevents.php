@@ -124,5 +124,3 @@ $Result['content'] = $tpl->fetch( 'design:contentstaging/syncevents.tpl' );
 
 $Result['path'] = array( array( 'text' => ezpI18n::tr( 'ezcontentstaging', 'Content synchronization' ),
 								'url' => 'contentstaging/syncnode' ) );
-
-?>

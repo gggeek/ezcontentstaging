@@ -49,5 +49,3 @@ class eZContentStagingRestBaseController extends ezpRestMvcController
         }
     }
 }
-
-?>

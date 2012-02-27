@@ -26,5 +26,3 @@ class eZContentStagingPreventWarningsFilter implements ezpRestPreRoutingFilterIn
     }
 
 }
-
-?>

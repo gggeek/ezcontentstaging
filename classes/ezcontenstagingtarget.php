@@ -429,5 +429,3 @@ class eZContentStagingTarget
     //{
     //}
 }
-
-?>

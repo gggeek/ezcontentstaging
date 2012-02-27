@@ -21,5 +21,3 @@ class eZContentStagingGhostintheshellFieldFilter implements eZContentStagingFiel
         return false;
     }
 }
-
-?>

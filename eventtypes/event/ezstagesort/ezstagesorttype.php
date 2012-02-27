@@ -53,5 +53,3 @@ class eZStageSortType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageSortType::WORKFLOW_TYPE_STRING, 'eZStageSortType' );
-
-?>

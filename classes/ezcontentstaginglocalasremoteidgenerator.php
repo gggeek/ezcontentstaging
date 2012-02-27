@@ -27,5 +27,3 @@ class eZContentStagingLocalAsRemoteIdGenerator implements eZContentStagingRemote
         return "ezcs:" . $this->target . ':' . $sourceId;
     }
 }
-
-?>

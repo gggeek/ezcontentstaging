@@ -22,5 +22,3 @@ interface eZContentStagingFieldFilter
     */
     public function accept( eZContentObjectAttribute $attribute );
 }
-
-?>

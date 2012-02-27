@@ -23,5 +23,3 @@ class eZContentStagingSameRemoteIdGenerator implements eZContentStagingRemoteIdG
         return $sourceRemoteId;
     }
 }
-
-?>

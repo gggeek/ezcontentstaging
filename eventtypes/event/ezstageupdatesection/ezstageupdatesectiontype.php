@@ -63,5 +63,3 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
 }
 
 eZWorkflowEventType::registerEventType( eZStageUpdateSectionType::WORKFLOW_TYPE_STRING, 'eZStageUpdateSectionType' );
-
-?>

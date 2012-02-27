@@ -44,5 +44,3 @@ class ezpRestInspectableVersionedRoute extends ezpRestVersionedRoute implements 
         return $this->route->getAction();
     }
 }
-
-?>

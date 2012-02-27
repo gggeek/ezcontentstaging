@@ -24,5 +24,3 @@ interface eZContentStagingRemoteIdGenerator
     */
     function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' );
 }
-
-?>
