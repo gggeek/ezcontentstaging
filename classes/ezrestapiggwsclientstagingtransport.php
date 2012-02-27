@@ -711,6 +711,82 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
         return $filter;
     }
+
+    /**
+    * These tests should be pushed down into ggeZWebservicesClient, but while we
+    * wait for it, we do them here
+    */
+    function checkConfiguration()
+    {
+        $out = array();
+
+        $server = @$this->target->attribute( 'server' );
+        if ( $server == null )
+        {
+            $out[] = "Remote server name not set in file contentstagingsource.ini, block 'Target_{$this->target->attribute( 'id' )}', parameter 'Server'";
+            return $out;
+        }
+
+        $ini = eZINI::instance( 'wsproviders.ini' );
+        if ( !$ini->hasGroup( $server ) )
+        {
+            $out[] = "Remote server name '$server' set in file contentstagingsource.ini, block 'Target_{$this->target->attribute( 'id' )}', parameter 'Server', not defined in wsproviders.ini, block '$server'";
+            return $out;
+        }
+
+        if ( !$ini->hasVariable( $server, 'providerType' ) || $ini->variable( $server, 'providerType' ) != 'REST' )
+        {
+            $out[] = "Remote server named '$server' has wrong type, should be 'REST' in file wsproviders.ini, block '$server', parameter 'providerType'";
+        }
+        if ( !$ini->hasVariable( $server, 'providerUri' ) || $ini->variable( $server, 'providerUri' ) == '' )
+        {
+            $out[] = "Remote server named '$server' has no URL set in file wsproviders.ini, block '$server', parameter 'providerUri'";
+        }
+
+        return $out;
+    }
+
+    function checkConnection()
+    {
+        $out = array();
+
+        $method = 'GET';
+        $url = "/api/versions";
+        $ini = eZINI::instance( 'wsproviders.ini' );
+        $uri = $ini->variable( $this->target->attribute( 'server' ), 'providerUri' );
+        try
+        {
+            $resp = $this->restCall( $method, $url );
+            if ( !is_array( $resp ) )
+            {
+
+                $out[] = "Invalid response received from target server, expected json array at url $uri$url";
+            }
+            else
+            {
+                $found = false;
+                foreach( $resp as $version )
+                {
+                    if ( @$version['version'] == 1 )
+                    {
+                        $found = true;
+                        break;
+                    }
+                }
+                if ( !$found )
+                {
+                    $out[] = "Target server does not expose correct API version at url $uri$url";
+                }
+            }
+        }
+        catch ( exception $e )
+        {
+            $out[] = $e->getMessage();
+        }
+
+
+        return $out;
+    }
 }
 
 ?>

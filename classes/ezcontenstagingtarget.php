@@ -224,8 +224,7 @@ class eZContentStagingTarget
         return $out;
     }
 
-    /* unused so far
-    function transport()
+    protected function transport()
     {
         $class = $this->attribute( 'transport_class' );
         if ( !class_exists( $class ) )
@@ -234,10 +233,10 @@ class eZContentStagingTarget
             return null;
         }
         return new $class( $this );
-    }*/
+    }
 
     /**
-    * Checks sync status
+    * Checks sync status for all nodes in the feed
     * @param callable $iterator
     * @return array key = noode_id, value = integer
     *
@@ -247,13 +246,7 @@ class eZContentStagingTarget
     {
         $out = array();
 
-        $class = $this->attribute( 'transport_class' );
-        if ( !class_exists( $class ) )
-        {
-            eZDebug::writeError( "Can not create transport, class $class not found", __METHOD__ );
-            return array();
-        }
-        $transport = new $class( $this );
+        $transport = $this->transport();
 
         $remotenodes = $this->_attrs['remote_subtrees'];
         foreach( $this->_attrs['subtrees'] as $key => $nodeID )
@@ -283,6 +276,7 @@ class eZContentStagingTarget
 
     /**
     * @param callable $iterator
+    * @return array
     * @todo implement a 'checked object' cache to avoid checaking same obj many times
     * @todo clear object cache after every N objects
     * @todo prevent loops
@@ -303,13 +297,12 @@ class eZContentStagingTarget
         //}
         if ( $transport == false )
         {
-            $class = $this->attribute( 'transport_class' );
-            if ( !class_exists( $class ) )
+            $transport = $this->transport();
+            // exit with specific error if transport is null
+            if ( $transport == false )
             {
-                eZDebug::writeError( "Can not create transport, class $class not found", __METHOD__ );
-                return array();
+                return array( $node->attribute( 'node_id' ) => eZBaseStagingTransport::DIFF_UNKNOWNTRANSPORT );
             }
-            $transport = new $class( $this );
         }
 
         $nodeok = $transport->checkNode( $node );
@@ -349,6 +342,92 @@ class eZContentStagingTarget
         return $out;
     }
 
+    /**
+    * Checks if all configuration for the target is fine
+    * @return array of string (error messages)
+    */
+    static function checkConfiguration( $targetId )
+    {
+        $out = array();
+
+        $ini = eZINI::instance( 'contentstagingsource.ini' );
+
+        $targets = $ini->variable( 'GeneralSettings', 'TargetList' );
+        if ( !in_array( $targetId, $targets ) )
+        {
+            $out[] = "Feed not defined in file contentstagingsource.ini, block 'GeneralSettings', parameter 'TargetList'";
+        }
+
+        $group = 'Target_' . $targetId;
+        if ( !$ini->hasGroup( $group ) )
+        {
+            $out[] = "Feed not defined in file contentstagingsource.ini, block '$group'";
+            return $out;
+        }
+
+        if ( !$ini->hasVariable( $group, 'Subtrees' ) || !is_array( $sourceroots = $ini->variable( $group, 'Subtrees' ) ) || count( $sourceroots ) == 0 )
+        {
+            $out[] = "Feed has no source root nodes defined in file contentstagingsource.ini, block '$group', parameter 'Subtrees'";
+        }
+        if ( !$ini->hasVariable( $group, 'RemoteSubtrees' ) || !is_array( $remoteroots = $ini->variable( $group, 'RemoteSubtrees' ) ) || count( $remoteroots ) == 0 )
+        {
+            $out[] = "Feed has no target root nodes defined in file contentstagingsource.ini, block '$group', parameter 'RemoteSubtrees'";
+        }
+        if ( count( $sourceroots ) != count( $remoteroots ) )
+        {
+             $out[] = "Number of source root nodes and remote root nodes differ in file contentstagingsource.ini, block '$group', parameters 'Subtrees' and 'RemoteSubtrees' ";
+        }
+        foreach ( $sourceroots as $root )
+        {
+            if ( !eZContentObjectTreeNode::fetch( $root ) )
+            {
+                $out[] = "Source root node $root does not exist in file contentstagingsource.ini, block '$group', parameter 'Subtrees'";
+            }
+        }
+
+        if ( !$ini->hasVariable( $group, 'TransportClass' ) || $ini->variable( $group, 'TransportClass' ) == '' )
+        {
+            $out[] = "Feed $targetId has no transport defined in file contentstagingsource.ini, block '$group', parameter 'TransportClass'";
+        }
+        $class = $ini->variable( $group, 'TransportClass' );
+        if ( !class_exists( $class ) )
+        {
+            $out[] = "Feed $targetId has transport class '$class' defined in file contentstagingsource.ini, block '$group', parameter 'TransportClass', but class does not exist";
+        }
+        else
+        {
+            $target = self::fetch( $targetId );
+            if ( $target )
+            {
+                $transport = new $class( $target );
+                $out = array_merge( $out, $transport->checkConfiguration() );
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+    * Checks if the transport layer can connect to the target server
+    * @return array of string (error messages)
+    */
+    function checkConnection()
+    {
+        $transport = $this->transport();
+        if ( !$transport )
+        {
+            return array( );
+        }
+        return $transport->checkConnection();
+    }
+
+    /**
+     * Checks if the transport layer can connect to the target server
+     * @return array of string (error messages)
+     */
+    //function checkInitialization()
+    //{
+    //}
 }
 
 ?>

@@ -11,6 +11,7 @@
 
 class eZBaseStagingTransport
 {
+    const DIFF_UNKNOWNTRANSPORT = 2048;
     const DIFF_TRANSPORTERROR = 1;
 
     const DIFF_NODE_MISSING = 2;

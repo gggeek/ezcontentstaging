@@ -36,6 +36,19 @@ interface eZContentStagingTransport
      * @return integer
      */
     function checkObject( eZContentObject $object );
+
+    /**
+    * Checks if configuration (eg ini parameters) is ok for this transport
+    * @return array of string with error messages
+    */
+    function checkConfiguration();
+
+    /**
+     * Checks if connectivity is ok for this transport
+     * @return array of string with error messages
+     */
+    function checkConnection();
+
 }
 
 ?>

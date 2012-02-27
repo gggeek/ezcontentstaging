@@ -33,6 +33,14 @@ $ViewList = array(
                         'SyncEventsButton' => 'SyncEvents',
                         'RemoveEventsButton' => 'RemoveEvents' )
                    ),
+
+    'checkfeed' => array( 'script' => 'checkfeed.php',
+                          'functions' => 'manage',
+                          'default_navigation_part' => 'ezsetupnavigationpart',
+                          'ui_context' => 'default',
+                          'params' => array( 'target_id' ),
+    ),
+
     /**
       @todo move all actions from other views into this one - cleaner architecture
     // where all the actions take place
