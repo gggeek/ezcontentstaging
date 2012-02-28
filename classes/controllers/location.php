@@ -96,32 +96,33 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
 
         $modified = false;
 
-        if ( isset( $this->request->inputVariables['sortField'] )
-                && isset( $this->request->inputVariables['sortOrder'] ) )
+        $inputVariables = $this->getRequestVariables();
+        if ( isset( $inputVariables['sortField'] )
+                && isset( $inputVariables['sortOrder'] ) )
         {
             eZContentStagingLocation::updateSort(
                 $node,
-                $this->request->inputVariables['sortField'],
-                $this->request->inputVariables['sortOrder']
+                $inputVariables['sortField'],
+                $inputVariables['sortOrder']
             );
             // we have to reload the node to pick up the change
             $modified = true;
         }
 
-        if ( isset( $this->request->inputVariables['priority'] ) )
+        if ( isset( $inputVariables['priority'] ) )
         {
             eZContentStagingLocation::updatePriority(
                 $node,
-                (int)$this->request->inputVariables['priority'] );
+                (int)$inputVariables['priority'] );
             // we have to reload the node to pick up the change
             $modified = true;
         }
 
-        if ( isset( $this->request->inputVariables['remoteId'] ) )
+        if ( isset( $inputVariables['remoteId'] ) )
         {
             if ( ( $result = eZContentStagingLocation::updateRemoteId(
                     $node,
-                    $this->request->inputVariables['remoteId'] )
+                    $inputVariables['remoteId'] )
                 ) !== 0 )
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
@@ -129,12 +130,12 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             $modified = true;
         }
 
-        if ( isset( $this->request->inputVariables['mainLocationRemoteId'] ) )
+        if ( isset( $inputVariables['mainLocationRemoteId'] ) )
         {
-            $newMainLocation = eZContentObjectTreeNode::fetchByRemoteID( $this->request->inputVariables['mainLocationRemoteId'] );
+            $newMainLocation = eZContentObjectTreeNode::fetchByRemoteID( $inputVariables['mainLocationRemoteId'] );
             if ( !$newMainLocation instanceof eZContentObjectTreeNode )
             {
-                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with remote id '{$this->request->inputVariables['mainLocationRemoteId']}' not found" );
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with remote id '{$inputVariables['mainLocationRemoteId']}' not found" );
             }
             /// @todo check if new main location is same as current
             eZContentStagingLocation::updateMainLocation(

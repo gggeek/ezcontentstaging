@@ -156,7 +156,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        $object = eZContentStagingContent::createContent( $node, $this->request->inputVariables, $sectionId );
+        $object = eZContentStagingContent::createContent( $node, $this->getRequestVariables(), $sectionId );
         if ( !$object instanceof eZContentObject )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
@@ -191,18 +191,19 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        if ( isset( $this->request->inputVariables['alwaysAvailable'] ) )
+        $inputVariables = $this->getRequestVariables();
+        if ( isset( $inputVariables['alwaysAvailable'] ) )
         {
             eZContentStagingContent::updateAlwaysAvailable(
                 $object,
-                (bool)$this->request->inputVariables['alwaysAvailable']
+                (bool)$inputVariables['alwaysAvailable']
             );
             //$result->status = new ezpRestHttpResponse( 204 );
         }
 
-        if ( isset( $this->request->inputVariables['initialLanguage'] ) )
+        if ( isset( $inputVariables['initialLanguage'] ) )
         {
-            $lang = $this->request->inputVariables['initialLanguage'];
+            $lang = $inputVariables['initialLanguage'];
             $languages = $object->allLanguages();
             if ( !isset( $languages[$lang] ) )
             {
@@ -215,11 +216,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             //$result->status = new ezpRestHttpResponse( 204 );
         }
 
-        if ( isset( $this->request->inputVariables['remoteId'] ) )
+        if ( isset( $inputVariables['remoteId'] ) )
         {
             if ( ( $result = eZContentStagingContent::updateRemoteId(
                        $object,
-                       $this->request->inputVariables['remoteId'] )
+                       $inputVariables['remoteId'] )
                  ) !== 0 )
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
@@ -227,8 +228,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             //$result->status = new ezpRestHttpResponse( 204 );
         }
 
-        /*if ( isset( $this->request->inputVariables['fields'] )
-                && count( $this->request->inputVariables['fields'] ) > 0 )
+        /*if ( isset( $inputVariables['fields'] )
+                && count( $inputVariables['fields'] ) > 0 )
         {
             // whole update
 
@@ -236,7 +237,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             $moduleRepositories = eZModule::activeModuleRepositories();
             eZModule::setGlobalPathList( $moduleRepositories );
 
-            $object = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
+            $object = eZContentStagingContent::updateContent( $object, $this->getRequestVariables() );
             if ( !$object instanceof eZContentObject )
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
@@ -259,7 +260,8 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      */
     public function doAddVersion()
     {
-        if ( !isset(  $this->request->inputVariables['fields'] ) || !is_array( $this->request->inputVariables['fields'] ) )
+        $inputVariables = $this->getRequestVariables();
+        if ( !isset(  $inputVariables['fields'] ) || !is_array( $inputVariables['fields'] ) )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "fields" parameters is missing or not an array' );
         }
@@ -274,7 +276,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        $version = eZContentStagingContent::updateContent( $object, $this->request->inputVariables );
+        $version = eZContentStagingContent::updateContent( $object, $inputVariables );
         if ( !$version instanceof eZContentObjectVersion )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $version );
@@ -437,7 +439,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         eZModule::setGlobalPathList( $moduleRepositories );
 
         $states = array();
-        foreach( $this->request->inputVariables as $stategroup => $state )
+        foreach( $this->getRequestVariables() as $stategroup => $state )
         {
             $groupObj = eZContentObjectStateGroup::fetchByIdentifier( $stategroup );
             if ( $groupObj )
@@ -500,11 +502,12 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         }
 
         $nodes = $object->attribute( 'assigned_nodes' );
+        $inputVariables = $this->getRequestVariables();
         foreach( $nodes as $node )
         {
             if ( $node->attribute( 'parent_node_id' ) == $parentNode->attribute( 'node_id' ) )
             {
-                return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$this->request->inputVariables['remoteId']}' already has a location under of location '{$parentRemoteId}'" );
+                return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "The object '{$inputVariables['remoteId']}' already has a location under of location '{$parentRemoteId}'" );
                 /*$result = new ezpRestMvcResult();
                 $result->status = new ezpRestHttpResponse( 403 );
                 return $result;*/
@@ -519,10 +522,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
 
         $newNode = eZContentStagingContent::addLocation(
             $object, $parentNode,
-            $this->request->inputVariables['remoteId'],
-            isset( $this->request->inputVariables['priority'] ) ? $this->request->inputVariables['priority'] : null,
-            isset( $this->request->inputVariables['sortField'] ) ? $this->request->inputVariables['sortField'] : null,
-            isset( $this->request->inputVariables['sortOrder'] ) ? $this->request->inputVariables['sortOrder'] : null
+            $inputVariables['remoteId'],
+            isset( $inputVariables['priority'] ) ? $inputVariables['priority'] : null,
+            isset( $inputVariables['sortField'] ) ? $inputVariables['sortField'] : null,
+            isset( $inputVariables['sortOrder'] ) ? $inputVariables['sortOrder'] : null
         );
         /// @todo return a 401 in case of permission problems!
         if ( !$newNode instanceof eZContentObjectTreeNode )

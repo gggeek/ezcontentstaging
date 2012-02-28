@@ -32,6 +32,22 @@ class eZContentStagingRestBaseController extends ezpRestMvcController
         $result->status = new ezpRestHttpResponse( $code, $message );
         return $result;
     }
+
+    /**
+    * A stub helping us to cope with different evolutions in the REST API lifetime
+    * @todo take into account also eZCP versions
+    */
+    protected function getRequestVariables()
+    {
+        if ( version_compare( eZPublishSDK::version(), '4.7.0' ) >= 0 )
+        {
+            return $this->request->getParsedBody();
+        }
+        else
+        {
+            return $this->request->inputVariables;
+        }
+    }
 }
 
 ?>
