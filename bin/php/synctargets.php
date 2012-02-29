@@ -42,6 +42,7 @@ foreach( $targets as $targetId )
         $eventCount = eZContentStagingEvent::fetchListCount( $targetId, null, eZContentStagingEvent::STATUS_SYNCING );
         $cli->output( "Events synchronizing: $eventCount" );
 
+        /// @todo make this scale better by fetching in loops instead of single pass
         $events = eZContentStagingEvent::fetchList( $targetId, true, null, null, null, eZContentStagingEvent::STATUS_TOSYNC );
         $eventCount = count( $events );
         $cli->output( "Events to synchronize: $eventCount" );
