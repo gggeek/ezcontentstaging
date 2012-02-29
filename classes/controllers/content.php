@@ -237,7 +237,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             $moduleRepositories = eZModule::activeModuleRepositories();
             eZModule::setGlobalPathList( $moduleRepositories );
 
-            $object = eZContentStagingContent::updateContent( $object, $this->getRequestVariables() );
+            $object = eZContentStagingContent::updateContent( $object, $inputVariables );
             if ( !$object instanceof eZContentObject )
             {
                 return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $object );
