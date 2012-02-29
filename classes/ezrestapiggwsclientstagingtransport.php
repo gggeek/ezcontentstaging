@@ -51,17 +51,19 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
             case eZContentStagingEvent::ACTION_ADDLOCATION:
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] );
-                /// @todo !important test that $RemoteObjRemoteID is not null
-                $method = 'PUT';
-                $url = "/content/objects/remote/$RemoteObjRemoteID/locations?parentRemoteId=$RemoteParentNodeRemoteID";
-                $payload = array(
-                    'remoteId' => $RemoteNodeRemoteID,
-                    'priority' => $data['priority'],
-                    'sortField' => eZContentStagingLocation::encodeSortField( $data['sortField'] ),
-                    'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
-                    );
-                $out = $this->restCall( $method, $url, $payload );
+
+                $out = $this->restCall(
+                    "PUT",
+                    /// @todo !important test that $RemoteObjRemoteID is not null
+                    "/content/objects/remote/$RemoteObjRemoteID/locations?parentRemoteId=" .
+                        $this->buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] ),
+                    array(
+                        'remoteId' => $RemoteNodeRemoteID,
+                        'priority' => $data['priority'],
+                        'sortField' => eZContentStagingLocation::encodeSortField( $data['sortField'] ),
+                        'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
+                    )
+                );
                 if ( !is_array( $out ) || !is_array( $out['Location'] ) || !isset( $out['Location']['remoteId'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -73,25 +75,22 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 return 0;
 
             case eZContentStagingEvent::ACTION_DELETE:
-                $method = 'DELETE';
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $url = "/content/objects/remote/$RemoteObjRemoteID?trash=" . self::encodeTrash( $data['trash'] );
-                $this->restCall( $method, $url );
+                $this->restCall( "DELETE", "/content/objects/remote/$RemoteObjRemoteID?trash=" . self::encodeTrash( $data['trash'] ) );
                 return 0;
 
             case eZContentStagingEvent::ACTION_HIDEUNHIDE:
-                $method = 'POST';
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                $url = "/content/locations/remote/$RemoteNodeRemoteID?hide=" . ( $data['hide'] ? 'true' : 'false' );
-                $this->restCall( $method, $url );
+                $this->restCall( "POST", "/content/locations/remote/$RemoteNodeRemoteID?hide=" . ( $data['hide'] ? 'true' : 'false' ) );
                 return 0;
 
             case eZContentStagingEvent::ACTION_MOVE:
-                $method = 'PUT';
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
-                $url = "/content/locations/remote/$RemoteNodeRemoteID/parent?destParentRemoteId=$RemoteParentNodeRemoteID";
-                $this->restCall( $method, $url );
+                $this->restCall(
+                    "PUT",
+                    "/content/locations/remote/$RemoteNodeRemoteID/parent?destParentRemoteId=" .
+                        $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] )
+                );
                 return 0;
 
             case eZContentStagingEvent::ACTION_PUBLISH:
@@ -110,14 +109,11 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 }
                 if ( $data['version'] == 1 )
                 {
-                    $method = 'POST';
-                    $RemoteParentNodeRemoteID = $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
-                    $url = "/content/objects?parentRemoteId=$RemoteParentNodeRemoteID";
+                    $url = "/content/objects?parentRemoteId=" . $this->buildRemoteId( $data['parentNodeID'], $data['parentNodeRemoteID'] );
                     $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], false, $RemoteObjRemoteID, $syncdate );
                 }
                 else
                 {
-                    $method = 'POST';
                     $url = "/content/objects/remote/$RemoteObjRemoteID/versions";
                     $payload = self::encodeObject( $event->attribute( 'object_id' ),  $data['version'], $data['locale'], true, false, $syncdate );
                 }
@@ -126,7 +122,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                     throw new Exception( "Can not serialize object to be sent", eZContentStagingEvent::ERROR_OBJECTCANNOTSERIALIZE );
                 }
 
-                $out = $this->restCall( $method, $url, $payload );
+                $out = $this->restCall( "POST", $url, $payload );
                 if ( !is_array( $out ) || !isset( $out['Location'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -139,9 +135,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 {
                     throw new Exception( "Missing version number in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
-                $method = 'POST';
-                $url = "/content/objects/remote/$RemoteObjRemoteID/versions/$versionNr";
-                $out = $this->restCall( $method, $url );
+                $out = $this->restCall( "POST", "/content/objects/remote/$RemoteObjRemoteID/versions/$versionNr" );
 
                 // step 3: fix remote id of created node (only for new nodes)
                 if ( $data['version'] == 1 )
@@ -154,12 +148,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                         throw new Exception( "Missing node id in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                     }
                     $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                    $method = 'PUT';
-                    $url = "/content/locations/$remoteNodeId";
-                    $payload = array(
-                        'remoteId' => $RemoteNodeRemoteID
-                    );
-                    $out = $this->restCall( $method, $url, $payload );
+                    $out = $this->restCall( "PUT", "/content/locations/$remoteNodeId", array( 'remoteId' => $RemoteNodeRemoteID ) );
                     if ( !is_array( $out ) || !isset( $out['remoteId'] ) )
                     {
                         throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -172,34 +161,29 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 return 0;
 
             case eZContentStagingEvent::ACTION_REMOVELOCATION:
-                $method = 'DELETE';
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                $url = "/content/locations/remote/$RemoteNodeRemoteID?trash=" . self::encodeTrash( $data['trash'] );
-                $this->restCall( $method, $url );
+                $this->restCall( "DELETE", "/content/locations/remote/$RemoteNodeRemoteID?trash=" . self::encodeTrash( $data['trash'] ) );
                 return 0;
 
             case eZContentStagingEvent::ACTION_REMOVETRANSLATION:
-                $method = 'DELETE';
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $baseurl = "/content/objects/remote/$RemoteObjRemoteID/languages/";
                 foreach ( $data['translations'] as $translation )
                 {
-                    $url = $baseurl . self::encodeLanguageId( $translation );
-                    $out = $this->restCall( $method, $url );
+                    $out = $this->restCall( "DELETE", "/content/objects/remote/$RemoteObjRemoteID/languages/" . self::encodeLanguageId( $translation ) );
                 }
                 return 0;
 
             case eZContentStagingEvent::ACTION_SORT:
-                $method = 'PUT';
-                $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                $url = "/content/locations/remote/$RemoteNodeRemoteID";
-                $payload = array(
-                    // @todo can we omit safely to send priority?
-                    //'priority' => $data['priority'],
-                    'sortField' => eZContentStagingLocation::encodeSortField( $data['sortField'] ),
-                    'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
-                    );
-                $out = $this->restCall( $method, $url, $payload );
+                $out = $this->restCall(
+                    "PUT",
+                    "/content/locations/remote/" . $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] ),
+                    array(
+                        // @todo can we omit safely to send priority?
+                        //'priority' => $data['priority'],
+                        'sortField' => eZContentStagingLocation::encodeSortField( $data['sortField'] ),
+                        'sortOrder' => eZContentStagingLocation::encodeSortOrder( $data['sortOrder'] )
+                    )
+                );
                 if ( !is_array( $out ) || !isset( $out['sortField'] ) || !isset( $out['sortOrder'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -219,11 +203,11 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 return -333;
 
             case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
-                $method = 'PUT';
-                $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $url = "/content/objects/remote/$RemoteObjRemoteID";
-                $payload = array( 'alwaysAvailable' => self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) );
-                $out = $this->restCall( $method, $url, $payload );
+                $out = $this->restCall(
+                    "PUT",
+                    "/content/objects/remote/" . $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' ),
+                    array( 'alwaysAvailable' => self::encodeAlwaysAvailable( $data['alwaysAvailable'] ) )
+                );
                 if ( !is_array( $out ) || !isset( $out['alwaysAvailable'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -235,11 +219,11 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 return 0;
 
             case eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE:
-                $method = 'PUT';
-                $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $url = "/content/objects/remote/$RemoteObjRemoteID";
-                $payload = array( 'initialLanguage' => self::encodeLanguageId( $data['initialLanguage'] ) );
-                $out = $this->restCall( $method, $url, $payload );
+                $out = $this->restCall(
+                    "PUT",
+                    "/content/objects/remote/" . $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' ),
+                    array( 'initialLanguage' => self::encodeLanguageId( $data['initialLanguage'] ) )
+                );
                 if ( !is_array( $out ) || !isset( $out['initialLanguage'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -252,12 +236,11 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
 
             case eZContentStagingEvent::ACTION_UPDATEMAINASSIGNMENT:
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
-                $method = 'PUT';
-                $url = "/content/locations/remote/$RemoteNodeRemoteID";
-                $payload = array(
-                    'mainLocationRemoteId' => $RemoteNodeRemoteID
+                $out = $this->restCall(
+                    "PUT",
+                    "/content/locations/remote/$RemoteNodeRemoteID",
+                    array( 'mainLocationRemoteId' => $RemoteNodeRemoteID )
                 );
-                $out = $this->restCall( $method, $url, $payload );
                 if ( !is_array( $out ) || !isset( $out['mainLocationId'] ) || !isset( $out['id'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -269,23 +252,18 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 return 0;
 
             case eZContentStagingEvent::ACTION_UPDATEOBJECSTATE:
-                $method = 'PUT';
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $url = "/content/objects/remote/$RemoteObjRemoteID/states";
-                $payload = $data['stateList'];
-                $this->restCall( $method, $url, $payload );
+                $this->restCall( "PUT", "/content/objects/remote/$RemoteObjRemoteID/states", $data['stateList'] );
                 return 0;
 
             case eZContentStagingEvent::ACTION_UPDATEPRIORITY:
-                $method = 'PUT';
                 foreach ( $data['priorities'] as $priority )
                 {
-                    $RemoteNodeRemoteID = $this->buildRemoteId( $priority['nodeID'], $priority['nodeRemoteID'] );
-                    $url = "/content/locations/remote/$RemoteNodeRemoteID";
-                    $payload = array(
-                        'priority' => $priority['priority']
+                    $out = $this->restCall(
+                        "PUT",
+                        "/content/locations/remote/" . $this->buildRemoteId( $priority['nodeID'], $priority['nodeRemoteID'] ),
+                        array( 'priority' => $priority['priority'] )
                     );
-                    $out = $this->restCall( $method, $url, $payload );
                     if ( !is_array( $out ) || !isset( $out['priority'] ) )
                     {
                         throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -298,33 +276,23 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 return 0;
 
             case eZContentStagingEvent::ACTION_UPDATESECTION:
-                $method = 'PUT';
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $url = "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}";
-                $this->restCall( $method, $url );
+                $this->restCall( "PUT", "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}" );
                 return 0;
 
             case eZContentStagingEvent::ACTION_INITIALIZEFEED:
                 // set remote id on remote node and remote object
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
 
-                $method = 'GET';
                 /// @todo switch from rest api v1 (content/node) to v2 (content/location)
-                $url = "/content/locations/{$data['remoteNodeID']}";
-                //$url = "/content/locations/{$data['remoteNodeID']}";
-                $out = $this->restCall( $method, $url );
+                $out = $this->restCall( "GET", "/content/locations/{$data['remoteNodeID']}" );
                 if ( !is_array( $out ) || !isset( $out['contentId'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
                 }
                 $remoteObjID = $out['contentId'];
 
-                $method = 'PUT';
-                $url = "/content/locations/{$data['remoteNodeID']}";
-                $payload = array(
-                    'remoteId' => $RemoteNodeRemoteID
-                );
-                $out = $this->restCall( $method, $url, $payload );
+                $out = $this->restCall( "PUT", "/content/locations/{$data['remoteNodeID']}", array( 'remoteId' => $RemoteNodeRemoteID ) );
                 if ( !is_array( $out ) || !isset( $out['remoteId'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -338,12 +306,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 // node remote id but not object remote id. In such case
                 // we do NOT rollback our changes
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
-                $method = 'PUT';
-                $url = "/content/objects/$remoteObjID";
-                $payload = array(
-                    'remoteId' => $RemoteObjRemoteID
-                );
-                $out = $this->restCall( $method, $url, $payload );
+                $out = $this->restCall( "PUT", "/content/objects/$remoteObjID", array( 'remoteId' => $RemoteObjRemoteID ) );
                 if ( !is_array( $out ) || !isset( $out['remoteId'] ) )
                 {
                     throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
@@ -363,13 +326,9 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     {
         $out = 0;
 
-        $nodeId = $node->attribute( 'node_id' );
-        $RemoteNodeRemoteID = $this->buildRemoteId( $node->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
-        $method = 'GET';
-        $url = "/content/locations/remote/{$RemoteNodeRemoteID}";
         try
         {
-            $remote = $this->restCall( $method, $url );
+            $remote = $this->restCall( "GET", "/content/locations/remote/" . $this->buildRemoteId( $node->attribute( 'node_id' ), $node->attribute( 'remote_id' ) ) );
             if ( !is_array( $remote ) || !isset( $remote['id'] ) || !isset( $remote['parentId'] ) )
             {
                 $out = self::DIFF_TRANSPORTERROR;
@@ -392,12 +351,12 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 {
                     // fetch remote parent node (as "node linked to local parent node") and check if it's the same as declared by the remote node
                     $parent = $node->attribute( 'parent' );
-                    $parentRemoteNodeRemoteID = $this->buildRemoteId( $parent->attribute( 'node_id' ), $parent->attribute( 'remote_id' ) );
-                    $method = 'GET';
-                    $url = "/content/locations/remote/$parentRemoteNodeRemoteID";
                     try
                     {
-                        $remoteParent = $this->restCall( $method, $url );
+                        $remoteParent = $this->restCall(
+                            "GET",
+                            "/content/locations/remote/" . $this->buildRemoteId( $parent->attribute( 'node_id' ), $parent->attribute( 'remote_id' ) )
+                        );
                         if ( isset( $remoteParent['id'] ) )
                         {
                             if ( $remoteParent['id'] != $remote['parentId'] )
@@ -411,7 +370,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                             /// @todo
                         }
                     }
-                    catch( exception $e )
+                    catch ( exception $e )
                     {
                         /// @todo
                     }
@@ -458,12 +417,12 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     function checkObject( eZContentObject $object )
     {
         $out = 0;
-        $RemoteObjectRemoteID = $this->buildRemoteId( $object->attribute( 'id' ), $object->attribute( 'remote_id' ), 'object' );
-        $method = 'GET';
-        $url = "/content/objects/remote/{$RemoteObjectRemoteID}";
         try
         {
-            $remote = $this->restCall( $method, $url );
+            $remote = $this->restCall(
+                "GET",
+                "/content/objects/remote/" . $this->buildRemoteId( $object->attribute( 'id' ), $object->attribute( 'remote_id' ), 'object' )
+            );
             if ( !is_array( $remote ) || !isset( $remote['id'] ) )
             {
                 $out = self::DIFF_TRANSPORTERROR;
@@ -570,7 +529,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
      * @todo miss object state info (both create and update)
      *
      */
-    protected function encodeObject( $objectID, $versionNr, $locale, $isupdate=false, $RemoteObjRemoteID=false, $syncdate=false )
+    protected function encodeObject( $objectID, $versionNr, $locale, $isupdate = false, $RemoteObjRemoteID = false, $syncdate = false )
     {
         $object = eZContentObject::fetch( $objectID );
         if ( !$object )
@@ -761,13 +720,12 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     {
         $out = array();
 
-        $method = 'GET';
         $url = "/api/versions";
         $ini = eZINI::instance( 'wsproviders.ini' );
         $uri = $ini->variable( $this->target->attribute( 'server' ), 'providerUri' );
         try
         {
-            $resp = $this->restCall( $method, $url );
+            $resp = $this->restCall( "GET", $url );
             if ( !is_array( $resp ) )
             {
 
