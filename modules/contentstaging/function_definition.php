@@ -55,6 +55,10 @@ $FunctionList = array(
                                array( 'name'     => 'language',
                                       'type'     => 'string',
                                       'required' => false,
+                                      'default'  => null ),
+                               array( 'name'     => 'status',
+                                      'type'     => 'integer',
+                                      'required' => false,
                                       'default'  => null ) ) ),
 
     'sync_events_count'  => array(
@@ -68,6 +72,10 @@ $FunctionList = array(
                                       'default'  => '' ),
                                array( 'name'     => 'language',
                                       'type'     => 'string',
+                                      'required' => false,
+                                      'default'  => null )
+                               array( 'name'     => 'status',
+                                      'type'     => 'integer',
                                       'required' => false,
                                       'default'  => null ) ) ),
 

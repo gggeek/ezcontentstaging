@@ -39,7 +39,10 @@ foreach( $targets as $targetId )
     {
         $cli->output( "Syncing target: $targetId" );
 
-        $events = eZContentStagingEvent::fetchList( $targetId );
+        $eventCount = eZContentStagingEvent::fetchListCount( $targetId, null, eZContentStagingEvent::STATUS_SYNCING );
+        $cli->output( "Events synchronizing: $eventCount" );
+
+        $events = eZContentStagingEvent::fetchList( $targetId, true, null, null, null, eZContentStagingEvent::STATUS_TOSYNC );
         $eventCount = count( $events );
         $cli->output( "Events to synchronize: $eventCount" );
         $script->resetIteration( $eventCount, 0 );

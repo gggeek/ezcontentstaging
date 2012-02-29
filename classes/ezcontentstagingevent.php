@@ -401,12 +401,16 @@ class eZContentStagingEvent extends eZPersistentObject
     *
     * @todo refactor: asObject as last param
     */
-    static function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
+    static function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null, $status=null )
     {
         $conditions = array();
         if ( $target_id != '' )
         {
-            $conditions = array( 'target_id' => $target_id );
+            $conditions['target_id'] = $target_id;
+        }
+        if ( $status !== null )
+        {
+            $conditions['status'] = (int)$status;
         }
         $limits = array();
         if ( $offset !== null )
@@ -487,12 +491,16 @@ class eZContentStagingEvent extends eZPersistentObject
     * Returns count of events to sync to a given server
     * @return integer
     */
-    static function fetchListCount( $target_id=null, $language=null )
+    static function fetchListCount( $target_id=null, $language=null, $status=null )
     {
         $conditions = array();
         if ( $target_id != '' )
         {
-            $conditions = array( 'target_id' => $target_id );
+            $conditions['target_id'] = $target_id ;
+        }
+        if ( $status !== null )
+        {
+            $conditions['status'] = (int)$status;
         }
         $custom_conds = null;
         if ( $language != null )

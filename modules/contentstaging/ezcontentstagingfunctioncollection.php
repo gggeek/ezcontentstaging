@@ -10,14 +10,14 @@
 class eZContentStagingFunctionCollection
 {
     /// @todo implement some filter parameters, to eg. be able to fetch non-currently-syncing items
-    static function fetchSyncEvents( $target_id=false, $offset=false, $limit=false, $language=false )
+    static function fetchSyncEvents( $target_id=false, $offset=false, $limit=false, $language=false, $status=null )
     {
-        return array( 'result' => eZContentStagingEvent::fetchList( $target_id, true, $offset, $limit, $language ) );
+        return array( 'result' => eZContentStagingEvent::fetchList( $target_id, true, $offset, $limit, $language, $status ) );
     }
 
-    static function fetchSyncEventsCount( $target_id=false, $language=false )
+    static function fetchSyncEventsCount( $target_id=false, $language=false, $status=null )
     {
-        return array( 'result' => eZContentStagingEvent::fetchListCount( $target_id, $language ) );
+        return array( 'result' => eZContentStagingEvent::fetchListCount( $target_id, $language, $status ) );
     }
 
     /// @todo implement some filter parameters, to eg. be able to fetch non-currently-syncing items
