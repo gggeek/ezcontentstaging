@@ -541,7 +541,7 @@ class eZContentStagingContent extends contentStagingBase
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && operationIsAvailable( 'content_updateinitiallanguage' ) )
+        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updateinitiallanguage' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
