@@ -36,21 +36,12 @@ if ( $http->hasPostVariable('NodeID') )
     {
         if ( $event instanceof eZContentStagingEvent )
         {
-<<<<<<< HEAD
-			$current_node_events[$event->attribute( 'id' )] = $event;
-		}
-	}
-
-	//collecte related objects
-	$relatedObjectList = $currentObject->relatedContentObjectList();
-=======
             $current_node_events[$event->attribute( 'id' )] = $event;
         }
     }
 
     //collecte related objects
     $relatedObjectList = $currentObject->relatedContentObjectList();
->>>>>>> 258f24c... CS: using spaces instead of tabs
 
     //Check if we need to sync related object
     $relatedObjectNeedingSync = $eventList = array();
@@ -70,16 +61,6 @@ if ( $http->hasPostVariable('NodeID') )
             }
         }
 
-<<<<<<< HEAD
-		/*
-		$relatedObjectNodes = $relatedObject->assignedNodes();
-		foreach($relatedObjectNodes as $relatedObjectNode){
-			echo $relatedObjectNode->attribute('node_id');
-		}
-		*/
-
-	}
-=======
         /*
         $relatedObjectNodes = $relatedObject->assignedNodes();
         foreach ($relatedObjectNodes as $relatedObjectNode)
@@ -89,7 +70,6 @@ if ( $http->hasPostVariable('NodeID') )
         */
 
     }
->>>>>>> 258f24c... CS: using spaces instead of tabs
 }
 
 if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncNodeButton'))
