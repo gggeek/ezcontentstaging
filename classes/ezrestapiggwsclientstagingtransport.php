@@ -104,7 +104,8 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 /// @todo what if we create many drafts and we discard them? Is the first version created still 1? test it!
                 $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
                 $syncdate = false;
-                if ( $this->target->attribute( 'use_source_creation_dates_on_target' ) == 'enabled')
+                // allow incomplete ini not to raise a warning: use @
+                if ( @$this->target->attribute( 'use_source_creation_dates_on_target' ) == 'enabled')
                 {
                     $syncdate = true;
                 }
