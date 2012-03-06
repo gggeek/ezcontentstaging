@@ -22,6 +22,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
 
     function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID )
     {
+        $nodeID = $node->attribute( 'node_id' );
         $object = $node->attribute( 'object' );
         $initData = array(
             'nodeID' => $nodeID,
