@@ -30,7 +30,7 @@ class ezpMvcRailsRoute extends ezcMvcRailsRoute
     {
         $this->protocol = $protocol;
         parent::__construct( $pattern, $controllerClassName, $action, $defaultValues );
-}
+    }
 
     /**
      * Evaluates the URI against this route and protocol.
