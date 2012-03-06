@@ -20,6 +20,36 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         $this->target = $target;
     }
 
+    function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID )
+    {
+        $object = $node->attribute( 'object' );
+        $initData = array(
+            'nodeID' => $nodeID,
+            'nodeRemoteID' => $node->attribute( 'remote_id' ),
+            'objectRemoteID' => $object->attribute( 'remote_id' ),
+            'remoteNodeID' => $remoteNodeID
+        );
+        $evtID = eZContentStagingEvent::addEvent(
+            $this->target->attribute( 'id' ),
+            $object->attribute( 'id' ),
+            eZContentStagingEvent::ACTION_UPDATEREMOTEIDS,
+            $initData,
+            array( $nodeID )
+        );
+
+        /*if ( $evtID )
+        {
+            $ok = eZContentStagingEvent::syncEvents( array( $evtID ) );
+            $out[] = $ok[$evtID];
+        }
+        else
+        {
+            $out[] = 0;
+        }*/
+
+        return 0;
+    }
+
     function syncEvents( array $events )
     {
         $results = array();
@@ -280,7 +310,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 $this->restCall( "PUT", "/content/objects/remote/$RemoteObjRemoteID/section?sectionId={$data['sectionID']}" );
                 return 0;
 
-            case eZContentStagingEvent::ACTION_INITIALIZEFEED:
+            case eZContentStagingEvent::ACTION_UPDATEREMOTEIDS:
                 // set remote id on remote node and remote object
                 $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
 
@@ -754,6 +784,47 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
 
 
+        return $out;
+    }
+
+    function checkSubtreeInitialization( eZContentObjectTreeNode $node, $remoteNodeID )
+    {
+        $out = array();
+
+        try
+        {
+            $method = 'GET';
+            $url = "/content/locations/{$remoteNodeID}";
+            $resp = $this->restCall( $method, $url );
+            if ( !is_array( $resp ) || !isset( $resp['remoteId'] ) || !isset( $resp['contentId'] ) )
+            {
+                $resp[] = "Received invalid data in response (checking remote node $remoteNodeID)";
+            }
+            else
+            {
+                $method = 'GET';
+                $url = "/content/objects/{$resp['contentId']}";
+                $resp2 = $this->restCall( $method, $url );
+                if ( !is_array( $resp2 ) || !isset( $resp2['remoteId'] ) )
+                {
+                    $out[] = "Received invalid data in response (checking remote object {$resp['contentId']})";
+                }
+                else
+                {
+                    $RemoteNodeRemoteID = $this->buildRemoteId( $node->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
+                    $obj = $node->attribute( 'object' );
+                    $RemoteObjRemoteID = $this->buildRemoteId( $obj->attribute( 'id' ), $obj->attribute( 'remote_id' ), 'object' );
+                    if ( $RemoteNodeRemoteID != $resp['remoteId'] || $RemoteObjRemoteID != $resp2['remoteId'] )
+                    {
+                        $out[] = "Remote node $remoteNodeID needs synchronization";
+                    }
+                }
+            }
+        }
+        catch ( exception $e )
+        {
+            $out[] = $e->getMessage() . "  (checking remote node $remoteNodeID)";
+        }
         return $out;
     }
 }

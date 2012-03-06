@@ -18,6 +18,7 @@ $targetId = $Params['target_id'];
 
 $configurationErrors = array();
 $connectionErrors = array();
+$initializationErrors = array();
 if ( $targetId !== null )
 {
     /// @todo check that target exists (either here or in tpl code)
@@ -26,12 +27,14 @@ if ( $targetId !== null )
     if ( $feed )
     {
         $connectionErrors = $feed->checkConnection();
+        $initializationErrors = $feed->checkInitialization();
     }
 }
 
 $tpl->setVariable( 'target_id', $targetId );
 $tpl->setVariable( 'configurationErrors', $configurationErrors );
 $tpl->setVariable( 'connectionErrors', $connectionErrors );
+$tpl->setVariable( 'initializationErrors', $initializationErrors );
 
 $Result = array();
 $Result['content'] = $tpl->fetch( 'design:contentstaging/checkfeed.tpl' );

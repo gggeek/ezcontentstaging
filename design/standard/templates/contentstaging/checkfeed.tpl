@@ -2,6 +2,7 @@
  @param string $targetId
  @param array $configurationErrors
  @param array $connectionErrors
+ @param array $initializationErrors
 *}
 
 <div class="border-box">
@@ -45,6 +46,20 @@
     {else}
         <tr class="{$style}"><td>{'No problems detected'|i18n('ezcontentstaging')}</td></tr>
     {/if}
+
+    <tr>
+        <th>{'Initialization status'|i18n('ezcontentstaging')}</th>
+    </tr>
+    {if $initializationErrors|count()}
+        {foreach $initializationErrors as $error sequence array( 'bglight', 'bgdark' ) as $style}
+            <tr class="{$style}">
+                <td>{$error|wash()}</td>
+            </tr>
+        {/foreach}
+    {else}
+        <tr class="{$style}"><td>{'No problems detected'|i18n('ezcontentstaging')}</td></tr>
+    {/if}
+
 </table>
 {/if}
 

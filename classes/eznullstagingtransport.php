@@ -18,6 +18,11 @@ class eZNullStagingTransport implements eZContentStagingTransport
 
     }
 
+    function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID )
+    {
+        return 0;
+    }
+
     function syncEvents( array $events )
     {
         return 0;
@@ -39,6 +44,10 @@ class eZNullStagingTransport implements eZContentStagingTransport
     }
 
     function checkConnection()
+    {
+        return array();
+    }
+    function checkSubtreeInitialization( eZContentObjectTreeNode $node, $remoteNodeID )
     {
         return array();
     }

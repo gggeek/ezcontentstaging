@@ -30,10 +30,12 @@ class eZContentStagingEvent extends eZPersistentObject
     const ACTION_UPDATEALWAYSAVAILABLE = 1024;
     const ACTION_UPDATEINITIALLANGUAGE = 2048;
     const ACTION_UPDATEMAINASSIGNMENT = 4096;
-    const ACTION_UPDATEOBJECSTATE = 8192; /// @todo
+    const ACTION_UPDATEOBJECSTATE = 8192;
     const ACTION_UPDATEPRIORITY = 16384;
     const ACTION_UPDATESECTION = 32768;
-    const ACTION_INITIALIZEFEED = 65536;
+    // the 'initializenode' event is used to inject remote_node_id and
+    // remote_object_id into the remote node (known by its node_id)
+    const ACTION_UPDATEREMOTEIDS = 65536;
 
 
     static $sync_strings = array(

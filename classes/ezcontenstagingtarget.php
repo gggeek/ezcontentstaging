@@ -170,10 +170,18 @@ class eZContentStagingTarget
      * - for all top level nodes, we need to sync in remote server the object-remote-id
      *   and node-remote-id
      * @return array for every source node, 0 for ok, or an error code
+     * @todo !important refactor: rename this method?
      */
-    function initializeRootItems( $doexecute=true )
+    function initializeRootItems()
     {
         $out = array();
+
+        $transport = $this->transport();
+        // exit with specific error if transport is null
+        if ( $transport == false )
+        {
+            return array( eZContentStagingEvent::ERROR_NOTRANSPORTCLASS );
+        }
 
         $remotenodes = $this->_attrs['remote_subtrees'];
         foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
@@ -189,36 +197,12 @@ class eZContentStagingTarget
             $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
-                eZDebug::writeError( "Node $subtreeRoot specified as root of feed " . $this->_attrs['name'] . " does not exist", __METHOD__ );
+                eZDebug::writeError( "Node $nodeID specified as root of feed " . $this->_attrs['name'] . " does not exist", __METHOD__ );
                 $out[] = eZContentStagingEvent::ERROR_NOSOURCENODE;
                 continue;
             }
 
-            $object = $node->attribute( 'object' );
-            $initData = array(
-                'nodeID' => $nodeID,
-                'nodeRemoteID' => $node->attribute( 'remote_id' ),
-                'objectRemoteID' => $object->attribute( 'remote_id' ),
-                'remoteNodeID' => $remotenodes[$key]
-            );
-            $evtID = eZContentStagingEvent::addEvent(
-                $this->attribute( 'id' ),
-                $object->attribute( 'id' ),
-                eZContentStagingEvent::ACTION_INITIALIZEFEED,
-                $initData,
-                array( $nodeID )
-            );
-
-            if ( $doexecute && $evtID )
-            {
-                $ok = eZContentStagingEvent::syncEvents( array( $evtID ) );
-                $out[] = $ok[$evtID];
-            }
-            else
-            {
-                $out[] = 0;
-            }
-
+            $out[] = $transport->initializeSubtree( $node, $remoteNodeID );
         }
         return $out;
     }
@@ -372,9 +356,10 @@ class eZContentStagingTarget
         {
             $out[] = "Feed has no target root nodes defined in file contentstagingsource.ini, block '$group', parameter 'RemoteSubtrees'";
         }
-        if ( count( $sourceroots ) != count( $remoteroots ) )
+        // since $sourceroots and $remoteroots could be hashes, we need to check their keys: all keys in source should be in remote as well
+        if ( count( array_diff( array_keys( $sourceroots ), array_keys( $remoteroots ) ) ) )
         {
-             $out[] = "Number of source root nodes and remote root nodes differ in file contentstagingsource.ini, block '$group', parameters 'Subtrees' and 'RemoteSubtrees' ";
+             $out[] = "Source root nodes and remote root nodes differ in file contentstagingsource.ini, block '$group', parameters 'Subtrees' and 'RemoteSubtrees' ";
         }
         foreach ( $sourceroots as $root )
         {
@@ -408,6 +393,7 @@ class eZContentStagingTarget
 
     /**
      * Checks if the transport layer can connect to the target server
+     * NB: returns no errors if transport class is not available - use checkConfiguration for that
      * @return array of string (error messages)
      */
     function checkConnection()
@@ -415,16 +401,50 @@ class eZContentStagingTarget
         $transport = $this->transport();
         if ( !$transport )
         {
-            return array( );
+            return array();
         }
+
         return $transport->checkConnection();
     }
 
     /**
-     * Checks if the transport layer can connect to the target server
+     * Checks if the feed has been successfully initializated, by asking the
+     * transport layer (which takes care of handling the initialization).
+     * NB: returns no errors if transport class is not available - use checkConfiguration for that
      * @return array of string (error messages)
      */
-    //function checkInitialization()
-    //{
-    //}
+    function checkInitialization()
+    {
+        $transport = $this->transport();
+        if ( !$transport )
+        {
+            return array();
+        }
+
+        $out = array();
+        $remotenodes = $this->_attrs['remote_subtrees'];
+        foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
+        {
+            if ( !isset( $remotenodes[$key] ) )
+            {
+                $out[] = "Remote root node not specified for feed " . $this->_attrs['name'];
+                continue;
+            }
+            $remoteNodeID = $remotenodes[$key];
+
+            $node = eZContentObjectTreeNode::fetch( $nodeID );
+            if ( !$node )
+            {
+                $out[] = "Node $nodeID specified as root of feed " . $this->_attrs['name'] . " does not exist";
+                continue;
+            }
+
+            if ( count( $errors = $transport->checkSubtreeInitialization( $node, $remoteNodeID ) ) != 0 )
+            {
+                $out = array_merge( $out, $errors );
+            }
+        }
+        return $out;
+    }
+
 }

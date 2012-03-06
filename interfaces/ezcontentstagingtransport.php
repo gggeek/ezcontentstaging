@@ -23,6 +23,15 @@ interface eZContentStagingTransport
     function syncEvents( array $events );
 
     /**
+     * Called once for each subtree that makes up a feed, this method should
+     * take all necessary actions to insure that successive calls are fine.
+     * It should be sufficient to init any feed only once, but multiple
+     * initializations should not have a destructive effect
+     * @retrun integer 0 on success
+     */
+    function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID );
+
+    /**
      * Checks a local node vs. a remote one and returns a bitmask of differences
      * @see eZBaseStagingTransport for codes
      * @return integer
@@ -30,7 +39,7 @@ interface eZContentStagingTransport
     function checkNode( eZContentObjectTreeNode $node );
 
     /**
-     * Checks a local node vs. a remote one and returns a bitmask of differences
+     * Checks a local object vs. a remote one and returns a bitmask of differences
      * @see eZBaseStagingTransport for codes
      * @return integer
      */
@@ -47,5 +56,11 @@ interface eZContentStagingTransport
      * @return array of string with error messages
      */
     function checkConnection();
+
+    /**
+     * Checks if initialization is ok for a given subtree.
+     * @return array of string with error messages
+     */
+    function checkSubtreeInitialization( eZContentObjectTreeNode $node, $remoteNodeID );
 
 }
