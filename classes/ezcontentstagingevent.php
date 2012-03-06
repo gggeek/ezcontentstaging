@@ -77,7 +77,7 @@ class eZContentStagingEvent extends eZPersistentObject
     // an error that should never be returned
     const ERROR_BADPHPCODING = -99;
 
-    // nb: ggws rest layers uses errors from -101 to -30x currently, we try to
+    // nb: rest layer uses errors from -101 to -30x currently, we try to
     // avoid collitions
     const ERROR_EVENTTYPEUNKNOWNTOTRANSPORT = -501;
     const ERROR_OBJECTCANNOTSERIALIZE = -502;
@@ -763,7 +763,7 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /**
-     * Removes useless events from array if any atre found
+     * Removes useless events from array if any are found
      * cases:
      * . a hide+unhide chain (event with other events in the middle)
      * . a setsection chain with no node add/remove/delete/swap in the middle
