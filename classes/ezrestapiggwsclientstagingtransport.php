@@ -517,8 +517,14 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
      * Wrapper for the REST calls.
      * Throws an exception on any protocol error
      *
+     * NB: when eZP is set to debug mode, at leat up to version 4.6, it will
+     * not send back proper HTTP response codes (or content type)
+     * This means that the callers of restCall() will get back an exception
+     * thrown when contacting production servers and a plain array when contacting
+     * debug servers. We should probably fix this (or get it fixed server-side)
+     *
      * @return mixed
-     * @todo implement result checking and error code parsing ...
+     * @todo implement better result checking and error code parsing
      */
     protected function restCall( $method, $url, $payload=array() )
     {
@@ -798,7 +804,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
             $resp = $this->restCall( $method, $url );
             if ( !is_array( $resp ) || !isset( $resp['remoteId'] ) || !isset( $resp['contentId'] ) )
             {
-                $resp[] = "Received invalid data in response (checking remote node $remoteNodeID)";
+                $out[] = "Received invalid data in response (checking remote node $remoteNodeID)";
             }
             else
             {
@@ -823,6 +829,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
         catch ( exception $e )
         {
+            /// @todo we should distinguish between "remote node not found" and "page nout found"
             $out[] = $e->getMessage() . "  (checking remote node $remoteNodeID)";
         }
         return $out;
