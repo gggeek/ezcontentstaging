@@ -352,6 +352,11 @@ class eZContentStagingTarget
         {
             $out[] = "Feed has no source root nodes defined in file contentstagingsource.ini, block '$group', parameter 'Subtrees'";
         }
+        /* this might actually be supported (to validate): have the same root node twice
+        if ( count( $sourceroots ) != count( array_unique( $sourceroots ) ) )
+        {
+            $out[] = "Feed has same source root defined twice in file contentstagingsource.ini, block '$group', parameter 'Subtrees'";
+        }*/
         if ( !$ini->hasVariable( $group, 'RemoteSubtrees' ) || !is_array( $remoteroots = $ini->variable( $group, 'RemoteSubtrees' ) ) || count( $remoteroots ) == 0 )
         {
             $out[] = "Feed has no target root nodes defined in file contentstagingsource.ini, block '$group', parameter 'RemoteSubtrees'";
@@ -360,6 +365,12 @@ class eZContentStagingTarget
         if ( count( array_diff( array_keys( $sourceroots ), array_keys( $remoteroots ) ) ) )
         {
              $out[] = "Source root nodes and remote root nodes differ in file contentstagingsource.ini, block '$group', parameters 'Subtrees' and 'RemoteSubtrees' ";
+        }
+        if ( count( $remoteroots ) != count( array_unique( $remoteroots ) ) )
+        {
+            /// @todo if the same target root is defined twice or more,
+            ///       we can allow it if it is tied to the same source root (or init will not work)
+            $out[] = "Feed has same remote root defined twice in file contentstagingsource.ini, block '$group', parameter 'RemoteSubtrees'";
         }
         foreach ( $sourceroots as $root )
         {
