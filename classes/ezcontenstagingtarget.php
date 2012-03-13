@@ -24,7 +24,9 @@ class eZContentStagingTarget
 
     function __construct( $row )
     {
-        $this->_attrs = self::CamelCase2camel_case( $row );
+        $this->_attrs = self::CamelCase2camel_case( $row ) + array(
+            "use_source_creation_dates_on_target" => "disabled",
+        );
     }
 
     function attributes()
