@@ -161,12 +161,13 @@ class eZContentStagingTarget
     /// CamelCase to camel_case conversion
     protected function CamelCase2camel_case( $array )
     {
+        $result = array();
         foreach ( $array as $key => $val )
         {
             $name = strtolower( implode( '_', preg_split( '/([[:upper:]][[:lower:]]+)/', $key, null, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY ) ) );
-            $out[$name] = $val;
+            $result[$name] = $val;
         }
-        return $out;
+        return $result;
     }
 
     /**
