@@ -111,15 +111,7 @@ class eZContentStagingTarget
      */
     function includesNode( eZContentObjectTreeNode $node )
     {
-        $nodepath = $node->attribute( 'path_string' );
-        foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
-        {
-            if ( strpos( $nodepath, '/' . $subtreeRoot . '/' ) !== false )
-            {
-                return true;
-            }
-        }
-        return false;
+        return $this->includesNodeByPath( $node->attribute( 'path_string' ) );
     }
 
     /**
