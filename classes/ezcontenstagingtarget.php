@@ -231,7 +231,7 @@ class eZContentStagingTarget
 
         $transport = $this->transport();
 
-        $remotenodes = $this->_attrs['remote_subtrees'];
+        //$remotenodes = $this->_attrs['remote_subtrees'];
         foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
         {
             /*if ( !isset( $remotenodes[$key] ) )
