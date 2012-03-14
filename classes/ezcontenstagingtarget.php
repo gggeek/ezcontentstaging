@@ -24,8 +24,10 @@ class eZContentStagingTarget
 
     function __construct( $row )
     {
+        // some of the parameters are optional in definition of an eZContentStagingTarget
         $this->_attrs = self::CamelCase2camel_case( $row ) + array(
             "use_source_creation_dates_on_target" => "disabled",
+            "use_source_owner_on_target" => "disabled"
         );
     }
 
