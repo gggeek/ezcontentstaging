@@ -60,6 +60,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const STATUS_TOSYNC = 0;
     const STATUS_SYNCING = 1;
     const STATUS_SUSPENDED = 2;
+    const STATUS_SCHEDULED = 4;
 
     // error ranges:
     // event status ko: -1 to -9
