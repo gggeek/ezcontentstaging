@@ -15,333 +15,179 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
         return self::VERSIONNUMBER;
     }
 
+    static $routesDefinition = array(
+
+        // content
+        'stagingContent' => array(
+            '/content/objects/:Id',
+            'eZContentStagingRestContentController',
+            array( 'http-get' => 'load', 'http-put' => 'update', 'http-delete' => 'remove' )
+        ),
+        'stagingContentRemote' => array(
+            '/content/objects/remote/:remoteId',
+            'eZContentStagingRestContentController',
+            array( 'http-get' => 'load', 'http-put' => 'update', 'http-delete' => 'remove' )
+        ),
+        'stagingContentCreate' => array(
+            '/content/objects',
+            'eZContentStagingRestContentController',
+            array( 'http-post' => 'create' )
+        ),
+        'stagingContentAddVersion' => array(
+            '/content/objects/:Id/versions',
+            'eZContentStagingRestContentController',
+            array( 'http-post' => 'addVersion' )
+        ),
+        'stagingContentAddVersionRemote' => array(
+            '/content/objects/remote/:remoteId/versions',
+            'eZContentStagingRestContentController',
+            array( 'http-post' => 'addVersion' )
+        ),
+        'stagingContentPublishVersion' => array(
+            '/content/objects/:Id/versions/:versionNr',
+            'eZContentStagingRestContentController',
+            array( 'http-post' => 'publishVersion' )
+        ),
+        'stagingContentPublishVersionRemote' => array(
+            '/content/objects/remote/:remoteId/versions/:versionNr',
+            'eZContentStagingRestContentController',
+            array( 'http-post' => 'publishVersion' )
+        ),
+        'stagingContentAddLocation' => array(
+            '/content/objects/:Id/locations',
+            'eZContentStagingRestContentController',
+            array( 'http-put' => 'addLocation' )
+        ),
+        'stagingContentAddLocationRemote' => array(
+            '/content/objects/remote/:remoteId/locations',
+            'eZContentStagingRestContentController',
+            array( 'http-put' => 'addLocation' )
+        ),
+        'stagingContentUpdateSection' => array(
+            '/content/objects/:Id/section',
+            'eZContentStagingRestContentController',
+            array( 'http-put' => 'updateSection' )
+        ),
+        'stagingContentUpdateSectionRemote' => array(
+            '/content/objects/remote/:remoteId/section',
+            'eZContentStagingRestContentController',
+            array( 'http-put' => 'updateSection' )
+        ),
+        'stagingContentUpdateStates' => array(
+            '/content/objects/:Id/states',
+            'eZContentStagingRestContentController',
+            array( 'http-put' => 'updateStates' )
+        ),
+        'stagingContentUpdateStatesRemote' => array(
+            '/content/objects/remote/:remoteId/states',
+            'eZContentStagingRestContentController',
+            array( 'http-put' => 'updateStates' )
+        ),
+        'stagingContentRemoveLanguage' => array(
+            '/content/objects/:Id/languages/:language',
+            'eZContentStagingRestContentController',
+            array( 'http-delete' => 'removeLanguage' )
+        ),
+        'stagingContentRemoveLanguageRemote' => array(
+            '/content/objects/remote/:remoteId/languages/:language',
+            'eZContentStagingRestContentController',
+            array( 'http-delete' => 'removeLanguage' )
+        ),
+
+        // 'locations'
+        'stagingLocationLoad' => array(
+            '/content/locations/:Id',
+            'eZContentStagingRestLocationController',
+            array( 'http-get' => 'load', 'http-post' => 'hideUnhide', 'http-put' => 'update', 'http-delete' => 'remove' )
+        ),
+        'stagingLocationLoadRemote' => array(
+            '/content/locations/remote/:remoteId',
+            'eZContentStagingRestLocationController',
+            array( 'http-get' => 'load', 'http-post' => 'hideUnhide', 'http-put' => 'update', 'http-delete' => 'remove' )
+        ),
+        'stagingLocationMove' => array(
+            '/content/locations/:Id/parent',
+            'eZContentStagingRestLocationController',
+            array( 'http-put' => 'move' )
+        ),
+        'stagingLocationMoveRemote' => array(
+            '/content/locations/remote/:remoteId/parent',
+            'eZContentStagingRestLocationController',
+            array( 'http-put' => 'move' )
+        ),
+
+        // helper calls
+        'apiVersionList' => array(
+            '/api/versions',
+            'eZContentStagingRestProviderAnalyzer',
+            array( 'http-get' => 'listVersions' )
+        ),
+        'apiVersion' => array(
+            '/api/versions/:version',
+            'eZContentStagingRestProviderAnalyzer',
+            array( 'http-get' => 'describeVersion' )
+        )
+    );
+
+    /**
+    * We cope with different evolutions in the REST API lifetime
+    */
     public function getRoutes()
     {
-        return array(
+        if ( version_compare( eZPublishSDK::version(), '4.7.0' ) >= 0 )
+        {
+            return $this->getRoutes47();
+        }
+        else
+        {
+            return $this->getRoutes46();
+        }
+    }
 
-            // "content"
-            'stagingContentLoad' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id',
-                    'eZContentStagingRestContentController',
-                    'load',
-                    array(),
-                    'http-get'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentLoadRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId',
-                    'eZContentStagingRestContentController',
-                    'load',
-                    array(),
-                    'http-get'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentCreate' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects',
-                    'eZContentStagingRestContentController',
-                    'create',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentAddVersion' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id/versions',
-                    'eZContentStagingRestContentController',
-                    'addVersion',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentAddVersionRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId/versions',
-                    'eZContentStagingRestContentController',
-                    'addVersion',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentPublishVersion' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id/versions/:versionNr',
-                    'eZContentStagingRestContentController',
-                    'publishVersion',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentPublishVersionRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId/versions/:versionNr',
-                    'eZContentStagingRestContentController',
-                    'publishVersion',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentUpdate' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id',
-                    'eZContentStagingRestContentController',
-                    'update',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentUpdateRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId',
-                    'eZContentStagingRestContentController',
-                    'update',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentRemove' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id',
-                    'eZContentStagingRestContentController',
-                    'remove',
-                    array(),
-                    'http-delete'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentRemoveRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId',
-                    'eZContentStagingRestContentController',
-                    'remove',
-                    array(),
-                    'http-delete'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentAddLocation' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id/locations',
-                    'eZContentStagingRestContentController',
-                    'addLocation',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentAddLocationRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId/locations',
-                    'eZContentStagingRestContentController',
-                    'addLocation',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentUpdateSection' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id/section',
-                    'eZContentStagingRestContentController',
-                    'updateSection',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentUpdateSectionRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId/section',
-                    'eZContentStagingRestContentController',
-                    'updateSection',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentUpdateStates' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id/states',
-                    'eZContentStagingRestContentController',
-                    'updateStates',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentUpdateStatesRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId/states',
-                    'eZContentStagingRestContentController',
-                    'updateStates',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentRemoveLanguage' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/:Id/languages/:language',
-                    'eZContentStagingRestContentController',
-                    'removeLanguage',
-                    array(),
-                    'http-delete'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingContentRemoveLanguageRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/objects/remote/:remoteId/languages/:language',
-                    'eZContentStagingRestContentController',
-                    'removeLanguage',
-                    array(),
-                    'http-delete'
-                ),
-                $this->getVersionNumber()
-            ),
-            // 'locations'
-            'stagingLocationLoad' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/:Id',
-                    'eZContentStagingRestLocationController',
-                    'load',
-                    array(),
-                    'http-get'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationLoadRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/remote/:remoteId',
-                    'eZContentStagingRestLocationController',
-                    'load',
-                    array(),
-                    'http-get'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationHideUnhide' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/:Id',
-                    'eZContentStagingRestLocationController',
-                    'hideUnhide',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationHideUnhideRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/remote/:remoteId',
-                    'eZContentStagingRestLocationController',
-                    'hideUnhide',
-                    array(),
-                    'http-post'
-                ),
-                $this->getVersionNumber()
-            ),
-            // update the sort field / sort order or the priority
-            // depending on the content of the PUT request
-            'stagingLocationUpdate' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/:Id',
-                    'eZContentStagingRestLocationController',
-                    'update',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationUpdateRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/remote/:remoteId',
-                    'eZContentStagingRestLocationController',
-                    'update',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationMove' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/:Id/parent',
-                    'eZContentStagingRestLocationController',
-                    'move',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationMoveRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/remote/:remoteId/parent',
-                    'eZContentStagingRestLocationController',
-                    'move',
-                    array(),
-                    'http-put'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationRemove' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/:Id',
-                    'eZContentStagingRestLocationController',
-                    'remove',
-                    array(),
-                    'http-delete'
-                ),
-                $this->getVersionNumber()
-            ),
-            'stagingLocationRemoveRemote' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/content/locations/remote/:remoteId',
-                    'eZContentStagingRestLocationController',
-                    'remove',
-                    array(),
-                    'http-delete'
-                ),
-                $this->getVersionNumber()
-            ),
+    /// we should use late static binding here. Waiting for deprecating php 5.2...
+    protected function getRoutes46()
+    {
+        $out = array();
+        foreach( self::$routesDefinition as $routeName => $routeDef )
+        {
+            foreach( $routeDef[2] as $verb => $method )
+            {
+                $out[ $routeName . ucfirst( substr( $verb, 5 ) ) ] =  new ezpRestInspectableVersionedRoute(
+                    new ezpRestInspectableRailsRoute(
+                        $routeDef[0],
+                        $routeDef[1],
+                        $method,
+                        array(),
+                        $verb
+                    ),
+                    $this->getVersionNumber()
+                );
+            }
+        }
+        return $out;
+    }
 
-            // helper calls
-
-            'apiVersionList' => new ezpRestInspectableVersionedRoute(
+    /// we should use late static binding here. Waiting for deprecating php 5.2...
+    protected function getRoutes47()
+    {
+        $out = array();
+        foreach( self::$routesDefinition as $routeName => $routeDef )
+        {
+            $out[ $routeName ] =  new ezpRestInspectableVersionedRoute(
                 new ezpRestInspectableRailsRoute(
-                    '/api/versions',
-                    'eZContentStagingRestProviderAnalyzer',
-                    'listVersions',
-                    array(),
-                    'http-get'
+                     $routeDef[0],
+                     $routeDef[1],
+                     $routeDef[2]
                 ),
                 $this->getVersionNumber()
-            ),
-
-            'apiVersion' => new ezpRestInspectableVersionedRoute(
-                new ezpRestInspectableRailsRoute(
-                    '/api/versions/:version',
-                    'eZContentStagingRestProviderAnalyzer',
-                    'describeVersion',
-                    array(),
-                    'http-get'
-                ),
-                $this->getVersionNumber()
-            )
-        );
+            );
+        }
+        return $out();
     }
 
     public function getViewController()
     {
         return new ezpRestApiViewController();
     }
+
 }
