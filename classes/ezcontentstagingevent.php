@@ -338,11 +338,6 @@ class eZContentStagingEvent extends eZPersistentObject
     static function fetchListGroupedByObject( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
     {
         $conditions = array();
-        if ( $language != null )
-        {
-            $custom_conds .= ' AND ' . self::languagesSQLFilter( $language );
-        }
-        $conditions = array();
         if ( $target_id != '' )
         {
             $conditions = array( 'target_id' => $target_id );
