@@ -677,7 +677,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
             return null;
         }
         $generator = new $class( $targetId );
-        if ( !is_a( $generator, 'eZContentStagingRemoteIdGenerator' ) )
+        if ( ! $generator instanceof eZContentStagingRemoteIdGenerator )
         {
             eZDebug::writeWarning( "Probable problems ahead generating remote ids for objects/nodes for target feed $targetId: class $class has wrong interface", __METHOD__ );
         }
@@ -707,7 +707,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
         /// @todo check for interface
         $filter = new $class( $targetId );
-        if ( !is_a( $filter, 'eZContentStagingFieldFilter' ) )
+        if ( ! $filter instanceof eZContentStagingFieldFilter )
         {
             eZDebug::writeWarning( "Probable problems ahead filtering fields when serializing for target feed $targetId: class $class has wrong interface", __METHOD__ );
         }

@@ -91,7 +91,7 @@ class eZContentStagingTarget
             $node = eZContentObjectTreeNode::fetch( $node );
 
         }
-        if ( ! is_a( $node, 'eZContentObjectTreeNode' ) )
+        if ( ! $node instanceof eZContentObjectTreeNode )
         {
             return array();
         }

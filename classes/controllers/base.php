@@ -18,7 +18,7 @@ class eZContentStagingRestBaseController extends ezpRestMvcController
         $result = new ezpRestMvcResult();
         if ( is_object( $message) )
         {
-            if ( is_a( $message, 'exception' ) )
+            if ( $message instanceof Exception )
             {
                 $message = $message->getMessage();
             }
