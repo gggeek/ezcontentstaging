@@ -76,7 +76,7 @@ if ( $module->isCurrentAction( 'ResetFeeds' ) )
     $tpl->setVariable( 'action_results', $actionResults );
     $tpl->setVariable( 'action', 'reinitialization' );
 }
-elseif ( $module->isCurrentAction( 'InitializeFeeds' ) )
+else if ( $module->isCurrentAction( 'InitializeFeeds' ) )
 {
     // test if current user has access to contentstaging/manage, as access to this view is only limited by 'view'
     $user = eZUser::currentUser();

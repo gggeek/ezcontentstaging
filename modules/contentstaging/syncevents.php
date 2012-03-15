@@ -81,7 +81,7 @@ if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncButton
     }
     $syncResults = null;
 }
-elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncButton'))
+else if ( count( $current_node_events ) && $http->hasPostVariable( 'ConfirmSyncButton' ))
 {
     $to_sync = $current_node_events;
     foreach ($related_node_events_list as $related_node_events )
@@ -108,7 +108,7 @@ elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncBut
             {
                 unset($current_node_events[$id]);
             }
-            elseif (isset($related_node_events_list[$event->attribute( 'object_id' )][$id]))
+            else if ( isset( $related_node_events_list[$event->attribute( 'object_id' )][$id] ) )
             {
                 unset($related_node_events_list[$event->attribute( 'object_id' )][$id]);
             }

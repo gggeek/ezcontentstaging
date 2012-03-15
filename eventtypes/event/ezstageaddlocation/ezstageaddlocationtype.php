@@ -43,7 +43,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
         {
             $newParentNodes = array( $newParentNodes );
         }
-        elseif( count( $newParentNodes ) == 0 )
+        else if ( count( $newParentNodes ) == 0 )
         {
             eZDebug::writeError( 'Unable to fetch new parent nodes for object ' . $objectID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;

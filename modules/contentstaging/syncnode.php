@@ -84,7 +84,7 @@ if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncNodeBu
     }
     $syncResults = null;
 }
-elseif ( count( $current_node_events ) && $http->hasPostVariable('ConfirmSyncNodeButton'))
+else if ( count( $current_node_events ) && $http->hasPostVariable( 'ConfirmSyncNodeButton' ) )
 {
     $to_sync = $current_node_events;
     foreach ($related_node_events_list as $related_node_events )

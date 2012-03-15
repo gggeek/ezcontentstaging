@@ -997,7 +997,7 @@ class eZContentStagingField
                 $node->setAttribute( 'href', $url );
                 $node->removeAttribute( 'url_id' );
             }
-            elseif ( $objectID )
+            else if ( $objectID )
             {
                 $object = eZContentObject::fetch( $objectID, false );
                 if ( is_array( $object ) )
@@ -1015,7 +1015,7 @@ class eZContentStagingField
                     $node->removeAttribute( 'object_id' );
                 }
             }
-            elseif ( $nodeID )
+            else if ( $nodeID )
             {
                 $nodeData = eZContentObjectTreeNode::fetch( $nodeID, false, false );
                 if ( is_array( $nodeData ) )
@@ -1063,7 +1063,7 @@ class eZContentStagingField
                     $contentObject->addContentObjectRelation( $objectID, $attribute->attribute( 'version' ), 0, $relationType );
                 }
             }
-            elseif ( $nodeRemoteID )
+            else if ( $nodeRemoteID )
             {
                 $nodeArray = eZContentObjectTreeNode::fetchByRemoteID( $nodeRemoteID, false );
                 if ( !is_array( $nodeArray ) )
