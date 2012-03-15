@@ -262,7 +262,11 @@ class eZContentStagingTarget
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
+<<<<<<< HEAD
     public function checkNode( $node, $recursive=true, $iterator=false, $transport=false )
+=======
+    function checkNode( $node, $recursive = true, $transport = false )
+>>>>>>> d3f2787... CS: fixed various space issues
     {
         //static $testedobjects;
         //$objectID = $object->attribute( 'id' );

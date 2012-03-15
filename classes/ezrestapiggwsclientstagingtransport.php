@@ -653,7 +653,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     /**
      * @todo !important implement factory pattern - store $generator for speed
      */
-    protected function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
+    protected function buildRemoteId( $sourceId, $sourceRemoteId, $type = 'node' )
     {
         $generator = $this->getRemoteIdGenerator();
         return $generator ? $generator->buildRemoteId( $sourceId, $sourceRemoteId, $type ) : $sourceRemoteId ;

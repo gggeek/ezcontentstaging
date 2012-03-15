@@ -738,7 +738,7 @@ class eZContentStagingField
                         {
                             $zoneBlocksIds[$i] = $db->escapeString( $v );
                         }
-                        $db->query( "DELETE from ezm_block WHERE zone_id='" . $db->escapeString( $pageZone->attribute( 'id' ) ) . "' AND id NOT IN ('" . implode( "', '", $zoneBlocksIds ). "')" );
+                        $db->query( "DELETE from ezm_block WHERE zone_id = '" . $db->escapeString( $pageZone->attribute( 'id' ) ) . "' AND id NOT IN ('" . implode( "', '", $zoneBlocksIds ). "')" );
                     }
                     else
                     {

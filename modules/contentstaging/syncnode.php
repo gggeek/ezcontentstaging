@@ -12,7 +12,7 @@
  */
 
 $http = eZHTTPTool::instance();
-$targetId=$http->postVariable('TargetId');
+$targetId = $http->postVariable( 'TargetId' );
 $syncErrors = array();
 $syncResults = array();
 $ini = eZIni::instance();
@@ -20,19 +20,19 @@ $module = $Params['Module'];
 
 $related_node_events_list = $current_node_events = $to_sync = array();
 
-if ( $http->hasPostVariable( "CancelButton" ) && $http->hasPostVariable('NodeID'))
+if ( $http->hasPostVariable( "CancelButton" ) && $http->hasPostVariable( 'NodeID' ) )
 {
-    $currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'));
+    $currentNode = eZContentObjectTreeNode::fetch( $http->postVariable( 'NodeID' ) );
     $module->redirectTo( $currentNode->attribute( 'url_alias' ) );
 }
 
-if ( $http->hasPostVariable('NodeID') )
+if ( $http->hasPostVariable( 'NodeID' ) )
 {
-    $currentNode = eZContentObjectTreeNode::fetch($http->postVariable('NodeID'), $ini->variable('RegionalSettings','ContentObjectLocale'), true);
-    $currentObject = $currentNode->attribute('object');
+    $currentNode = eZContentObjectTreeNode::fetch( $http->postVariable( 'NodeID' ), $ini->variable( 'RegionalSettings','ContentObjectLocale'), true );
+    $currentObject = $currentNode->attribute( 'object' );
 
-    $eventList = eZContentStagingEvent::fetchByNode($currentNode->attribute('node_id'), $currentNode->attribute( 'contentobject_id' ), $targetId);
-    foreach ($eventList as $event)
+    $eventList = eZContentStagingEvent::fetchByNode( $currentNode->attribute( 'node_id' ), $currentNode->attribute( 'contentobject_id' ), $targetId );
+    foreach ( $eventList as $event )
     {
         if ( $event instanceof eZContentStagingEvent )
         {
@@ -45,36 +45,36 @@ if ( $http->hasPostVariable('NodeID') )
 
     //Check if we need to sync related object
     $relatedObjectNeedingSync = $eventList = array();
-    foreach ($relatedObjectList as $relatedObject)
+    foreach ( $relatedObjectList as $relatedObject )
     {
-        //$eventList = eZContentStagingEvent::fetchByObject($relatedObject->ID);
-        $eventList = eZContentStagingEvent::fetchByNode($relatedObject->attribute('main_node_id'), $relatedObject->attribute( 'contentobject_id' ), $targetId);
-        if (count($eventList) > 0)
+        //$eventList = eZContentStagingEvent::fetchByObject( $relatedObject->ID );
+        $eventList = eZContentStagingEvent::fetchByNode( $relatedObject->attribute( 'main_node_id' ), $relatedObject->attribute( 'contentobject_id' ), $targetId );
+        if ( count( $eventList ) > 0 )
         {
-            array_push($relatedObjectNeedingSync, $relatedObject);
-            foreach ($eventList as $event)
+            array_push( $relatedObjectNeedingSync, $relatedObject );
+            foreach ( $eventList as $event )
             {
                 if ( $event instanceof eZContentStagingEvent )
                 {
-                    $related_node_events_list[$relatedObject->attribute('id')][$event->attribute( 'id' )] = $event;
+                    $related_node_events_list[$relatedObject->attribute( 'id' )][$event->attribute( 'id' )] = $event;
                 }
             }
         }
 
         /*
         $relatedObjectNodes = $relatedObject->assignedNodes();
-        foreach ($relatedObjectNodes as $relatedObjectNode)
+        foreach ( $relatedObjectNodes as $relatedObjectNode )
         {
-            echo $relatedObjectNode->attribute('node_id');
+            echo $relatedObjectNode->attribute( 'node_id' );
         }
         */
 
     }
 }
 
-if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncNodeButton'))
+if ( count( $current_node_events ) && !$http->hasPostVariable( 'ConfirmSyncNodeButton' ) )
 {
-    if (count($relatedObjectNeedingSync) > 0)
+    if ( count( $relatedObjectNeedingSync ) > 0 )
     {
         $syncErrors[] = ezpI18n::tr( 'ezcontentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
     }
@@ -87,7 +87,7 @@ if ( count( $current_node_events ) && !$http->hasPostVariable('ConfirmSyncNodeBu
 else if ( count( $current_node_events ) && $http->hasPostVariable( 'ConfirmSyncNodeButton' ) )
 {
     $to_sync = $current_node_events;
-    foreach ($related_node_events_list as $related_node_events )
+    foreach ( $related_node_events_list as $related_node_events )
     {
 
          $to_sync = $to_sync + $related_node_events;

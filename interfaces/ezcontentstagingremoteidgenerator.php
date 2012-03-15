@@ -21,5 +21,5 @@ interface eZContentStagingRemoteIdGenerator
      * @todo This interface is crappy. Let's receive an object instead, and get the
      *       remote_id from it...
      */
-    public function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' );
+    public function buildRemoteId( $sourceId, $sourceRemoteId, $type = 'node' );
 }

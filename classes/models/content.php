@@ -187,7 +187,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo fix object publication date if the parameter is received
      * @todo change user id if the parameter is received
      */
-    static public function createContent( eZContentObjectTreeNode $parent, $input, $sectionId=null )
+    static public function createContent( eZContentObjectTreeNode $parent, $input, $sectionId = null )
     {
         $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
         if ( !$class instanceof eZContentClass )
@@ -330,7 +330,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo make more params optional: $newNodeRemoteId
      * @todo perms checking: Is it doen always by called code?
      */
-    static public function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority=null, $sortField=null, $sortOrder=null )
+    static public function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority = null, $sortField = null, $sortOrder = null )
     {
         if ( $priority !== null )
         {
