@@ -38,7 +38,8 @@ class eZContentStagingRestBaseController extends ezpRestMvcController
     */
     protected function getRequestVariables()
     {
-        if ( version_compare( eZPublishSDK::version(), '4.7.0' ) >= 0 )
+        if ( ( version_compare( eZPublishSDK::version(), '4.7.0' ) >= 0 ) ||
+             ( eZPublishSDK::majorversion() >= 2012 && version_compare( eZPublishSDK::majorversion().'.'.eZPublishSDK::minorversion(), '2012.2' ) >= 0 ) )
         {
             return $this->request->getParsedBody();
         }

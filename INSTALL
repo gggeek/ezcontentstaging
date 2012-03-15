@@ -38,6 +38,7 @@ Source server:
 2. create the new db table: either go to "setup/Upgrade check/DB Upgrade check" in the admin interface, or use sql script in the sql/ folder
 
 3. copy the files from the patches directory over the original eZ Publish kernel files (back up originals first)
+   Note: for eZP Community Project versions, use the "4.6" patches up to versions 2012.1, no patches from 2012.2 onward
 
 4. enable all the needed workflow events:
   - create one workflow per trigger for all content-related triggers:

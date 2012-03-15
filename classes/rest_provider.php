@@ -134,7 +134,8 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
     */
     public function getRoutes()
     {
-        if ( version_compare( eZPublishSDK::version(), '4.7.0' ) >= 0 )
+        if ( ( version_compare( eZPublishSDK::version(), '4.7.0' ) >= 0 ) ||
+             ( ( eZPublishSDK::majorversion() >= 2012 ) && version_compare( eZPublishSDK::majorversion().'.'.eZPublishSDK::minorversion(), '2012.2' ) >= 0 ) )
         {
             return $this->getRoutes47();
         }
@@ -182,7 +183,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
                 $this->getVersionNumber()
             );
         }
-        return $out();
+        return $out;
     }
 
     public function getViewController()
