@@ -305,9 +305,10 @@ class eZContentStagingContent extends contentStagingBase
                 'version' => $version->attribute( 'version' )
             )
         );
-        // hand-tested: when publication goes ok, that's what we get
+        // hand-tested: 1- when publication goes ok, that's what we get
         /// @todo test: is it always 1 or is it the version nr?
-        if ( !is_array( $operationResult ) || @$operationResult['status'] != 1 )
+        //              3- when operation is suspsended to cronjob
+        if ( !is_array( $operationResult ) || ( @$operationResult['status'] != 1 && @$operationResult['status'] != 3 ) )
         {
             return -1;
         }
