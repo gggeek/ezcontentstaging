@@ -325,10 +325,22 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         if ( $version->attribute( 'version' ) == 1 )
         {
             $refresh = eZContentObject::fetch( $object->attribute( 'id' ) );
+            // nb: if there is a workflow, object might be pending and have no node
             $node = $refresh->attribute( 'main_node' );
-            $result->status = new eZContentStagingCreatedHttpResponse(
-                '/content/locations/' . $node->attribute( 'node_id' )
-            );
+            if ( $node != null )
+            {
+                $result->status = new eZContentStagingCreatedHttpResponse(
+                    '/content/locations/' . $node->attribute( 'node_id' )
+                    );
+            }
+            else
+            {
+                // try to use obj.version.temp_main_node instead ?
+                //$version = $refresh->version( 1 );
+                //$node = $version->attribute( 'temp_main_node' ) );
+                $result->status = new ezpRestHttpResponse( 204 );
+            }
+
         }
         else
         {
