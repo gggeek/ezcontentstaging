@@ -20,7 +20,17 @@ class ezpRestSessionAuthStyle extends ezpRestAuthenticationStyle implements ezpR
      */
     public function setup( ezcMvcRequest $request )
     {
-        return null;
+        //return null;
+
+        // this call makes all the authentication we need - it does not start a session if no session cookie is received
+        eZSession::lazyStart();
+        $userID = eZSession::issetkey( 'eZUserLoggedInID', false ) ? eZSession::get( 'eZUserLoggedInID' ) : false;
+
+        $auth = new ezcAuthentication( new ezcAuthenticationIdCredentials( $userID ) );
+        /// @todo add a new auth filter that does what we want, ie.
+        /// similar to ezpNativeUserAuthFilter but not checking anything when $userID is null
+        //$auth->addFilter( new ezpSessionUserAuthFilter() );
+        return $auth;
     }
 
     /**
@@ -30,12 +40,9 @@ class ezpRestSessionAuthStyle extends ezpRestAuthenticationStyle implements ezpR
      */
     public function authenticate( ezcAuthentication $auth, ezcMvcRequest $request )
     {
-        // this call makes all the authentication we need - it does not start a session if no session cookie is received
-        eZSession::lazyStart();
-
         // since we will be returning NULL, ezpRestAuthConfiguration will not
         // call setUser on us. We do it by ourselves
-        $userID = eZSession::issetkey( 'eZUserLoggedInID', false ) ? eZSession::get( 'eZUserLoggedInID' ) : false;
+        $userID = (int)$auth->credentials->id;
         if ( $userID )
         {
             $user = eZUser::fetch( $userID );
