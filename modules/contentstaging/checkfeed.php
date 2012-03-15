@@ -1,15 +1,15 @@
 <?php
 /**
-* View used to check one feed's status (not in terms of events pending, but config/connectivity)
-*
-* @todo add functionality to check initialization state of feed
-*
-* @package ezcontentstaging
-*
-* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
-* @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
-*
-*/
+ * View used to check one feed's status (not in terms of events pending, but config/connectivity)
+ *
+ * @todo add functionality to check initialization state of feed
+ *
+ * @package ezcontentstaging
+ *
+ * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ */
 
 $module = $Params['Module'];
 $http = eZHTTPTool::instance();

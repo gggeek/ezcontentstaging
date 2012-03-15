@@ -1,14 +1,14 @@
 <?php
 /**
-* Class used to sync content to remote servers
-* - using ggws extension for the http layer
-* - interfacing with the REST api for content creation
-*
-* @package ezcontentstaging
-*
-* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
-* @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
-*/
+ * Class used to sync content to remote servers
+ * - using ggws extension for the http layer
+ * - interfacing with the REST api for content creation
+ *
+ * @package ezcontentstaging
+ *
+ * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ */
 
 class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport implements eZContentStagingTransport
 {

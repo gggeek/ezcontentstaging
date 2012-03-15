@@ -1,20 +1,20 @@
 <?php
 /**
-* The persistent class used to store information about which objects/nodes need to be
-* synced to target servers - every content-modifying action gets a line in
-* the eZContentStagingEvent table for every existing target host.
-* For actions affecting a single node, one row is created in the ezcontentstaging_event_node table
-* (eg: hide/show)
-* For actions affecting the whole object (eg: edit), many rows are added in the
-* ezcontentstaging_event_node table.
-* When the object is synced, the lines are removed.
-*
-* @package ezcontentstaging
-*
-* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
-* @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
-*
-*/
+ * The persistent class used to store information about which objects/nodes need to be
+ * synced to target servers - every content-modifying action gets a line in
+ * the eZContentStagingEvent table for every existing target host.
+ * For actions affecting a single node, one row is created in the ezcontentstaging_event_node table
+ * (eg: hide/show)
+ * For actions affecting the whole object (eg: edit), many rows are added in the
+ * ezcontentstaging_event_node table.
+ * When the object is synced, the lines are removed.
+ *
+ * @package ezcontentstaging
+ *
+ * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ */
 
 class eZContentStagingEvent extends eZPersistentObject
 {

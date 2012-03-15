@@ -1,16 +1,16 @@
 <?php
 /**
-* View used to display one feed (or all of them together), and sync it
-* Supports pagination
-*
-* @todo add functionality to sync complete feed (all events), not just X events (either here or in feeds view)
-*
-* @package ezcontentstaging
-*
-* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
-* @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
-*
-*/
+ * View used to display one feed (or all of them together), and sync it
+ * Supports pagination
+ *
+ * @todo add functionality to sync complete feed (all events), not just X events (either here or in feeds view)
+ *
+ * @package ezcontentstaging
+ *
+ * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ *
+ */
 
 $module = $Params['Module'];
 $http = eZHTTPTool::instance();

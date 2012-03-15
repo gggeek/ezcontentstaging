@@ -1,12 +1,12 @@
 <?php
 /**
-* View used to check one node status vs. one target server
-*
-* @package ezcontentstaging
-*
-* @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
-* @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
-*/
+ * View used to check one node status vs. one target server
+ *
+ * @package ezcontentstaging
+ *
+ * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ */
 
 $nodeId = $Params['node_id'];
 $targetId = $Params['target_id'];
