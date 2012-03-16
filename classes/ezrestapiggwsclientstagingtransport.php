@@ -669,7 +669,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
         else
         {
-            $class = 'eZContentStagingLocalAsRemoteIdGenerator';
+            $class = 'eZContentStagingSameRemoteIdGenerator';
         }
         if ( !class_exists( $class ) )
         {
