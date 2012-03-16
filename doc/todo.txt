@@ -155,3 +155,4 @@ Phase 3:
 . add a php stream wrapper to allow easy access via php (non REST) to the API
 . add rest routes to access single content fields
 . realign the REST API with the final version of the eZ REST API v.2
+. add some nice jquery/yui wrapper (automatically built if possible) to facilitate ajax usage
