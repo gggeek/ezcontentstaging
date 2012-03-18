@@ -11,6 +11,12 @@
 /**
  * This auth style is used when eZ session (cookie based ) authentication is required for current REST request
  *
+ * NB: EXPERIMENTAL. THIS PLUGIN KILLS KITTENS.
+ *
+ * Known problems:
+ * . no mitigation against xsrf (should integrate with ezformtoken)
+ * . logs out user when an invalid url is requested
+ *
  * @todo add support for NOT letting in anonymous user
  */
 class ezpRestSessionAuthStyle extends ezpRestAuthenticationStyle implements ezpRestAuthenticationStyleInterface

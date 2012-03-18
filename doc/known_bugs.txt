@@ -14,4 +14,4 @@
 
 5. wen using session-based auth, if the caller tries to access an inexisting route, user is logged out - gg, 2012.3.15
 
-6. the "location" header sent back in creation responses is not correct, as it does not know about routing prefix
+6.  wen using session-based auth, no XSRF protection is active. Se should integrate with ezformtoken - gg, 2012.3.18

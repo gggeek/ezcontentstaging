@@ -156,3 +156,4 @@ Phase 3:
 . add rest routes to access single content fields
 . realign the REST API with the final version of the eZ REST API v.2
 . add some nice jquery/yui wrapper (automatically built if possible) to facilitate ajax usage
+. prevent XSRF when using session-based auth plugin
