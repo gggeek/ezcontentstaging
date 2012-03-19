@@ -157,3 +157,4 @@ Phase 3:
 . realign the REST API with the final version of the eZ REST API v.2
 . add some nice jquery/yui wrapper (automatically built if possible) to facilitate ajax usage
 . prevent XSRF when using session-based auth plugin
+. implement filters on the target server, so that both content attributes and content metadata can be hidden from output if wanted
