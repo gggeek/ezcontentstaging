@@ -616,7 +616,7 @@ class eZContentStagingField
                 else
                 {
                     /// @todo throw exception instead of returning false
-                    if ( strpos( 'remoteId:', $value ) == 0 )
+                    if ( strpos( $value, 'remoteId:' ) === 0 )
                     {
                         $value = substr( $value, 9 );
                         $object = eZContentObject::fetchByRemoteId( $value );
@@ -644,7 +644,7 @@ class eZContentStagingField
                 $localIds = array();
                 foreach ( $value as $key => $item )
                 {
-                    if ( strpos( 'remoteId:', $item ) == 0 )
+                    if ( strpos( $item, 'remoteId:' ) === 0 )
                     {
                         $item = substr( $item, 9 );
                         $object = eZContentObject::fetchByRemoteId( $item );
