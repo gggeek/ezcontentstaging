@@ -84,7 +84,8 @@ class ezpRestHttpRequestParser extends ezcMvcHttpRequestParser
             $req->body = file_get_contents( "php://input" );
             if ( isset( $_SERVER['CONTENT_TYPE'] ) &&  strlen( $req->body ) > 0 )
             {
-                switch( $_SERVER['CONTENT_TYPE'] )
+                $ct = explode( ';', $_SERVER['CONTENT_TYPE'] );
+                switch( $ct[0] )
                 {
                     case 'application/json':
                     case 'json':
