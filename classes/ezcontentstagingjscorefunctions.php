@@ -15,7 +15,7 @@ class eZContentStagingJSCoreFunctions
      *
      * @todo add i18n of returned messages
      */
-    static function syncnode( $args )
+    static public function syncnode( $args )
     {
         if ( count( $args ) < 1 )
         {

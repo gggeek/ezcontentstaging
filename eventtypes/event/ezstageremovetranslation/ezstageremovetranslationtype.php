@@ -10,13 +10,13 @@ class eZStageRemoveTranslationType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageremovetranslation';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage translation remove' ) );
         $this->setTriggerTypes( array( 'content' => array( 'removetranslation' => array( 'before' ) ) ) );
     }
 
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $objectID = $parameters['object_id'];

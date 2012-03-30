@@ -31,7 +31,7 @@ class eZContentStagingField
      * @todo implement this conversion within the datatypes themselves:
      *       it is a much better idea... (check datatypes that support a fromHash (fromJson?) method, use it)
      */
-    function __construct( eZContentObjectAttribute $attribute, $locale, $ridGenerator )
+    public function __construct( eZContentObjectAttribute $attribute, $locale, $ridGenerator )
     {
         $this->fieldDef = $attribute->attribute( 'data_type_string' );
         $this->language = $locale;
@@ -476,7 +476,7 @@ class eZContentStagingField
      * @see eZDataType::fromString
      * @see http://issues.ez.no/IssueList.php?Search=fromstring
      */
-    static function decodeValue( $attribute, $value )
+    static public function decodeValue( $attribute, $value )
     {
         $ok = true;
 
@@ -976,7 +976,7 @@ class eZContentStagingField
     }
 
     /// Taken from eZXMLTextType::transformLinksToRemoteLinks
-    protected static function transformLinksToRemoteLinks( DOMNodeList $nodeList, $ridGenerator )
+    static protected function transformLinksToRemoteLinks( DOMNodeList $nodeList, $ridGenerator )
     {
         foreach ( $nodeList as $node )
         {
@@ -1030,7 +1030,7 @@ class eZContentStagingField
     }
 
     /// Taken from eZXMLTextType::transformRemoteLinksToLinks
-    protected static function transformRemoteLinksToLinks( DOMNodeList $nodeList, eZContentObjectAttribute $attribute )
+    static protected function transformRemoteLinksToLinks( DOMNodeList $nodeList, eZContentObjectAttribute $attribute )
     {
         //$modified = false;
 
@@ -1091,7 +1091,7 @@ class eZContentStagingField
     /**
      * @param array $items array of array
      */
-    protected static function transformBlockItemsToRemote( $items, $ridGenerator )
+    static protected function transformBlockItemsToRemote( $items, $ridGenerator )
     {
         $out = array();
         foreach ( $items as $i => $item )

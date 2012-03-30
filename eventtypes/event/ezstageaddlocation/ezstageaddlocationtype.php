@@ -10,13 +10,13 @@ class eZStageAddLocationType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageaddlocation';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage add location' ) );
         $this->setTriggerTypes( array( 'content' => array( 'addlocation' => array( 'after' ) ) ) );
     }
 
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $nodeID = $parameters['node_id'];

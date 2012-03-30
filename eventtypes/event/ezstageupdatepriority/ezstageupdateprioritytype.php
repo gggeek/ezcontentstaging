@@ -10,14 +10,14 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageupdatepriority';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage update priority' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updatepriority' => array( 'before' ) ) ) );
     }
 
     /// @todo shall we show this event as relating to children nodes instead of parent node?
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
 

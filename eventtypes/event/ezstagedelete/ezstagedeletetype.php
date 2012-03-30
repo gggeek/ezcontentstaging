@@ -10,7 +10,7 @@ class eZStageDeleteType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstagedelete';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage delete' ) );
         $this->setTriggerTypes( array( 'content' => array( 'delete' => array( 'before' ) ) ) );
@@ -22,7 +22,7 @@ class eZStageDeleteType extends eZWorkflowEventType
      *       to all nodes of the object, but only to current node. We assume thus
      *       a single node is left when this is triggered?
      */
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $trash = $parameters['move_to_trash'];

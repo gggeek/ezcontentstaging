@@ -31,7 +31,7 @@ class eZContentStagingContent extends contentStagingBase
     public $initialLanguage;
     public $fields;
 
-    function __construct( eZContentObject $object )
+    public function __construct( eZContentObject $object )
     {
         $this->contentType = $object->attribute( 'class_identifier' );
         $this->name = $object->attribute( 'name' );
@@ -84,7 +84,7 @@ class eZContentStagingContent extends contentStagingBase
      * @param eZContentObject $object
      * @return eZContentObject|string
      */
-    static function updateContent( eZContentObject $object, $input )
+    static public function updateContent( eZContentObject $object, $input )
     {
         $db = eZDB::instance();
         // within transactions, db errors generate a fatal halt, unless we tell
@@ -139,7 +139,7 @@ class eZContentStagingContent extends contentStagingBase
      * @param array $attributes array of eZContentObjectAttribute to update
      * @param array $fields
      */
-    protected static function updateAttributesList( array $attributes, array $fields )
+    static protected function updateAttributesList( array $attributes, array $fields )
     {
         foreach ( $attributes as $attribute )
         {
@@ -187,7 +187,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo fix object publication date if the parameter is received
      * @todo change user id if the parameter is received
      */
-    static function createContent( eZContentObjectTreeNode $parent, $input, $sectionId=null )
+    static public function createContent( eZContentObjectTreeNode $parent, $input, $sectionId=null )
     {
         $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
         if ( !$class instanceof eZContentClass )
@@ -294,7 +294,7 @@ class eZContentStagingContent extends contentStagingBase
      * @return int 0 on sucess
      * @todo use exceptions / return more meaningful errors
      */
-    static function publishVersion( eZContentObject $object, eZContentObjectVersion $version )
+    static public function publishVersion( eZContentObject $object, eZContentObjectVersion $version )
     {
         // we assume that this operation always exists ;-)
         $operationResult = eZOperationHandler::execute(
@@ -330,7 +330,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo make more params optional: $newNodeRemoteId
      * @todo perms checking: Is it doen always by called code?
      */
-    static function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority=null, $sortField=null, $sortOrder=null )
+    static public function addLocation( eZContentObject $object, eZContentObjectTreeNode $parent, $newNodeRemoteId, $priority=null, $sortField=null, $sortOrder=null )
     {
         if ( $priority !== null )
         {
@@ -452,7 +452,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo add a try/catch block for transactions?
      * @todo perms checking
      */
-    static function updateSection( eZContentObject $object, $sectionId )
+    static public function updateSection( eZContentObject $object, $sectionId )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
@@ -483,7 +483,7 @@ class eZContentStagingContent extends contentStagingBase
     /**
      * @todo
      */
-    static function updateStates( eZContentObject $object, $states )
+    static public function updateStates( eZContentObject $object, $states )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
@@ -507,7 +507,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo perms checking
      * @todo handle Content object without nodes ?
      */
-    static function remove( eZContentObject $object, $moveToTrash )
+    static public function remove( eZContentObject $object, $moveToTrash )
     {
         $nodeIDs = array();
         foreach ( $object->attribute( 'assigned_nodes' ) as $node )
@@ -537,7 +537,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo add a try/catch block for transactions?
      * @todo perms checking
      */
-    static function updateInitialLanguage( eZContentObject $object, $initialLanguage )
+    static public function updateInitialLanguage( eZContentObject $object, $initialLanguage )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
@@ -565,7 +565,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo add a try/catch block for transactions?
      * @todo perms checking
      */
-    static function updateAlwaysAvailable( eZContentObject $object, $alwaysAvailable )
+    static public function updateAlwaysAvailable( eZContentObject $object, $alwaysAvailable )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
@@ -594,7 +594,7 @@ class eZContentStagingContent extends contentStagingBase
      * @param string $remoteId
      * @return 0|string
      */
-    static function updateRemoteId( eZContentObject $object, $remoteId )
+    static public function updateRemoteId( eZContentObject $object, $remoteId )
     {
         $db = eZDB::instance();
         $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
@@ -619,7 +619,7 @@ class eZContentStagingContent extends contentStagingBase
      * @todo add a try/catch block for transactions?
      * @todo perms checking
      */
-    static function removeTranslations( eZContentObject $object, $translations )
+    static public function removeTranslations( eZContentObject $object, $translations )
     {
         $ini = eZINI::instance( 'contentstagingtarget.ini' );
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );

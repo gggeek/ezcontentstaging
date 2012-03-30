@@ -12,7 +12,7 @@ class eZContentStagingLocalAsRemoteIdGenerator implements eZContentStagingRemote
 {
     protected $target = null;
 
-    function __construct( $target )
+    public function __construct( $target )
     {
         $this->target = $target;
     }
@@ -21,7 +21,11 @@ class eZContentStagingLocalAsRemoteIdGenerator implements eZContentStagingRemote
      * Uses local id on source as remote id on target server, with a prefix
      * @todo verify that remote id built is not longer than 32 chars
      */
+<<<<<<< HEAD
     function buildRemoteId( $sourceId, $sourceRemoteId, $type='node' )
+=======
+    public function buildRemoteId( $sourceId, $sourceRemoteId, $type = 'node' )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         return "ezcs:" . $this->target . ':' . $sourceId;
     }

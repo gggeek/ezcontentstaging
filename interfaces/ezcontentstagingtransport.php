@@ -10,7 +10,7 @@
 
 interface eZContentStagingTransport
 {
-    function __construct( eZContentStagingTarget $target );
+    public function __construct( eZContentStagingTarget $target );
 
     /**
      * This method takes an array of events becasue some transports might have
@@ -20,7 +20,7 @@ interface eZContentStagingTransport
      * @param array of eZContentStagingEvent $events
      * @return array values: 0 on sucess, a string (or other int?) on error
      */
-    function syncEvents( array $events );
+    public function syncEvents( array $events );
 
     /**
      * Called once for each subtree that makes up a feed, this method should
@@ -36,26 +36,26 @@ interface eZContentStagingTransport
      * @see eZBaseStagingTransport for codes
      * @return integer
      */
-    function checkNode( eZContentObjectTreeNode $node );
+    public function checkNode( eZContentObjectTreeNode $node );
 
     /**
      * Checks a local object vs. a remote one and returns a bitmask of differences
      * @see eZBaseStagingTransport for codes
      * @return integer
      */
-    function checkObject( eZContentObject $object );
+    public function checkObject( eZContentObject $object );
 
     /**
      * Checks if configuration (eg ini parameters) is ok for this transport
      * @return array of string with error messages
      */
-    function checkConfiguration();
+    public function checkConfiguration();
 
     /**
      * Checks if connectivity is ok for this transport
      * @return array of string with error messages
      */
-    function checkConnection();
+    public function checkConnection();
 
     /**
      * Checks if initialization is ok for a given subtree.

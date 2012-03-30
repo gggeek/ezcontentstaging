@@ -12,13 +12,13 @@ class eZStageHideType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstagehide';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage hide/unhide' ) );
         $this->setTriggerTypes( array( 'content' => array( 'hide' => array( 'before' ) ) ) );
     }
 
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $nodeID = $parameters['node_id'];

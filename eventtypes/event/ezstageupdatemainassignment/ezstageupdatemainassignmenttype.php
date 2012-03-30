@@ -10,13 +10,13 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageupdatemainassignment';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage update main assignment' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updatemainassignment' => array( 'before' ) ) ) );
     }
 
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
 

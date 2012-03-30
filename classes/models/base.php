@@ -13,12 +13,12 @@
 
 class contentStagingBase
 {
-    public static function encodeDateTime( $time )
+    static public function encodeDateTime( $time )
     {
         return gmdate( DATE_ISO8601, $time );
     }
 
-    protected static function decodeDatetIme( $timestring )
+    static protected function decodeDatetIme( $timestring )
     {
         // @todo throw an exception / log a warning ?
         return strtotime( $timestring );
@@ -31,7 +31,7 @@ class contentStagingBase
      * @param string $stringSortOrder
      * @return int
      */
-    static function decodeSortOrder( $stringSortOrder )
+    static public function decodeSortOrder( $stringSortOrder )
     {
         // @todo throw an exception if $stringSortOrder is not ASC or DESC ?
         $sortOrder = eZContentObjectTreeNode::SORT_ORDER_ASC;
@@ -49,7 +49,7 @@ class contentStagingBase
      * @param string $stringSortField
      * @return int
      */
-    static function decodeSortField( $stringSortField )
+    static public function decodeSortField( $stringSortField )
     {
         $field = eZContentObjectTreeNode::sortFieldID( strtolower( $stringSortField ) );
         if ( $field === null )
@@ -62,12 +62,12 @@ class contentStagingBase
         return $field;
     }
 
-    static function encodeSortOrder( $value )
+    static public function encodeSortOrder( $value )
     {
         return $value == eZContentObjectTreeNode::SORT_ORDER_DESC ? "DESC" : "ASC";
     }
 
-    static function encodeSortField( $value )
+    static public function encodeSortField( $value )
     {
         $value = strtoupper( eZContentObjectTreeNode::sortFieldName( $value ) );
         return $value;

@@ -15,11 +15,12 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     // so far only used to speed up node checking. remote node node_id => local node node_id
     protected static $remoteNodesNodeIdcache = array();
 
-    function __construct( eZContentStagingTarget $target )
+    public function __construct( eZContentStagingTarget $target )
     {
         $this->target = $target;
     }
 
+<<<<<<< HEAD:classes/ezrestapiggwsclientstagingtransport.php
     function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID )
     {
         $nodeID = $node->attribute( 'node_id' );
@@ -52,6 +53,9 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     }
 
     function syncEvents( array $events )
+=======
+    public function syncEvents( array $events )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration:classes/ezrestapiembeddedclientstagingtransport.php
     {
         $results = array();
         foreach ( $events as $event )
@@ -353,7 +357,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         }
     }
 
-    function checkNode( eZContentObjectTreeNode $node )
+    public function checkNode( eZContentObjectTreeNode $node )
     {
         $out = 0;
 
@@ -445,7 +449,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         return $out;
     }
 
-    function checkObject( eZContentObject $object )
+    public function checkObject( eZContentObject $object )
     {
         $out = 0;
         try
@@ -501,7 +505,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
     /**
      * A helper function used to interact with error responses from ggws client
      */
-    protected static function getHTTPErrorCode( exception $e )
+    static protected function getHTTPErrorCode( exception $e )
     {
         if ( $e->getCode() != ggWebservicesClient::ERROR_NON_200_RESPONSE )
         {
@@ -718,7 +722,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
      * These tests should be pushed down into ggeZWebservicesClient, but while we
      * wait for it, we do them here
      */
-    function checkConfiguration()
+    public function checkConfiguration()
     {
         $out = array();
 

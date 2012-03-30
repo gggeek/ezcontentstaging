@@ -86,7 +86,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const ERROR_OBJECTCANNOTSERIALIZE = -502;
     const ERROR_GENERICTRANSPORTERROR = -503;
 
-    static function definition()
+    static public function definition()
     {
         return array( 'fields' => array( 'id' => array( 'name' => 'ID',
                                                         'datatype' => 'integer',
@@ -157,7 +157,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * deletion (which is not a complete obj, but has some of its data: name, etc...)
      * @return eZContentObject
      */
-    function getObject()
+    public function getObject()
     {
         $return = eZContentObject::fetch( $this->ObjectID );
         if ( !$return )
@@ -177,19 +177,19 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
     /// @return eZContentStagingTarget
-    function getTarget()
+    public function getTarget()
     {
         /// @todo log error if target gone amiss
         return eZContentStagingTarget::fetch( $this->TargetID );
     }
 
     /// @return array
-    function getData()
+    public function getData()
     {
         return json_decode( $this->DataText, true );
     }
 
-    function getNodes()
+    public function getNodes()
     {
         $db = eZDB::instance();
         $nodeids = $db->arrayquery( 'SELECT node_id FROM ezcontentstaging_event_node WHERE ezcontentstaging_event_node.event_id = ' . $this->ID, array( 'column' => 'node_id' ) );
@@ -201,7 +201,7 @@ class eZContentStagingEvent extends eZPersistentObject
                                       null );
     }
 
-    function language()
+    public function language()
     {
         if ( $this->LanguageMask == null )
         {
@@ -213,7 +213,7 @@ class eZContentStagingEvent extends eZPersistentObject
     /**
      * Returns a stings, with a comma separated list of the changes happened with this event
      */
-    function getSyncString()
+    public function getSyncString()
     {
         $out = array();
         $bitmask = (int)$this->ToSync;
@@ -233,7 +233,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * fetch a specific sync event
      * @return eZContentStagingEvent or null
      */
-    static function fetch( $id, $asObject = true )
+    static public function fetch( $id, $asObject = true )
     {
         return self::fetchObject( self::definition(),
                                   null,
@@ -246,7 +246,11 @@ class eZContentStagingEvent extends eZPersistentObject
      * and by event type.
      * @todo refactor: asObject as last param
      */
+<<<<<<< HEAD
     static function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true, $language=null )
+=======
+    static public function fetchByObject( $objectId, $targetId = null, $toSync = null, $asObject = true, $language = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $conds = array( 'object_id' => $objectId );
         if ( $target_id != null )
@@ -280,7 +284,11 @@ class eZContentStagingEvent extends eZPersistentObject
      * @return array of eZContentStagingEvent
      * @todo refactor: asObject as last param
      */
+<<<<<<< HEAD
     static function fetchByNode( $nodeId, $objectId=null, $target_id=null, $asObject=true, $language=null )
+=======
+    static public function fetchByNode( $nodeId, $objectId = null, $targetId = null, $asObject = true, $language = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         if ( $objectId == null )
         {
@@ -321,7 +329,11 @@ class eZContentStagingEvent extends eZPersistentObject
      * array where the key is the feed id
      * @return array of array of eZContentStagingEvent
      */
+<<<<<<< HEAD
     static function fetchByNodeGroupedByTarget( $nodeId, $objectId=null, $language=null )
+=======
+    static public function fetchByNodeGroupedByTarget( $nodeId, $objectId = null, $language = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $targets = array();
         $events = self::fetchByNode( $nodeId, $objectId, null, true, $language );
@@ -335,7 +347,11 @@ class eZContentStagingEvent extends eZPersistentObject
     /**
      * @todo refactor: asObject as last param
      */
+<<<<<<< HEAD
     static function fetchListGroupedByObject( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
+=======
+    static public function fetchListGroupedByObject( $targetId = null, $asObject = true, $offset = null, $limit = null, $language = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -397,7 +413,11 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo refactor: asObject as last param
      */
+<<<<<<< HEAD
     static function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null, $status=null )
+=======
+    static public function fetchList( $targetId = null, $asObject = true, $offset = null, $limit = null, $language = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -491,7 +511,11 @@ class eZContentStagingEvent extends eZPersistentObject
      * Returns count of events to sync to a given server
      * @return integer
      */
+<<<<<<< HEAD
     static function fetchListCount( $target_id=null, $language=null, $status=null )
+=======
+    static public function fetchListCount( $targetId = null, $language = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -523,7 +547,7 @@ class eZContentStagingEvent extends eZPersistentObject
     }
 
 
-    protected static function languagesSQLFilter( $language )
+    static protected function languagesSQLFilter( $language )
     {
         // in case of unknown languages $mask will be 0
         $mask = eZContentLanguage::maskByLocale( $language );
@@ -547,7 +571,11 @@ class eZContentStagingEvent extends eZPersistentObject
      * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
      *       do not add show but remove hide, etc...
      */
+<<<<<<< HEAD
     static function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array(), $langMask=null )
+=======
+    static public function addEvent( $targetId, $objectId, $action, $data, $nodeIds = array(), $langMask = null )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $event = new eZContentStagingEvent( array(
             'target_id' => $targetId,
@@ -604,7 +632,11 @@ class eZContentStagingEvent extends eZPersistentObject
      * @todo figure out if we can be faster by batching events in calls to $transport::syncEvents
      *       while still maintaining correct ordering
      */
+<<<<<<< HEAD
     static function syncEvents( array $events, $iterator=null )
+=======
+    static public function syncEvents( array $events )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $results = array();
 
@@ -707,7 +739,11 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo return real number of deleted events - this is not really atomic...
      */
+<<<<<<< HEAD
     static function removeEvents( $eventIDList, $also_syncing=false )
+=======
+    static public function removeEvents( $eventIDList, $alsoSyncing = false )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $db = eZDB::instance();
         if ( !$also_syncing )
@@ -732,7 +768,11 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo return real number of deleted events - this is not really atomic...
      */
+<<<<<<< HEAD
     static function removeEventsByTargets( $targetIDList, $also_syncing=false )
+=======
+    static public function removeEventsByTargets( $targetIDList, $alsoSyncing = false )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $db = eZDB::instance();
         foreach ( $targetIDList as $key => $val )
@@ -782,7 +822,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * Funny that something similar not implemented in eZContentObject...
      * @return array of string node_id => path_string
      */
-    static function assignedNodeIds( $objectId )
+    static public function assignedNodeIds( $objectId )
     {
         $db = eZDB::instance();
         $out = array();

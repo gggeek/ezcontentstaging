@@ -10,7 +10,7 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageupdateinitiallanguage';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage update intial language' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updateinitiallanguage' => array( 'before' ) ) ) );
@@ -19,7 +19,7 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
     /**
      * An event that is set purely to the object, ie. it affects all its nodes
      */
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $objectID = $parameters['object_id'];

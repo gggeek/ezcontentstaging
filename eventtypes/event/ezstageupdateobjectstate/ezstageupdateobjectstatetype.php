@@ -10,13 +10,13 @@ class eZStageUpdateObjectStateType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageupdateobjectstate';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage update object state' ) );
         $this->setTriggerTypes( array( 'content' => array( 'updateobjectstate' => array( 'after' ) ) ) ); // ?
     }
 
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
         $objectID = $parameters['object_id'];

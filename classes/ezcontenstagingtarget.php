@@ -22,7 +22,7 @@ class eZContentStagingTarget
 {
     protected $_attrs = array();
 
-    function __construct( $row )
+    public function __construct( $row )
     {
         // some of the parameters are optional in definition of an eZContentStagingTarget
         $this->_attrs = self::CamelCase2camel_case( $row ) + array(
@@ -31,21 +31,26 @@ class eZContentStagingTarget
         );
     }
 
-    function attributes()
+    public function attributes()
     {
         return array_keys( $this->_attrs );
     }
 
+<<<<<<< HEAD
     function attribute( $attrname )
+=======
+    public function attribute( $name )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         return $this->_attrs[$attrname];
     }
 
-    function hasAttribute( $attribute )
+    public function hasAttribute( $attribute )
     {
         return in_array( $attribute, $this->attributes() );
     }
 
+<<<<<<< HEAD
     /**
      * Returns list of target hosts defined in the system
      *
@@ -58,6 +63,9 @@ class eZContentStagingTarget
     }*/
 
     static function fetchList()
+=======
+    static public function fetchList()
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );
         $out = array();
@@ -68,7 +76,7 @@ class eZContentStagingTarget
         return $out;
     }
 
-    static function fetch( $id )
+    static public function fetch( $id )
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );
         $targets = $ini->variable( 'GeneralSettings', 'TargetList' );
@@ -84,7 +92,7 @@ class eZContentStagingTarget
      * (assuming that there are events for that node)
      * @param int|eZContentObjectTreeNode $node
      */
-    static function fetchByNode( $node )
+    static public function fetchByNode( $node )
     {
         if ( is_numeric( $node ) )
         {
@@ -109,7 +117,7 @@ class eZContentStagingTarget
     /**
      * @return boolean
      */
-    function includesNode( eZContentObjectTreeNode $node )
+    protected function includesNode( eZContentObjectTreeNode $node )
     {
         return $this->includesNodeByPath( $node->attribute( 'path_string' ) );
     }
@@ -117,7 +125,7 @@ class eZContentStagingTarget
     /**
      * @return boolean
      */
-    function includesNodeByPath( $nodepath )
+    public function includesNodeByPath( $nodepath )
     {
         foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
         {
@@ -134,7 +142,7 @@ class eZContentStagingTarget
      * @param array $nodepathsarray node_id => node_path
      * @return array fileterd, in same format: node_id => node_path
      */
-    function includedNodesByPath( $nodepathsarray )
+    public function includedNodesByPath( $nodepathsarray )
     {
         $out = array();
         foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
@@ -169,7 +177,7 @@ class eZContentStagingTarget
      * @return array for every source node, 0 for ok, or an error code
      * @todo !important refactor: rename this method?
      */
-    function initializeRootItems()
+    public function initializeRootItems()
     {
         $out = array();
 
@@ -222,7 +230,11 @@ class eZContentStagingTarget
      *
      * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
      */
+<<<<<<< HEAD
     function checkTarget( $iterator=null )
+=======
+    public function checkTarget()
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $out = array();
 
@@ -262,7 +274,11 @@ class eZContentStagingTarget
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
+<<<<<<< HEAD
     function checkNode( $node, $recursive=true, $iterator=false, $transport=false )
+=======
+    public function checkNode( $node, $recursive = true, $transport = false )
+>>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         //static $testedobjects;
         //$objectID = $object->attribute( 'id' );
@@ -326,7 +342,7 @@ class eZContentStagingTarget
      * Checks if all configuration for the target is fine
      * @return array of string (error messages)
      */
-    static function checkConfiguration( $targetId )
+    static public function checkConfiguration( $targetId )
     {
         $out = array();
 
@@ -404,7 +420,7 @@ class eZContentStagingTarget
      * NB: returns no errors if transport class is not available - use checkConfiguration for that
      * @return array of string (error messages)
      */
-    function checkConnection()
+    public function checkConnection()
     {
         $transport = $this->transport();
         if ( !$transport )

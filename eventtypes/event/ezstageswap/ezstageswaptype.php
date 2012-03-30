@@ -10,16 +10,13 @@ class eZStageSwapType extends eZWorkflowEventType
 {
     const WORKFLOW_TYPE_STRING = 'ezstageswap';
 
-    function __construct()
+    public function __construct()
     {
         $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, ezpI18n::tr( 'ezcontentstaging/eventtypes', 'Stage node swap' ) );
         $this->setTriggerTypes( array( 'content' => array( 'swap' => array( 'before' ) ) ) );
     }
 
-    /*
-     \reimp
-    */
-    function execute( $process, $event )
+    public function execute( $process, $event )
     {
         /*$parameters = $process->attribute( 'parameter_list' );
 
