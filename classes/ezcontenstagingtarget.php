@@ -36,11 +36,7 @@ class eZContentStagingTarget
         return array_keys( $this->_attrs );
     }
 
-<<<<<<< HEAD
-    function attribute( $attrname )
-=======
-    public function attribute( $name )
->>>>>>> 4bc5afa... CS: fixed scope in method declaration
+    public function attribute( $attrname )
     {
         return $this->_attrs[$attrname];
     }
@@ -50,22 +46,18 @@ class eZContentStagingTarget
         return in_array( $attribute, $this->attributes() );
     }
 
-<<<<<<< HEAD
     /**
      * Returns list of target hosts defined in the system
      *
      * @return array
      */
-    /*static function fetchIDList()
+    /*static public function fetchIDList()
     {
         $ini = ezini( 'contentstagingsource.ini' );
         return $ini->variable( 'GeneralSettings', 'TargetList' );
     }*/
 
-    static function fetchList()
-=======
     static public function fetchList()
->>>>>>> 4bc5afa... CS: fixed scope in method declaration
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );
         $out = array();
@@ -230,11 +222,7 @@ class eZContentStagingTarget
      *
      * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
      */
-<<<<<<< HEAD
-    function checkTarget( $iterator=null )
-=======
-    public function checkTarget()
->>>>>>> 4bc5afa... CS: fixed scope in method declaration
+    public function checkTarget( $iterator=null )
     {
         $out = array();
 
@@ -274,11 +262,7 @@ class eZContentStagingTarget
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
-<<<<<<< HEAD
-    function checkNode( $node, $recursive=true, $iterator=false, $transport=false )
-=======
-    public function checkNode( $node, $recursive = true, $transport = false )
->>>>>>> 4bc5afa... CS: fixed scope in method declaration
+    public function checkNode( $node, $recursive=true, $iterator=false, $transport=false )
     {
         //static $testedobjects;
         //$objectID = $object->attribute( 'id' );

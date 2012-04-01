@@ -20,8 +20,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         $this->target = $target;
     }
 
-<<<<<<< HEAD:classes/ezrestapiggwsclientstagingtransport.php
-    function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID )
+    public function initializeSubtree( eZContentObjectTreeNode $node, $remoteNodeID )
     {
         $nodeID = $node->attribute( 'node_id' );
         $object = $node->attribute( 'object' );
@@ -52,10 +51,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         return 0;
     }
 
-    function syncEvents( array $events )
-=======
     public function syncEvents( array $events )
->>>>>>> 4bc5afa... CS: fixed scope in method declaration:classes/ezrestapiembeddedclientstagingtransport.php
     {
         $results = array();
         foreach ( $events as $event )
