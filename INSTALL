@@ -65,8 +65,8 @@ Source server:
     TargetList[]=<feedname>
     [Target_<feedname>]
     Name=<A descriptive name for this export feed>
-	TransportClass=eZRestApiGGWSClientStagingTransport
-    RemoteIdGeneratorClass=eZContentStagingLocalAsRemoteIdGenerator
+    TransportClass=eZRestApiGGWSClientStagingTransport
+    RemoteIdGeneratorClass=eZContentStagingSameRemoteIdGenerator
     Server=<server_feedname> note: this can be the same or different from feedname, but has to be the same as used in wsproviders.ini
     Subtrees[]=<local_root_node_id>
     RemoteSubtrees[]=<target_root_node_id>
@@ -75,13 +75,13 @@ Source server:
 
   . edit wsproviders.ini.append.php
 
-	[<server_feedname>]
+    [<server_feedname>]
     providerType=REST
-	providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/rest/api/contentstaging/v1>
-	Options[]
-	Options[authType]=1 (for basic auth)
-	Options[login]=<username>
-	Options[password]=<password>
+    providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/rest/api/contentstaging/v1>
+    Options[]
+    Options[authType]=1 (for basic auth)
+    Options[login]=<username>
+    Options[password]=<password>
 
 6. in the Administration interface, go to the "Setup" tab, click on the "Content staging" link in the left-col menu.
    You should see the target feed listed. Click on the "check" link to verify that it is properly set up.
