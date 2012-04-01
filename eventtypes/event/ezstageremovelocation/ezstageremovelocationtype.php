@@ -35,16 +35,6 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        // unluckily we miss current object id from operation, so we get it
-        // later on from 1st removed node
-        /*$node = eZContentObjectTreeNode::fetch( $nodeID );
-        if ( !is_object( $node ) )
-        {
-            eZDebug::writeError( 'Unable to fetch node for nodeID ' . $nodeID, __METHOD__ );
-            return eZWorkflowType::STATUS_ACCEPTED;
-        }
-        $object = $node->attribute( 'object' );*/
-
         $removedNodeRemoteIDList = array();
         foreach ( $removedNodeList as $i => $removedNode )
         {
