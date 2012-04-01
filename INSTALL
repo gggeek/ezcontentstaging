@@ -47,11 +47,11 @@ Source server:
 
   - add each workflow to one trigger
     . add location: after
-	. remove location: before
-	. ...
+    . remove location: before
+    . ...
     Note that for every one of the 15 operations relating to content, 2 triggers are available: Before and After.
     You do not need to create 30 workflows, only 15 - each worflow will be usable with the correct trigger type
-	(either Before or After).
+    (either Before or After).
 
   - if you have existing workflows (eg. content approval), put the "stage" event where you deem appropriate (eg. after approval and wait-until-date events)
 
