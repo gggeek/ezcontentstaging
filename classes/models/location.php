@@ -135,7 +135,7 @@ class eZContentStagingLocation extends contentStagingBase
                 'content',
                 'updatepriority',
                 array(
-                    'node_id' => $node->attribute( 'node_id' ),
+                    'node_id' => $node->attribute( 'parent_node_id' ),
                     'priority' => $priorityArray,
                     'priority_id' => $priorityIDArray ),
                 null, true );
