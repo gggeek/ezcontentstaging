@@ -142,7 +142,7 @@ class eZContentStagingLocation extends contentStagingBase
         }
         else
         {
-            eZContentOperationCollection::updatePriority( $node->attribute( 'node_id'), $priorityArray, $priorityIDArray );
+            eZContentOperationCollection::updatePriority( $node->attribute( 'parent_node_id'), $priorityArray, $priorityIDArray );
 
             /* manual update
                $db = eZDB::instance();
