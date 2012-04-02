@@ -246,11 +246,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * and by event type.
      * @todo refactor: asObject as last param
      */
-<<<<<<< HEAD
-    static public function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true, $language=null )
-=======
-    static function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true, $language = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true, $language = null )
     {
         $conds = array( 'object_id' => $objectId );
         if ( $target_id != null )
@@ -284,11 +280,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * @return array of eZContentStagingEvent
      * @todo refactor: asObject as last param
      */
-<<<<<<< HEAD
-    static public function fetchByNode( $nodeId, $objectId=null, $target_id=null, $asObject=true, $language=null )
-=======
-    static function fetchByNode( $nodeId, $objectId = null, $target_id = null, $asObject = true, $language = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function fetchByNode( $nodeId, $objectId = null, $target_id = null, $asObject = true, $language = null )
     {
         if ( $objectId == null )
         {
@@ -329,11 +321,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * array where the key is the feed id
      * @return array of array of eZContentStagingEvent
      */
-<<<<<<< HEAD
-    static public function fetchByNodeGroupedByTarget( $nodeId, $objectId=null, $language=null )
-=======
-    static function fetchByNodeGroupedByTarget( $nodeId, $objectId = null, $language = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function fetchByNodeGroupedByTarget( $nodeId, $objectId = null, $language = null )
     {
         $targets = array();
         $events = self::fetchByNode( $nodeId, $objectId, null, true, $language );
@@ -347,11 +335,7 @@ class eZContentStagingEvent extends eZPersistentObject
     /**
      * @todo refactor: asObject as last param
      */
-<<<<<<< HEAD
-    static public function fetchListGroupedByObject( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null )
-=======
-    static function fetchListGroupedByObject( $target_id = null, $asObject = true, $offset = null, $limit = null, $language = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function fetchListGroupedByObject( $target_id = null, $asObject = true, $offset = null, $limit = null, $language = null )
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -413,11 +397,7 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo refactor: asObject as last param
      */
-<<<<<<< HEAD
-    static public function fetchList( $target_id=null, $asObject= true, $offset=null, $limit=null, $language=null, $status=null )
-=======
-    static function fetchList( $target_id = null, $asObject = true, $offset = null, $limit = null, $language = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function fetchList( $target_id = null, $asObject = true, $offset = null, $limit = null, $language = null, $status = null )
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -511,11 +491,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * Returns count of events to sync to a given server
      * @return integer
      */
-<<<<<<< HEAD
-    static public function fetchListCount( $target_id=null, $language=null, $status=null )
-=======
-    static function fetchListCount( $target_id = null, $language = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function fetchListCount( $target_id = null, $language = null, $status = null )
     {
         $conditions = array();
         if ( $target_id != '' )
@@ -571,11 +547,7 @@ class eZContentStagingEvent extends eZPersistentObject
      * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
      *       do not add show but remove hide, etc...
      */
-<<<<<<< HEAD
-    static public function addEvent( $targetId, $objectId, $action, $data, $nodeIds=array(), $langMask=null )
-=======
-    static function addEvent( $targetId, $objectId, $action, $data, $nodeIds = array(), $langMask = null )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function addEvent( $targetId, $objectId, $action, $data, $nodeIds = array(), $langMask = null )
     {
         $event = new eZContentStagingEvent( array(
             'target_id' => $targetId,
@@ -735,11 +707,7 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo return real number of deleted events - this is not really atomic...
      */
-<<<<<<< HEAD
-    static public function removeEvents( $eventIDList, $also_syncing=false )
-=======
-    static function removeEvents( $eventIDList, $also_syncing = false )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function removeEvents( $eventIDList, $also_syncing = false )
     {
         $db = eZDB::instance();
         if ( !$also_syncing )
@@ -764,11 +732,7 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo return real number of deleted events - this is not really atomic...
      */
-<<<<<<< HEAD
-    static public function removeEventsByTargets( $targetIDList, $also_syncing=false )
-=======
-    static function removeEventsByTargets( $targetIDList, $also_syncing = false )
->>>>>>> d3f2787... CS: fixed various space issues
+    static public function removeEventsByTargets( $targetIDList, $also_syncing = false )
     {
         $db = eZDB::instance();
         foreach ( $targetIDList as $key => $val )
