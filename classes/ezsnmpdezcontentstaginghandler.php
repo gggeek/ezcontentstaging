@@ -44,7 +44,7 @@ class eZsnmpdeZContentStagingHandler extends eZsnmpdFlexibleHandler
 
                 if ( $internaloid == '1.5' )
                 {
-                    $count = time() - $count;
+                    $count = ( $count === null ? 0 : time() - $count );
                 }
             }
             return array(
