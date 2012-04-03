@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <software>
     <metadata>
-        <name>eZ Publish Content Staging extension</name>
-        <version>0.1</version>
-        <copyright>Copyright (C) 2011 Alti</copyright>
+        <name>eZ Publish Content Staging extension (CP version)</name>
+        <version>0.2-dev</version>
+        <copyright>Copyright (C) 2011-2012 G. Giunta</copyright>
         <license>GNU General Public License v2.0</license>
     </metadata>
 
@@ -14,6 +14,9 @@
         <requires>
             <extension name="ggwebservices" />
         </requires>
+        <uses>
+            <extension name="ezsnmpd" />
+        </uses>
     </dependencies>
 
 </software>

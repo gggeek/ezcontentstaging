@@ -12,9 +12,9 @@ class ezcontentstagingModuleInfo
 {
     function info()
     {
-        return array( 'Name' => "eZ Publish Content Staging extension",
-                      'Version' => "0.1",
-                      'Copyright' => "Copyright (C) 2011 eZ Systems",
+        return array( 'Name' => "eZ Publish Content Staging extension (CP version)",
+                      'Version' => "0.2-dev",
+                      'Copyright' => "Copyright (C) 2011-2012 G. Giunta",
                       'License' => "GNU General Public License v2.0"
                      );
     }
