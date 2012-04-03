@@ -107,6 +107,8 @@ class eZsnmpdeZContentStagingHandler extends eZsnmpdFlexibleHandler
      * This allows us to:
      * - catch the exception raised if db is down and keep the script going
      * - run the script in daemon mode without keeping a connection open (as we can close as soon as it is not needed anymore)
+     *
+     * NB: this function definition is redundant if using ezsnmpd 0.6 or later
      */
     protected static function eZDBinstance()
     {

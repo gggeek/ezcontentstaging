@@ -87,6 +87,8 @@ Source server:
    You should see the target feed listed. Click on the "check" link to verify that it is properly set up.
    Click on "init feed" button and sync the generated event
 
+7. for monitoring the number/age of events pending synchronization, integration with the eZSNMPd extension is provided.
+   Please use eZSNMPd version 0.5 or later for it to work.
 
 Troubleshooting
 ---------------
