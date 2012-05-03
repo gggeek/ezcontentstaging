@@ -36,19 +36,19 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
 
         $priorityArrayList = array();
         /// @todo !important usage of a foreach is ok here?
-        for ( $i = 0; $i < count( $priorityArray ); $i++ )
+        for ( $i = 0, $priorityArrayCount = count( $priorityArray ); $i < $priorityArrayCount; $i++ )
         {
-            $childNodePriority = (int) $priorityArray[$i];
             $childNodeID = (int) $priorityIDArray[$i];
             if ( $childNodeID == 0 || !( $childNode = eZContentObjectTreeNode::fetch( $childNodeID ) ) )
             {
                 eZDebug::writeError( 'Unable to fetch child node ' . $nodeID . ' to set priority value to it', __METHOD__ );
                 continue;
             }
-            $childNodeRemoteID = $childNode->attribute( 'remote_id' );
-            $priorityArrayList[] = array( 'nodeID' => $childNodeID,
-                                          'nodeRemoteID' => $childNodeRemoteID,
-                                          'priority' => $childNodePriority );
+            $priorityArrayList[] = array(
+                'nodeID' => $childNodeID,
+                'nodeRemoteID' => $childNode->attribute( 'remote_id' ),
+                'priority' => (int)$priorityArray[$i]
+            );
         }
 
         $objectId = $node->attribute( 'contentobject_id' );
@@ -57,11 +57,12 @@ class eZStageUpdatePriorityType extends eZWorkflowEventType
         $prioritizedNodesData = array(
             'nodeID' => $nodeID,
             'nodeRemoteID' => $node->attribute( 'remote_id' ),
-            'priorities' => $priorityArrayList );
-        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+            'priorities' => $priorityArrayList
+        );
+        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $targetId => $target )
         {
             eZContentStagingEvent::addEvent(
-                $target_id,
+                $targetId,
                 $objectId,
                 eZContentStagingEvent::ACTION_UPDATEPRIORITY,
                 $prioritizedNodesData,

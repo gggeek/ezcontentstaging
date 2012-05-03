@@ -20,8 +20,6 @@ class eZStageMoveType extends eZWorkflowEventType
     {
         $parameters = $process->attribute( 'parameter_list' );
         $nodeID = $parameters['node_id'];
-        $newParentNodeID = $parameters['new_parent_node_id'];
-        $objectID = $parameters['object_id'];
 
         // sanity checks
 
@@ -32,6 +30,7 @@ class eZStageMoveType extends eZWorkflowEventType
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
+        $newParentNodeID = $parameters['new_parent_node_id'];
         $newParentNode = eZContentObjectTreeNode::fetch( $newParentNodeID );
         if ( !is_object( $newParentNode ) )
         {
@@ -48,21 +47,22 @@ class eZStageMoveType extends eZWorkflowEventType
             'nodeRemoteID' => $node->attribute( 'remote_id' ),
             'parentNodeID' => $newParentNodeID,
             'parentNodeRemoteID' => $newParentNode->attribute( 'remote_id' ),
-            'objectRemoteID' => $object->attribute( 'remote_id' ) );
+            'objectRemoteID' => $object->attribute( 'remote_id' )
+        );
         $currentVersion = $object->attribute( 'current_version' );
         $initialLanguageID = $object->attribute( 'initial_language_id' );
         $initialLanguage = eZContentLanguage::fetch( $initialLanguageID );
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        $objectID = $parameters['object_id'];
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
-            $hasNode = $target->includesNodeByPath( $nodePath );
             $hasNewParentNode =  $target->includesNodeByPath( $newParentNodePath );
-            if ( $hasNode )
+            if ( $target->includesNodeByPath( $nodePath ) )
             {
                 if ( $hasNewParentNode )
                 {
                     // record a move-node event to this target
                     eZContentStagingEvent::addEvent(
-                        $target_id,
+                        $targetId,
                         $objectID,
                         eZContentStagingEvent::ACTION_MOVE,
                         $movedNodeData,
@@ -73,7 +73,7 @@ class eZStageMoveType extends eZWorkflowEventType
                 {
                     // record a remove-node event to this target
                     eZContentStagingEvent::addEvent(
-                        $target_id,
+                        $targetId,
                         $objectID,
                         eZContentStagingEvent::ACTION_REMOVELOCATION,
                         array_merge( $movedNodeData, array( 'trash' => false ) ),

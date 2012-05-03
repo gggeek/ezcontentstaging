@@ -50,15 +50,16 @@ class eZStageUpdateMainAssignmentType extends eZWorkflowEventType
         $affectedObjectData = array(
             "objectRemoteID" => $object->attribute( 'remote_id' ),
             "nodeID" => $mainNodeID,
-            "nodeRemoteID" => $mainNode->attribute( 'remote_id' ) );
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+            "nodeRemoteID" => $mainNode->attribute( 'remote_id' )
+        );
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $affectedNodes ) );
-            if ( count( $affectedFeedNodes ) )
+            if ( !empty( $affectedFeedNodes ) )
             {
                 /// @todo what if new main node is not in target feed?
                 eZContentStagingEvent::addEvent(
-                    $target_id,
+                    $targetId,
                     $objectID,
                     eZContentStagingEvent::ACTION_UPDATEMAINASSIGNMENT,
                     $affectedObjectData,

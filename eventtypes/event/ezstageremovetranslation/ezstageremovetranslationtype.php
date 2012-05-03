@@ -32,13 +32,13 @@ class eZStageRemoveTranslationType extends eZWorkflowEventType
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array( "objectRemoteID" => $object->attribute( 'remote_id' ), "translations" => $parameters['language_id_list'] );
 
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
-            if ( count( $affectedFeedNodes ) )
+            if ( !empty( $affectedFeedNodes ) )
             {
                 eZContentStagingEvent::addEvent(
-                    $target_id,
+                    $targetId,
                     $objectID,
                     eZContentStagingEvent::ACTION_REMOVETRANSLATION,
                     $affectedObjectData,

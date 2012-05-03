@@ -30,7 +30,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
 
         // sanity checks
 
-        if ( count( $removedNodeList ) == 0 )
+        if ( empty( $removedNodeList ) )
         {
             return eZWorkflowType::STATUS_ACCEPTED;
         }
@@ -52,26 +52,26 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                $removedNodeRemoteIDList[$removedNode->attribute( 'path_string' )] = array(
                    "nodeID" => $removedNode->attribute( 'node_id' ),
                    "nodeRemoteID" => $removedNode->attribute( 'remote_id' ),
-                   "trash" => $trash );
+                   "trash" => $trash
+                );
             }
         }
 
-        if ( count( $removedNodeRemoteIDList ) == 0 )
+        if ( empty( $removedNodeRemoteIDList ) )
         {
             eZDebug::writeError( 'Unable to fetch removed nodes for nodeID ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
         // set this event to be shown on all remaining nodes
-        $objectNodes = array_keys( eZContentStagingEvent::assignedNodeIds( $objectId ) );
-        $affectedNodes = array_diff( $objectNodes, $removedNodeList );
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        $affectedNodes = array_diff( array_keys( eZContentStagingEvent::assignedNodeIds( $objectId ) ), $removedNodeList );
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             foreach ( $removedNodeRemoteIDList as $removedNodePathString => $removedNodeData )
             {
                 if ( $target->includesNodeByPath( $removedNodePathString ) )
                 {
                     eZContentStagingEvent::addEvent(
-                        $target_id,
+                        $targetId,
                         $objectId,
                         eZContentStagingEvent::ACTION_REMOVELOCATION,
                         $removedNodeData,

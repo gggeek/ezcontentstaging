@@ -25,7 +25,6 @@ class eZStageDeleteType extends eZWorkflowEventType
     public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-        $trash = $parameters['move_to_trash'];
 
         if ( isset( $parameters['node_id_list'] ) )
         {
@@ -53,23 +52,24 @@ class eZStageDeleteType extends eZWorkflowEventType
 
             $object = $node->attribute( 'object' );
             $objectID = $object->attribute( 'id' );
-            //$nodeRemoteID = $node->attribute( 'remote_id' );
-            $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
             /// @bug we should not store object name in a version which is localized with current language...
             /// @todo decide which data we save inside the 'object' array
             $deletObjectData = array(
                 "objectRemoteID" => $object->attribute( 'remote_id' ),
-                "trash" => $trash,
+                "trash" => $parameters['move_to_trash'],
                 "object" => array(
                     "name" => $object->attribute( 'name' ),
                     "class_name" => $object->attribute( 'class_name' ),
                     "published" => $object->attribute( 'published' ),
                     "modified" => $object->attribute( 'modified' ),
-                    "owner_id" => $object->attribute( 'owner_id' ) ) );
-            foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+                    "owner_id" => $object->attribute( 'owner_id' )
+                )
+            );
+            $affectedNodes = array_keys( eZContentStagingEvent::assignedNodeIds( $objectID ) );
+            foreach ( array_keys( eZContentStagingTarget::fetchByNode( $node ) ) as $targetId )
             {
                 eZContentStagingEvent::addEvent(
-                    $target_id,
+                    $targetId,
                     $objectID,
                     eZContentStagingEvent::ACTION_DELETE,
                     $deletObjectData,
@@ -77,7 +77,7 @@ class eZStageDeleteType extends eZWorkflowEventType
                     // which nodes to mrk as affected? In theory there should
                     // be none left after the delete. But we run this trigger before the
                     // actual action...
-                    array_keys( $objectNodes )
+                    $affectedNodes
                     );
             }
         }

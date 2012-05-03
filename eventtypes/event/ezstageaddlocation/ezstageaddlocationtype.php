@@ -19,17 +19,16 @@ class eZStageAddLocationType extends eZWorkflowEventType
     public function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-        $nodeID = $parameters['node_id'];
-        $objectID = $parameters['object_id'];
         $selectNodeIDArray = $parameters['select_node_id_array'];
 
         // sanity checks
 
-        if ( count( $selectNodeIDArray ) == 0 )
+        if ( empty( $selectNodeIDArray ) )
         {
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
+        $objectID = $parameters['object_id'];
         $object = eZContentObject::fetch( $objectID );
         if ( !is_object( $object ) )
         {
@@ -43,7 +42,7 @@ class eZStageAddLocationType extends eZWorkflowEventType
         {
             $newParentNodes = array( $newParentNodes );
         }
-        else if ( count( $newParentNodes ) == 0 )
+        else if ( empty( $newParentNodes ) )
         {
             eZDebug::writeError( 'Unable to fetch new parent nodes for object ' . $objectID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
@@ -57,8 +56,11 @@ class eZStageAddLocationType extends eZWorkflowEventType
         $db = eZDB::instance();
         foreach ( $newParentNodes as $newParentNode )
         {
-            $sql = "SELECT node_id, remote_id, priority, sort_field, sort_order, path_string FROM ezcontentobject_tree where contentobject_id = '$objectID' AND parent_node_id  = " . $newParentNode->attribute( 'node_id' );
-            $data = $db->arrayQuery( $sql );
+            $data = $db->arrayQuery(
+                "SELECT node_id, remote_id, priority, sort_field, sort_order, path_string " .
+                "FROM ezcontentobject_tree " .
+                "WHERE contentobject_id = '$objectID' AND parent_node_id  = " . $newParentNode->attribute( 'node_id' )
+            );
             /// @todo test for errors
             $data = $data[0];
             $newNodesData[$data['path_string']] = array(
@@ -76,20 +78,20 @@ class eZStageAddLocationType extends eZWorkflowEventType
         // finally add, for every target feed, all new nodes that fall within it
         // Question: shall we show this event on every node, or only on new nodes ???
         $affectedNodes = array_keys( eZContentStagingEvent::assignedNodeIds( $objectID ) );
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             foreach ( $newNodesData as $newNodePathString => $newNodeData )
             {
-                if ( $target->includesNodeByPath( $newNodePathString ) )
-                {
-                    eZContentStagingEvent::addEvent(
-                        $target_id,
-                        $object->attribute( 'id' ),
-                        eZContentStagingEvent::ACTION_ADDLOCATION,
-                        $newNodeData,
-                        $affectedNodes
-                    );
-                }
+                if ( !$target->includesNodeByPath( $newNodePathString ) )
+                    continue;
+
+                eZContentStagingEvent::addEvent(
+                    $targetId,
+                    $object->attribute( 'id' ),
+                    eZContentStagingEvent::ACTION_ADDLOCATION,
+                    $newNodeData,
+                    $affectedNodes
+                );
             }
         }
 

@@ -22,7 +22,6 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
     {
         $parameters = $process->attribute( 'parameter_list' );
         $nodeID = $parameters['node_id'];
-        $sectionID = $parameters['selected_section_id'];
 
         // sanity checks
 
@@ -36,14 +35,14 @@ class eZStageUpdateSectionType extends eZWorkflowEventType
         $object = $node->attribute( 'object' );
         $objectID = $object->attribute( 'id' );
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
-        $affectedObjectData = array( "sectionID" => $sectionID, "objectRemoteID" => $object->attribute( 'remote_id' ) );
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        $affectedObjectData = array( "sectionID" => $parameters['selected_section_id'], "objectRemoteID" => $object->attribute( 'remote_id' ) );
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
-            if ( count( $affectedFeedNodes ) )
+            if ( !empty( $affectedFeedNodes ) )
             {
                 eZContentStagingEvent::addEvent(
-                    $target_id,
+                    $targetId,
                     $objectID,
                     eZContentStagingEvent::ACTION_UPDATESECTION,
                     $affectedObjectData,

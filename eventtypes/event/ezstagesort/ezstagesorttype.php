@@ -35,12 +35,13 @@ class eZStageSortType extends eZWorkflowEventType
                     'nodeID' => $nodeID,
                     'nodeRemoteID' => $node->attribute( 'remote_id' ),
                     'sortField' => $parameters['sorting_field'],
-                    'sortOrder' => $parameters['sorting_order'] );
+                    'sortOrder' => $parameters['sorting_order']
+        );
         $affectedNodes = array( $nodeID );
-        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchByNode( $node ) as $targetId => $target )
         {
             eZContentStagingEvent::addEvent(
-                $target_id,
+                $targetId,
                 $objectID,
                 eZContentStagingEvent::ACTION_SORT,
                 $sortedNodeData,

@@ -36,13 +36,13 @@ class eZStageUpdateInitialLanguageType extends eZWorkflowEventType
         $objectID = $object->attribute( 'id' );
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array( "initialLanguage" => $parameters['new_initial_language_id'], "objectRemoteID" => $object->attribute( 'remote_id' ) );
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
-            if ( count( $affectedFeedNodes ) )
+            if ( !empty( $affectedFeedNodes ) )
             {
                 eZContentStagingEvent::addEvent(
-                    $target_id,
+                    $targetId,
                     $objectID,
                     eZContentStagingEvent::ACTION_UPDATEINITIALLANGUAGE,
                     $affectedObjectData,

@@ -18,45 +18,44 @@ class eZStageSwapType extends eZWorkflowEventType
 
     public function execute( $process, $event )
     {
-        /*$parameters = $process->attribute( 'parameter_list' );
-
+        $parameters = $process->attribute( 'parameter_list' );
         $nodeID = $parameters['node_id'];
-
         $node = eZContentObjectTreeNode::fetch( $nodeID );
 
         if ( !is_object( $node ) )
         {
-            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, 'eZStageSwapType::execute' );
+            eZDebug::writeError( 'Unable to fetch node with ID ' . $nodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
         $selectedNodeID = $parameters['selected_node_id'];
-
         $selectedNode = eZContentObjectTreeNode::fetch( $selectedNodeID );
 
         if ( !is_object( $selectedNode ) )
         {
-            eZDebug::writeError( 'Unable to fetch selected node with ID ' . $selectedNodeID, 'eZStageSwapType::execute' );
+            eZDebug::writeError( 'Unable to fetch selected node with ID ' . $selectedNodeID, __METHOD__ );
             return eZWorkflowType::STATUS_ACCEPTED;
         }
 
-        $feedSourceIDList = eZSyndicationNodeActionLog::feedSourcesByNode( $node );
+        $objectID = $node->attribute( 'contentobject_id' );
+        $swapData = array(
+            'nodeID1' => $nodeID,
+            'nodeRemoteID1' => $node->attribute( 'remote_id' ),
+            'nodeID2' => $selectedNodeID,
+            'nodeRemoteID2' => $selectedNode->attribute( 'remote_id' ),
+        );
+        $affectedNodes = array( $nodeID, $selectedNodeID );
 
-        $nodeRemoteID = $node->attribute( 'remote_id' );
-        $selectedRemoteID = $selectedNode->attribute( 'remote_id' );
-        $time = time();
-
-        foreach ( $feedSourceIDList as $feedSourceID )
+        foreach ( array_keys( eZContentStagingTarget::fetchList() ) as $targetId )
         {
-            $log = new eZSyndicationNodeActionLog( array(
-                'source_id' => $feedSourceID,
-                'node_remote_id' => $nodeRemoteID,
-                'timestamp' => $time,
-                'action' => eZSyndicationNodeActionLog::ACTION_SWAP_NODES,
-                'options' => serialize( array( 'selected_node_remote_id' => $selectedRemoteID ) ) ) );
-
-            $log->store();
-        }*/
+            eZContentStagingEvent::addEvent(
+                $targetId,
+                $objectID,
+                eZContentStagingEvent::ACTION_SWAP,
+                $swapData,
+                $affectedNodes
+            );
+        }
 
         return eZWorkflowType::STATUS_ACCEPTED;
     }

@@ -68,13 +68,13 @@ class eZStagePublishType extends eZWorkflowEventType
             $affectedObjectData['nodeRemoteID'] = $node->attribute( 'remote_id' );
         }
 
-        foreach ( eZContentStagingTarget::fetchList() as $target_id => $target )
+        foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
-            if ( count( $affectedFeedNodes ) )
+            if ( !empty( $affectedFeedNodes ) )
             {
                 eZContentStagingEvent::addEvent(
-                    $target_id,
+                    $targetId,
                     $objectID,
                     eZContentStagingEvent::ACTION_PUBLISH,
                     $affectedObjectData,
