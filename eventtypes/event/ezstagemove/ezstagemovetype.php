@@ -39,7 +39,7 @@ class eZStageMoveType extends eZWorkflowEventType
         }
 
         $object = $node->attribute( 'object' );
-        $nodePath = array( $node->attribute( 'path_string' ) );
+        $nodePath = $node->attribute( 'path_string' );
         $newParentNodePath = $newParentNode->attribute( 'path_string' );
         $affectedNodes = array( $nodeID );
         $movedNodeData = array(
@@ -55,7 +55,7 @@ class eZStageMoveType extends eZWorkflowEventType
         $objectID = $parameters['object_id'];
         foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
-            $hasNewParentNode =  $target->includesNodeByPath( $newParentNodePath );
+            $hasNewParentNode = $target->includesNodeByPath( $newParentNodePath );
             if ( $target->includesNodeByPath( $nodePath ) )
             {
                 if ( $hasNewParentNode )
@@ -76,33 +76,26 @@ class eZStageMoveType extends eZWorkflowEventType
                         $targetId,
                         $objectID,
                         eZContentStagingEvent::ACTION_REMOVELOCATION,
-                        array_merge( $movedNodeData, array( 'trash' => false ) ),
+                        array( 'trash' => false ) + $movedNodeData,
                         $affectedNodes
                     );
                 }
             }
-            else
+            else if ( $hasNewParentNode )
             {
-                if ( $hasNewParentNode )
-                {
-                    // record a create-node event to this target
-                    /// @todo in fact we should import all versions and languages...
-                    eZContentStagingEvent::addEvent(
-                        $target_id,
-                        $objectID,
-                        eZContentStagingEvent::ACTION_PUBLISH,
-                        array_merge( $movedNodeData, array(
-                            'version' => $currentVersion,
-                            'locale' => $initialLanguage->attribute( 'locale' )
-                        ) ),
-                        $affectedNodes,
-                        $initialLanguageID
-                    );
-                }
-                else
-                {
-                    // nothing to see here, move along
-                }
+                // record a create-node event to this target
+                /// @todo in fact we should import all versions and languages...
+                eZContentStagingEvent::addEvent(
+                    $targetId,
+                    $objectID,
+                    eZContentStagingEvent::ACTION_PUBLISH,
+                    array(
+                        'version' => $currentVersion,
+                        'locale' => $initialLanguage->attribute( 'locale' )
+                    ) + $movedNodeData,
+                    $affectedNodes,
+                    $initialLanguageID
+                );
             }
         }
 
