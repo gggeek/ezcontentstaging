@@ -29,14 +29,14 @@ if ( $module->isCurrentAction( 'ResetFeeds' ) )
     $actionResults = array();
     if ( $http->hasPostVariable( 'feeds' ) && is_array( $http->postVariable( 'feeds' ) ) )
     {
-        $toreset = array();
+        $toReset = array();
         foreach ( $http->postVariable( 'feeds' ) as $feedId )
         {
             $feed = eZContentStagingTarget::fetch( $feedId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $feed instanceof eZContentStagingTarget )
             {
-                $toreset[] = $feedId;
+                $toReset[] = $feedId;
             }
             else
             {
@@ -44,18 +44,18 @@ if ( $module->isCurrentAction( 'ResetFeeds' ) )
             }
         }
 
-        if ( count( $toreset ) )
+        if ( !empty( $toReset ) )
         {
             /// @todo we are actually faking the number of deleted events...
-            $out = eZContentStagingEvent::removeEventsByTargets( $toreset );
+            $out = eZContentStagingEvent::removeEventsByTargets( $toReset );
             /// @todo apply i18n to messages
             if ( $out === false )
             {
-                $actionErrors[] = "Error: feeds not reset (" . implode( ', ', $toreset ) . ')';
+                $actionErrors[] = "Error: feeds not reset (" . implode( ', ', $toReset ) . ')';
             }
             else
             {
-                $actionResults[] = "feeds reset (" . implode( ', ', $toreset ) . "): $out events removed";
+                $actionResults[] = "feeds reset (" . implode( ', ', $toReset ) . "): $out events removed";
             }
         }
         else
@@ -90,14 +90,14 @@ else if ( $module->isCurrentAction( 'InitializeFeeds' ) )
     $actionResults = array();
     if ( $http->hasPostVariable( 'feeds' ) && is_array( $http->postVariable( 'feeds' ) ) )
     {
-        $toinitialize = array();
+        $toInitialize = array();
         foreach ( $http->postVariable( 'feeds' ) as $feedId )
         {
             $feed = eZContentStagingTarget::fetch( $feedId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $feed instanceof eZContentStagingTarget )
             {
-                $toinitialize[] = $feed;
+                $toInitialize[] = $feed;
             }
             else
             {
@@ -105,9 +105,9 @@ else if ( $module->isCurrentAction( 'InitializeFeeds' ) )
             }
         }
 
-        if ( count( $toinitialize ) )
+        if ( !empty( $toInitialize ) )
         {
-            foreach ( $toinitialize as $feed )
+            foreach ( $toInitialize as $feed )
             {
                 $errors = array();
                 foreach ( $feed->initializeRootItems() as $result )
@@ -118,7 +118,7 @@ else if ( $module->isCurrentAction( 'InitializeFeeds' ) )
                     }
                 }
                 /// @todo apply i18n to messages
-                if ( count( $errors ) )
+                if ( !empty( $errors ) )
                 {
                     $actionErrors[] = "Error: feed " . $feed->attribute( 'name' ) . 'not initialized ( ' . implode( ', ', $errors ) . ' )';
                 }

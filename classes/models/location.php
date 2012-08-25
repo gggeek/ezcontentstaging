@@ -30,7 +30,13 @@ class eZContentStagingLocation extends contentStagingBase
     public $sortField;
     public $sortOrder;
 
-    function __construct( eZContentObjectTreeNode $node )
+    /**
+     * Constructor
+     *
+     * @param eZContentObjectTreeNode $node
+     *
+     */
+    public function __construct( eZContentObjectTreeNode $node )
     {
         $this->pathString = $node->attribute( 'path_string' );
         $this->pathIdentificationString = $node->attribute( 'path_identification_string' );
@@ -64,30 +70,30 @@ class eZContentStagingLocation extends contentStagingBase
      * @param int $sortField
      * @param int $sortOrder
      */
-    static function updateSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
+    static public function updateSort( eZContentObjectTreeNode $node, $sortField, $sortOrder )
     {
         $sortField = self::decodeSortField( $sortField );
         $sortOrder = self::decodeSortOrder( $sortOrder);
 
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_sort' ) )
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_sort' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
                 'sort',
-                array( 'node_id' => $node->attribute( 'node_id' ),
-                       'sorting_field' => $sortField,
-                       'sorting_order' => $sortOrder ),
-                null, true );
+                array(
+                    'node_id' => $node->attribute( 'node_id' ),
+                    'sorting_field' => $sortField,
+                    'sorting_order' => $sortOrder
+                ),
+                null,
+                true
+            );
             /// @todo test if any errors occurred
             return 0;
-
         }
-        else
-        {
-            $result = eZContentOperationCollection::changeSortOrder( $node->attribute( 'node_id' ), $sortField, $sortOrder );
-            return ( $result['status'] == true ) ? 0 : -1;
+
+        $result = eZContentOperationCollection::changeSortOrder( $node->attribute( 'node_id' ), $sortField, $sortOrder );
+        return ( $result['status'] == true ) ? 0 : -1;
 
             /* manual update
                $db = eZDB::instance();
@@ -110,7 +116,7 @@ class eZContentStagingLocation extends contentStagingBase
                    }
                    return $e->getMessage();
                }*/
-        }
+
     }
 
     /**
@@ -121,15 +127,13 @@ class eZContentStagingLocation extends contentStagingBase
      *
      * @todo shall we fix priorities of other nodes too if there is a conflict?
      */
-    static function updatePriority( eZContentObjectTreeNode $node, $priority )
+    static public function updatePriority( eZContentObjectTreeNode $node, $priority )
     {
         // note: the eZ API for this is mind-bending to say the least...
         $priorityArray = array( $priority );
         $priorityIDArray = array( $node->attribute( 'node_id') );
 
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatepriority' ) )
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_updatepriority' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -137,8 +141,11 @@ class eZContentStagingLocation extends contentStagingBase
                 array(
                     'node_id' => $node->attribute( 'parent_node_id' ),
                     'priority' => $priorityArray,
-                    'priority_id' => $priorityIDArray ),
-                null, true );
+                    'priority_id' => $priorityIDArray
+                ),
+                null,
+                true
+            );
         }
         else
         {
@@ -173,10 +180,10 @@ class eZContentStagingLocation extends contentStagingBase
      * @param eZContentObjectTreeNode $node
      * @param string $remoteId
      */
-    static function updateRemoteId( eZContentObjectTreeNode $node, $remoteId )
+    static public function updateRemoteId( eZContentObjectTreeNode $node, $remoteId )
     {
         $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             $node->setAttribute( 'remote_id', $remoteId );
@@ -186,7 +193,7 @@ class eZContentStagingLocation extends contentStagingBase
             );
             return 0;
         }
-        catch ( exception $e )
+        catch ( Exception $e )
         {
             if ( $db->transactionCounter() )
             {
@@ -204,22 +211,24 @@ class eZContentStagingLocation extends contentStagingBase
      *
      * @todo add checking for 'all ok'
      */
-    static function updateVisibility( eZContentObjectTreeNode $node, $hide )
+    static public function updateVisibility( eZContentObjectTreeNode $node, $hide )
     {
-        if ( $node->attribute( 'is_hidden' ) != $hide )
+        if ( $node->attribute( 'is_hidden' ) == $hide )
+            return;
+
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_hide' ) )
         {
-            $ini = eZINI::instance( 'contentstagingtarget.ini' );
-            $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-            if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_hide' ) )
-            {
-                $operationResult = eZOperationHandler::execute( 'content',
-                                                                'hide',
-                                                                 array( 'node_id' => $node->attribute( 'node_id' ) ),
-                                                                 null, true );
-            }
-            else
-            {
-                eZContentOperationCollection::changeHideStatus( $node->attribute( 'node_id' ) );
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'hide',
+                array( 'node_id' => $node->attribute( 'node_id' ) ),
+                null,
+                true
+            );
+        }
+        else
+        {
+            eZContentOperationCollection::changeHideStatus( $node->attribute( 'node_id' ) );
                 /* manual update
                 if ( $hide )
                 {
@@ -229,16 +238,20 @@ class eZContentStagingLocation extends contentStagingBase
                 {
                     eZContentObjectTreeNode::unhideSubTree( $node );
                 }*/
-            }
         }
     }
 
-    /// @todo check for failure
-    static function updateMainLocation( eZContentObjectTreeNode $node, eZContentObjectTreeNode $newMainLocation )
+    /**
+     * Update main location of $node to $newMainLocation
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param eZContentObjectTreeNode $newMainLocation
+     *
+     * @todo check for failure
+     */
+    static public function updateMainLocation( eZContentObjectTreeNode $node, eZContentObjectTreeNode $newMainLocation )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatemainassignment' ) )
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_updatemainassignment' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -248,26 +261,31 @@ class eZContentStagingLocation extends contentStagingBase
                     'object_id' => $node->attribute( 'contentobject_id' ),
                     'main_assignment_parent_id' => $newMainLocation->attribute( 'parent_node_id' ) ),
                 null,
-                true );
+                true
+            );
         }
         else
         {
             eZContentOperationCollection::UpdateMainAssignment(
                 $newMainLocation->attribute( 'node_id' ),
                 $node->attribute( 'contentobject_id' ),
-                $newMainLocation->attribute( 'parent_node_id' ) );
+                $newMainLocation->attribute( 'parent_node_id' )
+            );
         }
     }
 
     /**
+     * Move $node to $destination
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param eZContentObjectTreeNode $destination
+     *
      * @todo return false on errors
      * @todo add perms checking
      */
-    static function move( eZContentObjectTreeNode $node, eZContentObjectTreeNode $dest )
+    static public function move( eZContentObjectTreeNode $node, eZContentObjectTreeNode $destination )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_move' ) )
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_move' ) )
         {
             $operationResult = eZOperationHandler::execute(
                 'content',
@@ -275,36 +293,41 @@ class eZContentStagingLocation extends contentStagingBase
                 array(
                     'node_id' => $node->attribute( 'node_id' ),
                     'object_id' => $node->attribute( 'contentobject_id' ),
-                    'new_parent_node_id' => $dest->attribute( 'node_id' ) ),
+                    'new_parent_node_id' => $destination->attribute( 'node_id' ) ),
                 null,
-                true );
+                true
+            );
         }
         else
         {
             eZContentOperationCollection::moveNode(
                 $node->attribute( 'node_id' ),
                 $node->attribute( 'contentobject_id' ),
-                $dest->attribute( 'node_id' )
+                $destination->attribute( 'node_id' )
             );
         }
     }
 
     /**
-     * @param bool $totrash
+     * Remove a $node
+     *
+     * @param eZContentObjectTreeNode $node
+     * @param bool $moveToTrash Whether to move the object to trash.
      * @todo add perms checking
      */
-    static function remove( eZContentObjectTreeNode $node, $moveToTrash )
+    static public function remove( eZContentObjectTreeNode $node, $moveToTrash )
     {
         $removeList = array( $node->attribute( 'node_id' ) );
 
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_removelocation' ) )
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_removelocation' ) )
         {
-            $operationResult = eZOperationHandler::execute( 'content',
-                                                            'removelocation', array( 'node_list' => $removeList ),
-                                                            null,
-                                                            true );
+            $operationResult = eZOperationHandler::execute(
+                'content',
+                'removelocation',
+                array( 'node_list' => $removeList ),
+                null,
+                true
+            );
         }
         else
         {
@@ -344,4 +367,14 @@ class eZContentStagingLocation extends contentStagingBase
 
         $out = 0;
     }*/
+
+    /**
+     * Returns whether triggers execution is enabled.
+     *
+     * @return bool
+     */
+    static private function isTriggersExecutionEnabled()
+    {
+        return eZINI::instance( "contentstagingtarget.ini" )->variable( "GeneralSettings", "ExecuteTriggers" ) !== "disabled";
+    }
 }

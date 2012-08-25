@@ -99,11 +99,11 @@ class eZContentStagingField
             case 'ezgmaplocation':
                 if ( $attribute->attribute( 'has_content' ) )
                 {
-                    $gmaplocation = $attribute->attribute( 'content' );
+                    $gmapLocation = $attribute->attribute( 'content' );
                     $this->value = array(
-                        "latitude" => $gmaplocation->attribute( 'latitude' ),
-                        "longitude" =>  $gmaplocation->attribute( 'longitude' ),
-                        "address" =>  $gmaplocation->attribute( 'address' )
+                        "latitude" => $gmapLocation->attribute( 'latitude' ),
+                        "longitude" =>  $gmapLocation->attribute( 'longitude' ),
+                        "address" =>  $gmapLocation->attribute( 'address' )
                     );
                 }
                 break;
@@ -204,10 +204,10 @@ class eZContentStagingField
             case 'ezobjectrelationlist':
                 if ( $ridGenerator )
                 {
-                    $relation_list = $attribute->attribute( 'content' );
-                    $relation_list = $relation_list['relation_list'];
+                    $relationList = $attribute->attribute( 'content' );
+                    $relationList = $relationList['relation_list'];
                     $values = array();
-                    foreach ( $relation_list as $relatedObjectInfo )
+                    foreach ( $relationList as $relatedObjectInfo )
                     {
                         // nb: for the object relation we check for objects that have disappeared we do it here too. Even though it is bad for perfs...
                         $relatedObject = eZContentObject::fetch( $relatedObjectInfo['contentobject_id'] );
@@ -664,7 +664,7 @@ class eZContentStagingField
                     }
                 }
                 /// @todo we only catch one error type here, but we should catch more
-                if ( count( $localIds ) == 0 && count( $value ) > 0 )
+                if ( empty( $localIds ) && !empty( $value ) )
                 {
                     $ok = false;
                 }
@@ -732,7 +732,7 @@ class eZContentStagingField
 
                     // 1.1: delete from ezm_block those that are in current zone but actually not there anymore
                     /// @todo move to eZPO calls
-                    if ( count( $zoneBlocksIds ) )
+                    if ( !empty( $zoneBlocksIds ) )
                     {
                         foreach ( $zoneBlocksIds as $i => $v  )
                         {
@@ -805,7 +805,7 @@ class eZContentStagingField
                                 );
                             }
                         }
-                        if ( count( $goodItems ) )
+                        if ( !empty( $goodItems ) )
                         {
                             eZFlowPool::insertItems( $goodItems );
                         }

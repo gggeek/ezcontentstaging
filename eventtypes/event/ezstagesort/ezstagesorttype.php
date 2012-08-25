@@ -32,10 +32,10 @@ class eZStageSortType extends eZWorkflowEventType
 
         $objectID = $node->attribute( 'contentobject_id' );
         $sortedNodeData = array(
-                    'nodeID' => $nodeID,
-                    'nodeRemoteID' => $node->attribute( 'remote_id' ),
-                    'sortField' => $parameters['sorting_field'],
-                    'sortOrder' => $parameters['sorting_order']
+            'nodeID' => $nodeID,
+            'nodeRemoteID' => $node->attribute( 'remote_id' ),
+            'sortField' => $parameters['sorting_field'],
+            'sortOrder' => $parameters['sorting_order']
         );
         $affectedNodes = array( $nodeID );
         foreach ( eZContentStagingTarget::fetchByNode( $node ) as $targetId => $target )

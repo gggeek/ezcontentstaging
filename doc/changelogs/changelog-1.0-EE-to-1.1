@@ -1,0 +1,19 @@
+Changes between versions 1.0 Enterprise and 1.1 Community
+
+* New features
+. the Community version is compatible (with patches included) with eZ Publish 4.5 and 4.6,
+  the Enterprise version is compatible only with eZ Publish 4.7 and later
+. the Community version integrates with the eZSNMPD extension
+. the Community version provides a self-documenting interface for the REST api exposed
+. the "staging_sync" cronjob has been implemented
+. the view checking for proper configuration of an export feed also displays initialization errors
+. the fetch functions 'sync_events' and 'sync_events_count' accept an optional parameter 'status'
+
+* Bugfixes:
+. the "synctargets" php script does not try to synchronize events which are already in syncing status
+
+* Misc
+. the Community version requires the ggwebservices extension to run,
+  the Enterprise version has no such requirement, as it includes a simplified version of it
+. two example filters are provided in the the Community version: eZNullStagingTransport and eZContentStagingGhostintheshellFieldFilter
+. bugfixes to the included session-based auth filter for REST services

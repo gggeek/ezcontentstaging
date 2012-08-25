@@ -78,7 +78,7 @@ class eZStageDeleteType extends eZWorkflowEventType
                     // be none left after the delete. But we run this trigger before the
                     // actual action...
                     $affectedNodes
-                    );
+                );
             }
         }
 

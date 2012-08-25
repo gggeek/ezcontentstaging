@@ -86,12 +86,12 @@ class eZRESTResponse
      * Request is not used, kept for compat with sibling classes
      * Name is not set to response from request - a bit weird...
      */
-    public function decodeStream( $request, $stream, $headers = false, $cookies = array(), $statuscode = "200" )
+    public function decodeStream( $request, $stream, $headers = false, $cookies = array(), $statusCode = "200" )
     {
         $this->Cookies = $cookies;
 
         // Allow empty payloads regardless of declared content type, for 204 and 205 responses
-        if ( $statuscode == '204' || $statuscode == '205' )
+        if ( $statusCode == '204' || $statusCode == '205' )
         {
             if ( $stream == '' && ( !isset( $headers['content-length'] ) || $headers['content-length'] == 0 ) )
             {

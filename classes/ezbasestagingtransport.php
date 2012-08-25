@@ -25,7 +25,7 @@ class eZBaseStagingTransport
     const DIFF_OBJECT_ALWAYSAVAILABLE = 1024;
 
     // should be a constant really, but php allows no arrays as class consts
-    static $diff_descriptions = array(
+    static $diffDescriptions = array(
         self::DIFF_TRANSPORTERROR => 'Error while checking differences',
         self::DIFF_NODE_MISSING => 'Node is missing',
         self::DIFF_NODE_PARENT => 'Parent node is different',
@@ -44,7 +44,7 @@ class eZBaseStagingTransport
     static public function diffmask2array( $bitmask )
     {
         $diffs = array();
-        foreach ( self::$diff_descriptions as $code => $desc )
+        foreach ( self::$diffDescriptions as $code => $desc )
         {
             if ( $code & $bitmask )
             {

@@ -15,7 +15,7 @@ $syncResults = array();
 $ini = eZIni::instance();
 $module = $Params['Module'];
 
-$related_node_events_list = $current_node_events = $to_sync = array();
+$relatedNodeEventsList = $currentNodeEvents = $toSync = array();
 
 if ( $http->hasPostVariable( "CancelButton" ) && $http->hasPostVariable( 'NodeID' ))
 {
@@ -33,7 +33,7 @@ if ( $http->hasPostVariable( 'NodeID' ) )
     {
         if ( $event instanceof eZContentStagingEvent )
         {
-            $current_node_events[$event->attribute( 'id' )] = $event;
+            $currentNodeEvents[$event->attribute( 'id' )] = $event;
         }
     }
 
@@ -46,14 +46,14 @@ if ( $http->hasPostVariable( 'NodeID' ) )
     {
         //$eventList = eZContentStagingEvent::fetchByObject( $relatedObject->ID );
         $eventList = eZContentStagingEvent::fetchByNode( $relatedObject->attribute( 'main_node_id' ), $relatedObject->attribute( 'contentobject_id' ), $targetId );
-        if ( count( $eventList ) > 0 )
+        if ( !empty( $eventList ) )
         {
             array_push( $relatedObjectNeedingSync, $relatedObject );
             foreach ( $eventList as $event )
             {
                 if ( $event instanceof eZContentStagingEvent )
                 {
-                    $related_node_events_list[$relatedObject->attribute( 'id' )][$event->attribute( 'id' )] = $event;
+                    $relatedNodeEventsList[$relatedObject->attribute( 'id' )][$event->attribute( 'id' )] = $event;
                 }
             }
         }
@@ -69,9 +69,9 @@ if ( $http->hasPostVariable( 'NodeID' ) )
     }
 }
 
-if ( count( $current_node_events ) && !$http->hasPostVariable( 'ConfirmSyncButton' ))
+if ( !empty( $currentNodeEvents ) && !$http->hasPostVariable( 'ConfirmSyncButton' ))
 {
-    if ( count( $relatedObjectNeedingSync ) > 0 )
+    if ( !empty( $relatedObjectNeedingSync ) )
     {
         $syncErrors[] = ezpI18n::tr( 'ezcontentstaging', 'The current node has some related contents that must be synchronized too. Please, confirm your action to run the synchronisation.' );
     }
@@ -81,22 +81,22 @@ if ( count( $current_node_events ) && !$http->hasPostVariable( 'ConfirmSyncButto
     }
     $syncResults = null;
 }
-else if ( count( $current_node_events ) && $http->hasPostVariable( 'ConfirmSyncButton' ))
+else if ( !empty( $currentNodeEvents ) && $http->hasPostVariable( 'ConfirmSyncButton' ))
 {
-    $to_sync = $current_node_events;
-    foreach ( $related_node_events_list as $related_node_events )
+    $toSync = $currentNodeEvents;
+    foreach ( $relatedNodeEventsList as $relatedNodeEvents )
     {
 
-         $to_sync = $to_sync + $related_node_events;
+         $toSync += $relatedNodeEvents;
     }
-    ksort( $to_sync );
+    ksort( $toSync );
 
-    $out = eZContentStagingEvent::syncEvents( $to_sync );
+    $out = eZContentStagingEvent::syncEvents( $toSync );
     /// @todo apply i18n to messages
     /// @todo check that current user can sync - with limitations - this event
     foreach ( $out as $id => $resultCode )
     {
-        $event = $to_sync[$id];
+        $event = $toSync[$id];
         if ( $resultCode !== 0 )
         {
             $syncErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
@@ -104,13 +104,13 @@ else if ( count( $current_node_events ) && $http->hasPostVariable( 'ConfirmSyncB
         else
         {
             $syncResults[] = "Object " . $event->attribute( 'object_id' ) . " succesfully synchronised to feed " . $event->attribute( 'target_id' ) . " [Event $id]";
-            if ( isset( $current_node_events[$id] ) )
+            if ( isset( $currentNodeEvents[$id] ) )
             {
-                unset( $current_node_events[$id] );
+                unset( $currentNodeEvents[$id] );
             }
-            else if ( isset( $related_node_events_list[$event->attribute( 'object_id' )][$id] ) )
+            else if ( isset( $relatedNodeEventsList[$event->attribute( 'object_id' )][$id] ) )
             {
-                unset( $related_node_events_list[$event->attribute( 'object_id' )][$id] );
+                unset( $relatedNodeEventsList[$event->attribute( 'object_id' )][$id] );
             }
             else
             {
@@ -128,8 +128,8 @@ $tpl = eZTemplate::factory();
 $tpl->setVariable( 'current_node', $currentNode );
 $tpl->setVariable( 'sync_related_objects', $relatedObjectNeedingSync );
 $tpl->setVariable( 'target_id', $targetId );
-$tpl->setVariable( 'current_node_events', $current_node_events );
-$tpl->setVariable( 'related_node_events', $related_node_events_list );
+$tpl->setVariable( 'current_node_events', $currentNodeEvents );
+$tpl->setVariable( 'related_node_events', $relatedNodeEventsList );
 $tpl->setVariable( 'sync_errors', $syncErrors );
 $tpl->setVariable( 'sync_results', $syncResults );
 

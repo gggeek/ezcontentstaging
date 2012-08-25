@@ -27,7 +27,7 @@ class eZContentStagingPreventErrorsFilter implements ezpRestRequestFilterInterfa
         $controllers = $ini->variable( 'RestAPI', 'ControllerClasses' );
         if ( in_array( $this->controllerClass, $controllers ) )
         {
-            $errorhandling = eZDebug::setHandleType( eZDebug::HANDLE_FROM_PHP );
+            $errorHandling = eZDebug::setHandleType( eZDebug::HANDLE_FROM_PHP );
         }
     }
 

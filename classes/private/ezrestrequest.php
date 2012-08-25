@@ -89,7 +89,7 @@ class eZRESTRequest
         {
             $next = '?';
         }
-        if ( count( $params ) )
+        if ( !empty( $params ) )
         {
             $return .= $next . json_encode( $params );
         }

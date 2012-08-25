@@ -45,10 +45,10 @@ foreach ( $targets as $targetId )
         //$nodeCount = $target->nodeCount();
         //$cli->output( "Nodes to check: $nodeCount" );
         //$script->resetIteration( $nodeCount, 0 );
-        //$tosync = $target->checkTarget( 'iterate' );
+        //$toSync = $target->checkTarget( 'iterate' );
 
-        $tosync = $target->checkTarget();
-        foreach ( $tosync as $nodeId => $problems )
+        $toSync = $target->checkTarget();
+        foreach ( $toSync as $nodeId => $problems )
         {
 
             if ( $options['sync'] )

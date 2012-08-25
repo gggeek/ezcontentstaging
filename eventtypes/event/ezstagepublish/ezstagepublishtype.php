@@ -48,14 +48,13 @@ class eZStagePublishType extends eZWorkflowEventType
         ///       test if eg. after collab. refusal we pass through here...
 
         $initialLanguageID = $version->attribute( 'initial_language_id' );
-        $initialLanguage = eZContentLanguage::fetch( $initialLanguageID );
 
         // if this is a 1st version, we need to identify parent node and store its ids too
 
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array(
             'version' => $versionID,
-            'locale' => $initialLanguage->attribute( 'locale' ),
+            'locale' => eZContentLanguage::fetch( $initialLanguageID )->attribute( 'locale' ),
             'objectRemoteID' => $object->attribute( 'remote_id' ),
             'parentNodeID' => $parentNode->attribute( 'node_id' ),
             'parentNodeRemoteID' => $parentNode->attribute( 'remote_id' ) );

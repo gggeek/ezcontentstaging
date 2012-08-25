@@ -203,11 +203,11 @@ class eZContentStagingContent extends contentStagingBase
         {
             /// @todo maybe abort instead of continuing if bad date format?
             /// @todo add a check that date is not in the future?
-            $creationdate = null;
+            $creationDate = null;
             if ( isset( $input['created'] ) )
             {
-                $creationdate = self::decodeDatetIme( $input['created'] );
-                if ( !$creationdate )
+                $creationDate = self::decodeDatetIme( $input['created'] );
+                if ( !$creationDate )
                 {
                     eZDebug::writeWarning( 'Object creation date not valid: ' . $input['created'], __METHOD__ );
                 }
@@ -232,9 +232,9 @@ class eZContentStagingContent extends contentStagingBase
             }
 
             // the date set here is normally not reset during the publication process
-            if ( $creationdate )
+            if ( $creationDate )
             {
-                $content->setAttribute( 'published', $creationdate );
+                $content->setAttribute( 'published', $creationDate );
             }
             $content->store();
 
@@ -253,9 +253,9 @@ class eZContentStagingContent extends contentStagingBase
             $version = $content->version( 1 );
             // The date of version creation we set to object publication date,
             // in order not to make it appear as if it was created after object publication
-            if ( $creationdate )
+            if ( $creationDate )
             {
-                $version->setAttribute( 'created', $creationdate );
+                $version->setAttribute( 'created', $creationDate );
             }
             // Version modification time is taken as current time at version creation.
             /*else

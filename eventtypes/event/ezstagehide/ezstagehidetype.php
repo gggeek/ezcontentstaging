@@ -43,7 +43,7 @@ class eZStageHideType extends eZWorkflowEventType
                 eZContentStagingEvent::ACTION_HIDEUNHIDE,
                 $hiddenNodeData,
                 $affectedNodes
-                );
+            );
         }
 
         return eZWorkflowType::STATUS_ACCEPTED;

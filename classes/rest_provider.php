@@ -190,5 +190,4 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
     {
         return new ezpRestApiViewController();
     }
-
 }

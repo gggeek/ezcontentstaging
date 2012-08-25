@@ -450,9 +450,9 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         eZModule::setGlobalPathList( $moduleRepositories );
 
         $states = array();
-        foreach( $this->getRequestVariables() as $stategroup => $state )
+        foreach( $this->getRequestVariables() as $stateGroup => $state )
         {
-            $groupObj = eZContentObjectStateGroup::fetchByIdentifier( $stategroup );
+            $groupObj = eZContentObjectStateGroup::fetchByIdentifier( $stateGroup );
             if ( $groupObj )
             {
                 $stateObj = $groupObj->stateByIdentifier( $state );
@@ -462,12 +462,12 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
                 }
                 else
                 {
-                    return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "State '$state' not found in group '$stategroup'" );
+                    return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "State '$state' not found in group '$stateGroup'" );
                 }
             }
             else
             {
-                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "State group '$stategroup' not found" );
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "State group '$stateGroup' not found" );
             }
         }
 

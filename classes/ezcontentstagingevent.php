@@ -37,23 +37,22 @@ class eZContentStagingEvent extends eZPersistentObject
     // remote_object_id into the remote node (known by its node_id)
     const ACTION_UPDATEREMOTEIDS = 65536;
 
-
-    static $sync_strings = array(
-        1 => 'location added',
-        2 => 'object removed',
-        4 => 'node hidden/shown',
-        8 => 'node moved',
-        16 => 'object published',
-        32 => 'location removed',
-        64 => 'translation removed',
-        128 => 'sort order changed',
-        256 => 'two objects swapped',
-        1024 => 'alwaysavailable updated',
-        2048 => 'main language updated',
-        4096 => 'main location changed',
-        8192 => 'content state changed',
-        16384 => 'child priority changed',
-        32768 => 'section changed',
+    static $syncStrings = array(
+        self::ACTION_ADDLOCATION => 'location added',
+        self::ACTION_DELETE => 'object removed',
+        self::ACTION_HIDEUNHIDE => 'node hidden/shown',
+        self::ACTION_MOVE => 'node moved',
+        self::ACTION_PUBLISH => 'object published',
+        self::ACTION_REMOVELOCATION => 'location removed',
+        self::ACTION_REMOVETRANSLATION => 'translation removed',
+        self::ACTION_SORT => 'sort order changed',
+        self::ACTION_SWAP => 'two objects swapped',
+        self::ACTION_UPDATEALWAYSAVAILABLE => 'alwaysavailable updated',
+        self::ACTION_UPDATEINITIALLANGUAGE => 'main language updated',
+        self::ACTION_UPDATEMAINASSIGNMENT => 'main location changed',
+        self::ACTION_UPDATEOBJECSTATE => 'content state changed',
+        self::ACTION_UPDATEPRIORITY => 'child priority changed',
+        self::ACTION_UPDATESECTION => 'section changed',
         65536 => 'node initialization'
     );
 
@@ -88,65 +87,88 @@ class eZContentStagingEvent extends eZPersistentObject
 
     static public function definition()
     {
-        return array( 'fields' => array( 'id' => array( 'name' => 'ID',
-                                                        'datatype' => 'integer',
-                                                        'required' => true ),
-                                         'target_id' => array( 'name' => 'TargetID',
-                                                        'datatype' => 'string',
-                                                        'required' => true ),
-                                         'object_id' => array( 'name' => 'ObjectID',
-                                                               'datatype' => 'integer',
-                                                               'required' => true,
-                                                               'foreign_class' => 'eZContentObject',
-                                                               'foreign_attribute' => 'id',
-                                                               'multiplicity' => '1..*' ),
-                                         // this is only stored for some events. NULL == affects all languages
-                                         'language_mask' => array( 'name' => 'LanguageMask',
-                                                                   'datatype' => 'integer',
-                                                                   'required' => false ),
-                                         // type of event (what to sync)
-                                         'to_sync' => array( 'name' => 'ToSync',
-                                                             'datatype' => 'integer',
-                                                             'required' => true ),
-                                         // we store a custom modification date of object, as it includes metadata modifications
-                                         /// @todo rename to 'created' ?
-                                         'modified' => array( 'name' => 'Modified',
-                                                              'datatype' => 'integer',
-                                                              'required' => true ),
-                                         // we store extra data here, eg. description of deleted objects
-                                         'data_text' => array( 'name' => 'DataText',
-                                                               'datatype' => 'text' ),
+        return array(
+            'fields' => array(
+                'id' => array(
+                    'name' => 'ID',
+                    'datatype' => 'integer',
+                    'required' => true
+                ),
+                'target_id' => array(
+                    'name' => 'TargetID',
+                    'datatype' => 'string',
+                    'required' => true
+                ),
+                'object_id' => array(
+                     'name' => 'ObjectID',
+                     'datatype' => 'integer',
+                     'required' => true,
+                     'foreign_class' => 'eZContentObject',
+                     'foreign_attribute' => 'id',
+                     'multiplicity' => '1..*'
+                ),
+                // this is only stored for some events. NULL == affects all languages
+                'language_mask' => array(
+                    'name' => 'LanguageMask',
+                    'datatype' => 'integer',
+                    'required' => false
+                ),
+                // type of event (what to sync)
+                'to_sync' => array(
+                    'name' => 'ToSync',
+                    'datatype' => 'integer',
+                    'required' => true
+                ),
+                // we store a custom modification date of object, as it includes metadata modifications
+                /// @todo rename to 'created' ?
+                'modified' => array(
+                    'name' => 'Modified',
+                    'datatype' => 'integer',
+                    'required' => true
+                ),
+                // we store extra data here, eg. description of deleted objects
+                'data_text' => array(
+                    'name' => 'DataText',
+                    'datatype' => 'text'
+                ),
 
-                                         // used to avoid double syncing in parallel
-                                         'status' => array( 'name' => 'Status',
-                                                            'datatype' => 'integer',
-                                                            'default' => 0,
-                                                            'required' => true ),
-                                         'sync_begin_date' => array( 'name' => 'SyncBeginDate',
-                                                                     'datatype' => 'integer',
-                                                                     'required' => false,
-                                                                     'default' => null ),
-                                         // are these fields actually needed ?
-                                         /*'synced' => array( 'name' => 'SyncDate',
-                                                            'datatype' => 'integer',
-                                                            'default' => null ),
-                                         'sync-failures' => array( 'name' => 'SyncFailures',
-                                                                   'datatype' => 'integer',
-                                                                   'default' => 0,
-                                                                   'required' => true )*/ ),
-                      'keys' => array( 'id' ),
-                      'increment_key' => 'id',
-                      'function_attributes' => array( 'object' => 'getObject',
-                                                      'target' => 'getTarget',
-                                                      //'can_sync' => 'canSync',
-                                                      'nodes' => 'getNodes',
-                                                      'data' => 'getData',
-                                                      'language' => 'language',
-                                                      'to_sync_string' => 'getSyncString' ),
-                      'class_name' => 'eZContentStagingEvent',
-                      'sort' => array( 'id' => 'asc' ),
-                      'grouping' => array(), // only there to prevent a php warning by ezpo
-                      'name' => 'ezcontentstaging_event' );
+                // used to avoid double syncing in parallel
+                'status' => array(
+                    'name' => 'Status',
+                    'datatype' => 'integer',
+                    'default' => 0,
+                    'required' => true
+                ),
+                'sync_begin_date' => array(
+                    'name' => 'SyncBeginDate',
+                    'datatype' => 'integer',
+                    'required' => false,
+                    'default' => null
+                ),
+                // are these fields actually needed ?
+                /*'synced' => array( 'name' => 'SyncDate',
+                                     'datatype' => 'integer',
+                                     'default' => null ),
+                'sync-failures' => array( 'name' => 'SyncFailures',
+                                          'datatype' => 'integer',
+                                          'default' => 0,
+                                          'required' => true )*/ ),
+             'keys' => array( 'id' ),
+             'increment_key' => 'id',
+             'function_attributes' => array(
+                 'object' => 'getObject',
+                 'target' => 'getTarget',
+                 //'can_sync' => 'canSync',
+                 'nodes' => 'getNodes',
+                 'data' => 'getData',
+                 'language' => 'language',
+                 'to_sync_string' => 'getSyncString'
+             ),
+             'class_name' => 'eZContentStagingEvent',
+             'sort' => array( 'id' => 'asc' ),
+             'grouping' => array(), // only there to prevent a php warning by ezpo
+             'name' => 'ezcontentstaging_event'
+        );
     }
 
     // ***  function attributes ***
@@ -192,13 +214,18 @@ class eZContentStagingEvent extends eZPersistentObject
     public function getNodes()
     {
         $db = eZDB::instance();
-        $nodeids = $db->arrayquery( 'SELECT node_id FROM ezcontentstaging_event_node WHERE ezcontentstaging_event_node.event_id = ' . $this->ID, array( 'column' => 'node_id' ) );
+        $nodeids = $db->arrayquery(
+            'SELECT node_id FROM ezcontentstaging_event_node WHERE ezcontentstaging_event_node.event_id = ' . $this->ID,
+            array( 'column' => 'node_id' )
+        );
         /// @todo log error if count of nodes found is lesser than stored node ids ?
-        return self::fetchObjectList( eZContentObjectTreeNode::definition(),
-                                      null,
-                                      array( 'node_id' => array( $nodeids ) ),
-                                      null,
-                                      null );
+        return self::fetchObjectList( 
+            eZContentObjectTreeNode::definition(),
+            null,
+            array( 'node_id' => array( $nodeids ) ),
+            null,
+            null
+        );
     }
 
     public function language()
@@ -217,7 +244,7 @@ class eZContentStagingEvent extends eZPersistentObject
     {
         $out = array();
         $bitmask = (int)$this->ToSync;
-        foreach ( self::$sync_strings as $key => $val )
+        foreach ( self::$syncStrings as $key => $val )
         {
             if ( $bitmask & $key )
             {
@@ -235,10 +262,7 @@ class eZContentStagingEvent extends eZPersistentObject
      */
     static public function fetch( $id, $asObject = true )
     {
-        return self::fetchObject( self::definition(),
-                                  null,
-                                  array( 'id' => $id ),
-                                  $asObject );
+        return self::fetchObject( self::definition(), null, array( 'id' => $id ), $asObject );
     }
 
     /**
@@ -246,32 +270,23 @@ class eZContentStagingEvent extends eZPersistentObject
      * and by event type.
      * @todo refactor: asObject as last param
      */
-    static public function fetchByObject( $object_id, $target_id = null, $to_sync = null, $asObject = true, $language = null )
+    static public function fetchByObject( $objectId, $targetId = null, $toSync = null, $asObject = true, $language = null )
     {
         $conds = array( 'object_id' => $objectId );
-        if ( $target_id != null )
+        if ( $targetId != null )
         {
-            $conds['target_id'] = $target_id;
+            $conds['target_id'] = $targetId;
         }
-        if ( $to_sync != null )
+        if ( $toSync != null )
         {
-            $conds['to_sync'] = $to_sync;
+            $conds['to_sync'] = $toSync;
         }
-        $custom_conds = null;
+        $customConds = null;
         if ( $language != null )
         {
-            $custom_conds = ' AND ' . self::languagesSQLFilter( $language );
+            $customConds = ' AND ' . self::languagesSQLFilter( $language );
         }
-        return self::fetchObjectList( self::definition(),
-                                      null,
-                                      $conds,
-                                      null,
-                                      null,
-                                      $asObject,
-                                      false,
-                                      null,
-                                      null,
-                                      $custom_conds );
+        return self::fetchObjectList( self::definition(), null, $conds, null, null, $asObject, false, null, null, $customConds );
     }
 
     /**
@@ -280,40 +295,31 @@ class eZContentStagingEvent extends eZPersistentObject
      * @return array of eZContentStagingEvent
      * @todo refactor: asObject as last param
      */
-    static public function fetchByNode( $nodeId, $objectId = null, $target_id = null, $asObject = true, $language = null )
+    static public function fetchByNode( $nodeId, $objectId = null, $targetId = null, $asObject = true, $language = null )
     {
         if ( $objectId == null )
         {
             $node = eZContentObjectTreeNode::fetch( $nodeId );
             if ( !$node )
             {
-                eZDebug::writeWarning( "Node " . $node_id . " does not exist", __METHOD__ );
+                eZDebug::writeWarning( "Node " . $nodeId . " does not exist", __METHOD__ );
                 return null;
             }
             $objectId = $node->attribute( 'contentobject_id' );
         }
         $conds = array( 'object_id' => $objectId );
-        if ( $target_id != null )
+        if ( $targetId != null )
         {
-            $conds['target_id'] = $target_id;
+            $conds['target_id'] = $targetId;
         }
-        $custom_conds = ' AND id IN ( SELECT node_id FROM ezcontentstaging_event_node WHERE node_id = ' . (int)$nodeId . ' )';
+        $customConds = ' AND id IN ( SELECT node_id FROM ezcontentstaging_event_node WHERE node_id = ' . (int)$nodeId . ' )';
         if ( $language != null )
         {
-            $custom_conds .= ' AND ' . self::languagesSQLFilter( $language );
+            $customConds .= ' AND ' . self::languagesSQLFilter( $language );
         }
         //$fields = self::definition();
         //$fields = array_keys( $fields['fields'] );
-        return self::fetchObjectList( self::definition(),
-                                      null,
-                                      $conds,
-                                      null,
-                                      null,
-                                      $asObject,
-                                      null, // $fields,
-                                      null,
-                                      null, //array( 'ezcontentstaging_event_node' ),
-                                      $custom_conds );
+        return self::fetchObjectList( self::definition(), null, $conds, null, null, $asObject, null, null, null, $customConds );
     }
 
     /**
@@ -324,8 +330,7 @@ class eZContentStagingEvent extends eZPersistentObject
     static public function fetchByNodeGroupedByTarget( $nodeId, $objectId = null, $language = null )
     {
         $targets = array();
-        $events = self::fetchByNode( $nodeId, $objectId, null, true, $language );
-        foreach ( $events as $event )
+        foreach ( self::fetchByNode( $nodeId, $objectId, null, true, $language ) as $event )
         {
             $targets[$event->TargetID][] = $event;
         }
@@ -335,12 +340,12 @@ class eZContentStagingEvent extends eZPersistentObject
     /**
      * @todo refactor: asObject as last param
      */
-    static public function fetchListGroupedByObject( $target_id = null, $asObject = true, $offset = null, $limit = null, $language = null )
+    static public function fetchListGroupedByObject( $targetId = null, $asObject = true, $offset = null, $limit = null, $language = null )
     {
         $conditions = array();
-        if ( $target_id != '' )
+        if ( $targetId != '' )
         {
-            $conditions = array( 'target_id' => $target_id );
+            $conditions = array( 'target_id' => $targetId );
         }
         $limits = array();
         if ( $offset !== null )
@@ -351,42 +356,39 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $limits['limit'] = $limit;
         }
-        $custom_conds = null;
+        $customConds = null;
         if ( $language != null )
         {
             if ( $conditions )
             {
-                $custom_conds = ' AND ';
+                $customConds = ' AND ';
             }
             else
             {
-                $custom_conds = ' WHERE ';
+                $customConds = ' WHERE ';
             }
-            $custom_conds .= self::languagesSQLFilter( $language );
+            $customConds .= self::languagesSQLFilter( $language );
         }
         $out = array();
-        foreach ( self::fetchObjectList( self::definition(),
-                                        array( 'object_id' ),
-                                        $conditions,
-                                        array(),
-                                        $limits,
-                                        false,
-                                        array( 'object_id' ),
-                                        null,
-                                        null,
-                                        $custom_conds ) as $row )
+        foreach (
+            self::fetchObjectList(
+                self::definition(), array( 'object_id' ), $conditions, array(), $limits, false, array( 'object_id' ), null, null, $customConds
+           ) as $row
+        )
         {
-            $conds['object_id'] = $row['object_id'];
-            $out[$row['object_id']] = self::fetchObjectList( self::definition(),
-                                                             null,
-                                                             $conditions,
-                                                             null, /// @todo sort by id
-                                                             null,
-                                                             $asObject,
-                                                             false,
-                                                             null,
-                                                             null,
-                                                             $custom_conds );
+            $conditions['object_id'] = $row['object_id'];
+            $out[$row['object_id']] = self::fetchObjectList(
+                self::definition(),
+                null,
+                $conditions,
+                null, /// @todo sort by id
+                null,
+                $asObject,
+                false,
+                null,
+                null,
+                $customConds
+            );
         }
         return $out;
     }
@@ -397,12 +399,12 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo refactor: asObject as last param
      */
-    static public function fetchList( $target_id = null, $asObject = true, $offset = null, $limit = null, $language = null, $status = null )
+    static public function fetchList( $targetId = null, $asObject = true, $offset = null, $limit = null, $language = null, $status = null )
     {
         $conditions = array();
-        if ( $target_id != '' )
+        if ( $targetId != '' )
         {
-            $conditions['target_id'] = $target_id;
+            $conditions['target_id'] = $targetId;
         }
         if ( $status !== null )
         {
@@ -417,29 +419,20 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $limits['limit'] = $limit;
         }
-        $custom_conds = null;
+        $customConds = null;
         if ( $language != null )
         {
             if ( $conditions )
             {
-                $custom_conds = ' AND ';
+                $customConds = ' AND ';
             }
             else
             {
-                $custom_conds = ' WHERE ';
+                $customConds = ' WHERE ';
             }
-            $custom_conds .= self::languagesSQLFilter( $language );
+            $customConds .= self::languagesSQLFilter( $language );
         }
-        return self::fetchObjectList( self::definition(),
-                                      null,
-                                      $conditions,
-                                      null,
-                                      $limits,
-                                      $asObject,
-                                      false,
-                                      null,
-                                      null,
-                                      $custom_conds );
+        return self::fetchObjectList( self::definition(), null, $conditions, null, $limits, $asObject, false, null, null, $customConds );
     }
 
 

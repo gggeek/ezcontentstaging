@@ -40,18 +40,18 @@ class eZStageUpdateObjectStateType extends eZWorkflowEventType
                 eZDebug::writeError( 'Unable to fetch object state ' . $stateId, __METHOD__ );
                 continue;
             }
-            $group = $state->attribute( 'group' );
-            $states[$group->attribute( 'identifier')] = $state->attribute( 'identifier' );
+            $states[$state->attribute( 'group' )->attribute( 'identifier')] = $state->attribute( 'identifier' );
         }
 
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array(
             "objectRemoteID" => $object->attribute( 'remote_id' ),
-            "stateList" => $states );
+            "stateList" => $states
+        );
         foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
-            if ( count( $affectedFeedNodes ) )
+            if ( !empty( $affectedFeedNodes ) )
             {
                 eZContentStagingEvent::addEvent(
                     $targetId,

@@ -33,6 +33,4 @@ class eZContentStagingCreatedHttpResponse extends ezpRestHttpResponse
         $writer->headers['Content-Type'] = 'application/json; charset=UTF-8';
         $writer->response->body = json_encode( array( 'Location' => $this->uri ) );
     }
-
-
 }

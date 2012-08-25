@@ -29,27 +29,25 @@ class eZContentStagingJSCoreFunctions
         {
             $events = eZContentStagingEvent::fetchByNode( $args[0], null, $args[1], true, @$args[2] );
         }
-        if ( count( $events ) )
-        {
-            $syncErrors = array();
-            $syncResults = array();
-            foreach ( eZContentStagingEvent::syncEvents( $events ) as $id => $resultCode )
-            {
-                $event = $tosync[$id];
-                if ( $resultCode !== 0 )
-                {
-                    $syncErrors[] = "Event $id: failure ($resultCode)";
-                }
-                else
-                {
-                    $syncResults[] = "Event $id: success";
-                }
-            }
-            return array( 'errors' => $syncErrors, 'results' => $syncResults );
-        }
-        else
+        if ( empty( $events ) )
         {
             return array( 'errors' => array( 'No events found for node ' . (int)$args[0] ) );
         }
+
+        $syncErrors = array();
+        $syncResults = array();
+        foreach ( eZContentStagingEvent::syncEvents( $events ) as $id => $resultCode )
+        {
+            //$event = $toSync[$id];
+            if ( $resultCode !== 0 )
+            {
+                $syncErrors[] = "Event $id: failure ($resultCode)";
+            }
+            else
+            {
+                $syncResults[] = "Event $id: success";
+            }
+        }
+        return array( 'errors' => $syncErrors, 'results' => $syncResults );
     }
 }

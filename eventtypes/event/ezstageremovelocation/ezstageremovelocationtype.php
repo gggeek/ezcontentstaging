@@ -53,7 +53,7 @@ class eZStageRemoveLocationType extends eZWorkflowEventType
                    "nodeID" => $removedNode->attribute( 'node_id' ),
                    "nodeRemoteID" => $removedNode->attribute( 'remote_id' ),
                    "trash" => $trash
-                );
+               );
             }
         }
 

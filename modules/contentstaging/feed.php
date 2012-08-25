@@ -31,14 +31,14 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
     $actionResults = array();
     if ( $http->hasPostVariable( 'syncArray' ) && is_array( $http->postVariable( 'syncArray' ) ) )
     {
-        $tosync = array();
+        $toSync = array();
         foreach ( $http->postVariable( 'syncArray' ) as $eventId )
         {
             $event = eZContentStagingEvent::fetch( $eventId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $event instanceof eZContentStagingEvent )
             {
-                $tosync[$event->attribute( 'id' )] = $event;
+                $toSync[$event->attribute( 'id' )] = $event;
             }
             else
             {
@@ -46,12 +46,12 @@ if ( $module->isCurrentAction( 'SyncEvents' ) )
             }
         }
         // we sync by sorting based on event IDs to keep proper history
-        ksort( $tosync );
-        $out = eZContentStagingEvent::syncEvents( $tosync );
+        ksort( $toSync );
+        $out = eZContentStagingEvent::syncEvents( $toSync );
         /// @todo apply i18n to messages
         foreach ( $out as $id => $resultCode )
         {
-            $event = $tosync[$id];
+            $event = $toSync[$id];
             if ( $resultCode !== 0 )
             {
                 $actionErrors[] = " Object " . $event->attribute( 'object_id' ) . " to be synchronised to feed " . $event->attribute( 'target_id' ) . ": failure ($resultCode) [Event $id]";
@@ -88,14 +88,14 @@ else if (   $module->isCurrentAction( 'RemoveEvents' ) )
     $actionResults = array();
     if ( $http->hasPostVariable( 'syncArray' ) && is_array( $http->postVariable( 'syncArray' ) ) )
     {
-        $toremove = array();
+        $toRemove = array();
         foreach ( $http->postVariable( 'syncArray' ) as $eventId )
         {
             $event = eZContentStagingEvent::fetch( $eventId );
             /// @todo with finer grained perms, we should check user can sync these items, one by one
             if ( $event instanceof eZContentStagingEvent )
             {
-                $toremove[] = $event->attribute( 'id' );
+                $toRemove[] = $event->attribute( 'id' );
             }
             else
             {
@@ -103,15 +103,15 @@ else if (   $module->isCurrentAction( 'RemoveEvents' ) )
             }
         }
         /// @todo we are actually faking the number of deleted events...
-        $out = eZContentStagingEvent::removeEvents( $toremove );
+        $out = eZContentStagingEvent::removeEvents( $toRemove );
         /// @todo apply i18n to messages
         if ( $out === false )
         {
-            $actionErrors[] = "Error: events not removed (" . implode( ', ', $toremove ) . ')';
+            $actionErrors[] = "Error: events not removed (" . implode( ', ', $toRemove ) . ')';
         }
         else
         {
-            $actionResults[] = "$out events removed (" . implode( ', ', $toremove ) . ')';
+            $actionResults[] = "$out events removed (" . implode( ', ', $toRemove ) . ')';
         }
 
     }

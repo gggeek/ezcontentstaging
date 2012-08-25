@@ -20,12 +20,12 @@
 // Extremely quick and dirty "template object" from an ini settings group
 class eZContentStagingTarget
 {
-    protected $_attrs = array();
+    protected $attributes = array();
 
     public function __construct( $row )
     {
         // some of the parameters are optional in definition of an eZContentStagingTarget
-        $this->_attrs = self::CamelCase2camel_case( $row ) + array(
+        $this->attributes = self::CamelCase2camel_case( $row ) + array(
             "use_source_creation_dates_on_target" => "disabled",
             "use_source_owner_on_target" => "disabled"
         );
@@ -33,12 +33,12 @@ class eZContentStagingTarget
 
     public function attributes()
     {
-        return array_keys( $this->_attrs );
+        return array_keys( $this->attributes );
     }
 
-    public function attribute( $attrname )
+    public function attribute( $name )
     {
-        return $this->_attrs[$attrname];
+        return $this->attributes[$name];
     }
 
     public function hasAttribute( $attribute )
@@ -119,7 +119,7 @@ class eZContentStagingTarget
      */
     public function includesNodeByPath( $nodepath )
     {
-        foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
+        foreach ( $this->attributes['subtrees'] as $subtreeRoot )
         {
             if ( strpos( $nodepath, '/' . $subtreeRoot . '/' ) !== false )
             {
@@ -137,7 +137,7 @@ class eZContentStagingTarget
     public function includedNodesByPath( $nodepathsarray )
     {
         $out = array();
-        foreach ( $this->_attrs['subtrees'] as $subtreeRoot )
+        foreach ( $this->attributes['subtrees'] as $subtreeRoot )
         {
             foreach ( $nodepathsarray as $nodeid => $nodepath )
             {
@@ -180,21 +180,21 @@ class eZContentStagingTarget
             return array( eZContentStagingEvent::ERROR_NOTRANSPORTCLASS );
         }
 
-        $remotenodes = $this->_attrs['remote_subtrees'];
-        foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
+        $remoteNodes = $this->attributes['remote_subtrees'];
+        foreach ( $this->attributes['subtrees'] as $key => $nodeID )
         {
-            if ( !isset( $remotenodes[$key] ) )
+            if ( !isset( $remoteNodes[$key] ) )
             {
-                eZDebug::writeError( "Remote root node not specified for feed " . $this->_attrs['name'], __METHOD__ );
+                eZDebug::writeError( "Remote root node not specified for feed " . $this->attributes['name'], __METHOD__ );
                 $out[] = eZContentStagingEvent::ERROR_NOREMOUTESOURCE;
                 continue;
             }
-            $remoteNodeID = $remotenodes[$key];
+            $remoteNodeID = $remoteNodes[$key];
 
             $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
-                eZDebug::writeError( "Node $nodeID specified as root of feed " . $this->_attrs['name'] . " does not exist", __METHOD__ );
+                eZDebug::writeError( "Node $nodeID specified as root of feed " . $this->attributes['name'] . " does not exist", __METHOD__ );
                 $out[] = eZContentStagingEvent::ERROR_NOSOURCENODE;
                 continue;
             }
@@ -222,18 +222,18 @@ class eZContentStagingTarget
      *
      * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
      */
-    public function checkTarget( $iterator=null )
+    public function checkTarget( $iterator = null )
     {
         $out = array();
 
         $transport = $this->transport();
 
-        //$remotenodes = $this->_attrs['remote_subtrees'];
-        foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
+        //$remotenodes = $this->attributes['remote_subtrees'];
+        foreach ( $this->attributes['subtrees'] as $key => $nodeID )
         {
             /*if ( !isset( $remotenodes[$key] ) )
             {
-                eZDebug::writeError( "Remote root node not specified for feed " . $this->_attrs['Name'], __METHOD__ );
+                eZDebug::writeError( "Remote root node not specified for feed " . $this->attributes['Name'], __METHOD__ );
                 $out[] = -2; //eZContentStagingEvent::ERROR_NOREMOUTESOURCE;
                 continue;
             }*/
@@ -242,13 +242,13 @@ class eZContentStagingTarget
             $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
-                eZDebug::writeError( "Node $nodeID specified as root of feed " . $this->_attrs['name'] . " does not exist", __METHOD__ );
+                eZDebug::writeError( "Node $nodeID specified as root of feed " . $this->attributes['name'] . " does not exist", __METHOD__ );
                 $out[$nodeID] = -1; //eZContentStagingEvent::ERROR_NOSOURCENODE;
                 continue;
             }
 
             // nb: using integer-indexed arrays: must not use array_merge
-            $out = $out + $this->checkNode( $node, true, $iterator, $transport );
+            $out = $out + $this->checkNode( $node, true, $transport, $iterator );
         }
 
         return $out;
@@ -262,7 +262,7 @@ class eZContentStagingTarget
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
-    public function checkNode( $node, $recursive = true, $iterator = false, $transport = false )
+    public function checkNode( $node, $recursive = true, $transport = false, $iterator = false )
     {
         //static $testedobjects;
         //$objectID = $object->attribute( 'id' );
@@ -285,10 +285,9 @@ class eZContentStagingTarget
             }
         }
 
-        $nodeok = $transport->checkNode( $node );
-        $object = $node->attribute( 'object' );
-        $objectok = $transport->checkObject( $object );
-        $out[$node->attribute( 'node_id' )] = $nodeok | $objectok;
+        $out = array(
+            $node->attribute( 'node_id' ) => $transport->checkNode( $node ) | $transport->checkObject( $node->attribute( 'object' ) )
+        );
 
         if ( $recursive )
         {
@@ -345,7 +344,7 @@ class eZContentStagingTarget
             return $out;
         }
 
-        if ( !$ini->hasVariable( $group, 'Subtrees' ) || !is_array( $sourceroots = $ini->variable( $group, 'Subtrees' ) ) || count( $sourceroots ) == 0 )
+        if ( !$ini->hasVariable( $group, 'Subtrees' ) || !is_array( $sourceroots = $ini->variable( $group, 'Subtrees' ) ) || empty( $sourceroots ) )
         {
             $out[] = "Feed has no source root nodes defined in file contentstagingsource.ini, block '$group', parameter 'Subtrees'";
         }
@@ -411,7 +410,6 @@ class eZContentStagingTarget
         {
             return array();
         }
-
         return $transport->checkConnection();
     }
 
@@ -430,12 +428,12 @@ class eZContentStagingTarget
         }
 
         $out = array();
-        $remotenodes = $this->_attrs['remote_subtrees'];
-        foreach ( $this->_attrs['subtrees'] as $key => $nodeID )
+        $remotenodes = $this->attributes['remote_subtrees'];
+        foreach ( $this->attributes['subtrees'] as $key => $nodeID )
         {
             if ( !isset( $remotenodes[$key] ) )
             {
-                $out[] = "Remote root node not specified for feed " . $this->_attrs['name'];
+                $out[] = "Remote root node not specified for feed " . $this->attributes['name'];
                 continue;
             }
             $remoteNodeID = $remotenodes[$key];
@@ -443,7 +441,7 @@ class eZContentStagingTarget
             $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
-                $out[] = "Node $nodeID specified as root of feed " . $this->_attrs['name'] . " does not exist";
+                $out[] = "Node $nodeID specified as root of feed " . $this->attributes['name'] . " does not exist";
                 continue;
             }
 
