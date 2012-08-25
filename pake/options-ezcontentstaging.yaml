@@ -2,7 +2,7 @@ extension:
     name: ezcontentstaging
 
 version:
-    major: 0
+    major: 1
     minor: 1
     release: 0
 
