@@ -114,7 +114,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * Handle POST request to create a content object
      *
      * Request:
-     * - POST /content/objects
+     * - POST /content/objects?(parentRemoteId=<XX>|parentId=<YY>)[sectionId=<SectId>]
      *
      * @return ezpRestMvcResult
      */

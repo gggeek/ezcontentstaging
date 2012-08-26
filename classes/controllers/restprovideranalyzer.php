@@ -75,6 +75,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
 
     /**
      * Describes all routes for a gievn API version.
+     * Format used: @see https://github.com/mashery/iodocs
      * @todo return also a field describing the type of route?
      * @todo return a 404 if version does not exist at all
      */
@@ -105,17 +106,22 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
             {
                 if ( $route->getVersion() == $this->version )
                 {
-                    $routes[$name] = array(
-                        'urlpattern' => $patternprefix . $route->getPattern(),
-                        'verb' => $route->getVerb(),
-                        'description' => $route->getDescription()
+                    $routes[] = array(
+                        'MethodName' => $name,
+                        /// @todo get params from route
+                        'parameters' => array(),
+                        /// @todo according to docs, we should remove the prefix part from the url
+                        'URI' => $patternprefix . $route->getPattern(),
+                        'HTTPMethod' => strtoupper( $route->getVerb() ),
+                        'Synopsis' => $route->getDescription()
                     );
                 }
             }
         }
 
         $result = new ezpRestMvcResult();
-        $result->variables = $routes;
+        /// @todo should we wrap this in a further array (i.e. make it a single "resource" in iodocs terms)?
+        $result->variables = array( 'name' => $prefix, 'methods' => $routes );
         return $result;
     }
 }

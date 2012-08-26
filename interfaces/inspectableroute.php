@@ -20,7 +20,7 @@ interface ezpRestInspectableRoute
     public function getPattern();
 
     /// the HTTP verb matched
-    /// @todo should be an array, wehn our routes do support it...
+    /// @todo should be an array, when our routes do support it...
     public function getVerb();
 
     /// returns human-readable docs

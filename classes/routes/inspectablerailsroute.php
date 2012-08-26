@@ -45,6 +45,8 @@ class ezpRestInspectableRailsRoute extends ezpMvcRailsRoute implements ezpRestIn
     /// @todo use php introspection + phpdoc parsing
     public function getDescription()
     {
-        return "";
+        $reflection = new ReflectionMethod( $this->controllerClassName, 'do' . $this->action );
+        $parser = new eZPHPDocParser( explode( "\n", $reflection->getDocComment() ) );
+        return $parser->short_desc . "\n" . $parser->long_desc;
     }
 }

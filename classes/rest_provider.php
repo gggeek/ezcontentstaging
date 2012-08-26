@@ -153,7 +153,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
         {
             foreach( $routeDef[2] as $verb => $method )
             {
-                $out[ $routeName . ucfirst( substr( $verb, 5 ) ) ] =  new ezpRestInspectableVersionedRoute(
+                $out[ $routeName . ucfirst( substr( $verb, 5 ) ) ] = new ezpRestInspectableVersionedRoute(
                     new ezpRestInspectableRailsRoute(
                         $routeDef[0],
                         $routeDef[1],
@@ -174,7 +174,7 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
         $out = array();
         foreach( self::$routesDefinition as $routeName => $routeDef )
         {
-            $out[ $routeName ] =  new ezpRestInspectableVersionedRoute(
+            $out[ $routeName ] = new ezpRestInspectableVersionedRoute(
                 new ezpRestInspectableRailsRoute(
                      $routeDef[0],
                      $routeDef[1],
