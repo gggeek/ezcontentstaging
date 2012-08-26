@@ -342,6 +342,35 @@ class eZContentStagingLocation extends contentStagingBase
     }
 
     /**
+     * Swap $node1 with $node2
+     *
+     * @param eZContentObjectTreeNode $node1
+     * @param eZContentObjectTreeNode $node2
+     */
+    static public function swap( eZContentObjectTreeNode $node1, eZContentObjectTreeNode $node2 )
+    {
+        $nodeIds = array( $node1->attribute( "node_id" ), $node2->attribute( "node_id" ) );
+        if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_swap' ) )
+        {
+            eZOperationHandler::execute(
+                'content',
+                'swap',
+                array(
+                    'node_id' => $nodeIds[0],
+                    'selected_node_id' => $nodeIds[1],
+                    'node_id_list' => $nodeIds
+                ),
+                null,
+                true
+            );
+        }
+        else
+        {
+            eZContentOperationCollection::swapNode( $nodeIds[0], $nodeIds[1] );
+        }
+    }
+
+    /**
      * Checks differences between the current node and another one
      * @return integer a bitmask of differences
      * /

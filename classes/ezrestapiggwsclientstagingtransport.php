@@ -229,9 +229,14 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 }
                 return 0;
 
-            case 'swap':
-                /// @todo ...
-                return -333;
+            // NB: we use a custom HTTP verb for swapping nodes. It might not be the best idea in the world...
+            case eZContentStagingEvent::ACTION_SWAP:
+                $out = $this->restCall(
+                    "SWAP",
+                    "/content/locations/remote/" . $this->buildRemoteId( $data['nodeID1'], $data['nodeRemoteID1'] ) .
+                    "?withRemoteId=" . $this->buildRemoteId( $data['nodeID2'], $data['nodeRemoteID2'] )
+                );
+                return 0;
 
             case eZContentStagingEvent::ACTION_UPDATEALWAYSAVAILABLE:
                 $out = $this->restCall(

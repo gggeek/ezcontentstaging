@@ -98,12 +98,12 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
         'stagingLocationLoad' => array(
             '/content/locations/:Id',
             'eZContentStagingRestLocationController',
-            array( 'http-get' => 'load', 'http-post' => 'hideUnhide', 'http-put' => 'update', 'http-delete' => 'remove' )
+            array( 'http-get' => 'load', 'http-post' => 'hideUnhide', 'http-put' => 'update', 'http-delete' => 'remove', 'http-swap' => 'swap' )
         ),
         'stagingLocationLoadRemote' => array(
             '/content/locations/remote/:remoteId',
             'eZContentStagingRestLocationController',
-            array( 'http-get' => 'load', 'http-post' => 'hideUnhide', 'http-put' => 'update', 'http-delete' => 'remove' )
+            array( 'http-get' => 'load', 'http-post' => 'hideUnhide', 'http-put' => 'update', 'http-delete' => 'remove', 'http-swap' => 'swap' )
         ),
         'stagingLocationMove' => array(
             '/content/locations/:Id/parent',

@@ -5,7 +5,7 @@
     need to finish: translation of node_ids when they are set in auto/custom blocks parameters (ok for encoding, needs decoding)
     replace the xml serialization of attribute with pure json (phase 2 or 3?)
   - matrix, ezcomments, ezmbpaex
-  - webshop datatypes: multioption2, multiprice, option, price, product category, range option
+  - webshop datatypes: multiprice, option, price, product category, range option
   - deprecated datatypes: enum, inisetting, multioption, package, subtree subscription
 
 . add support for sending in object creation/modification requests the remote_id of creator user
@@ -14,10 +14,8 @@
 
 2 - EVENTS
 
-. source server: finish missing events:
-  - swap
-
 . test all events:
+  . test "swap"
   . do they play nice if a "wait until" event is placed 1st in their workflow?
 
 . handling of dependencies between events
@@ -32,9 +30,6 @@
 
 
 3 - REST API
-
-. target server: finish actions:
-  - swap
 
 . test all actions
   - review actions that might actually fail on target server without sending back a failure code

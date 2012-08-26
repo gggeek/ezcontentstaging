@@ -233,6 +233,43 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         return $result;
     }
 
+    /**
+     * Handle swap operation for two locations
+     *
+     * Request:
+     * - SWAP /content/locations/remote/<remoteId>?withRemoteId=<remoteId>
+     * - SWAP /content/locations/<Id>?withRemoteId=<remoteId>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doSwap()
+    {
+        $node = $this->node();
+        if ( !$node instanceof eZContentObjectTreeNode )
+        {
+            return $node;
+        }
+
+        if ( !isset( $this->request->get['withRemoteId'] ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "withRemoteId" parameter is missing' );
+        }
+
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
+        $node2 = eZContentObjectTreeNode::fetchByRemoteID( $this->request->get['withRemoteId'] );
+        if ( !$node2 instanceof eZContentObjectTreeNode )
+        {
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with remote id '" . $this->request->get['withRemoteId'] . "' not found" );
+        }
+        eZContentStagingLocation::swap( $node, $node2 );
+
+        $result = new ezpRestMvcResult();
+        $result->status = new ezpRestHttpResponse( 204 );
+        return $result;
+    }
 
     // *** helper methods ***
 

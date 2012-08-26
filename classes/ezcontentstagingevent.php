@@ -26,7 +26,7 @@ class eZContentStagingEvent extends eZPersistentObject
     const ACTION_REMOVELOCATION = 32;
     const ACTION_REMOVETRANSLATION = 64;
     const ACTION_SORT = 128;
-    const ACTION_SWAP = 256; /// @todo
+    const ACTION_SWAP = 256;
     const ACTION_UPDATEALWAYSAVAILABLE = 1024;
     const ACTION_UPDATEINITIALLANGUAGE = 2048;
     const ACTION_UPDATEMAINASSIGNMENT = 4096;
@@ -219,7 +219,7 @@ class eZContentStagingEvent extends eZPersistentObject
             array( 'column' => 'node_id' )
         );
         /// @todo log error if count of nodes found is lesser than stored node ids ?
-        return self::fetchObjectList( 
+        return self::fetchObjectList(
             eZContentObjectTreeNode::definition(),
             null,
             array( 'node_id' => array( $nodeids ) ),
