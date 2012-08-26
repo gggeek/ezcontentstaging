@@ -108,9 +108,9 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
                 {
                     $routes[] = array(
                         'MethodName' => $name,
-                        /// @todo get params from route
+                        /// @todo get params from route (embedded ones) + action (query string ones)
                         'parameters' => array(),
-                        /// @todo according to docs, we should remove the prefix part from the url
+                        /// @todo according to docs, we could remove the prefix part from the url (and put it in the "publicPath"
                         'URI' => $patternprefix . $route->getPattern(),
                         'HTTPMethod' => strtoupper( $route->getVerb() ),
                         'Synopsis' => $route->getDescription()
@@ -120,8 +120,7 @@ class eZContentStagingRestProviderAnalyzer extends ezpRestMvcController
         }
 
         $result = new ezpRestMvcResult();
-        /// @todo should we wrap this in a further array (i.e. make it a single "resource" in iodocs terms)?
-        $result->variables = array( 'name' => $prefix, 'methods' => $routes );
+        $result->variables = array( 'endpoints' => array( array( 'name' => $prefix, 'methods' => $routes ) ) );
         return $result;
     }
 }
