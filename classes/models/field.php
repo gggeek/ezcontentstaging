@@ -174,6 +174,17 @@ class eZContentStagingField
                 }
                 break;
 
+            case 'ezmultioption2':
+                $content = $attribute->attribute( 'content' );
+                $this->value = array(
+                    'name' => $content->attribute( 'name' ),
+                    'id' => $content->attribute( 'id' ),
+                    'groupId' => $content->attribute( 'group_id' ),
+                    'multiOptionIDCounter' => $content->getMultiOptionIDCounter(),
+                    'optionCounter' => $content->getOptionCounter(),
+                    'xml' => $content->xmlString(),
+                );
+                break;
             // serialized as a single string of either local or remote id
             case 'ezobjectrelation':
                 // slightly more intelligent than base "toString" method: we always check for presence of related object
@@ -606,6 +617,12 @@ class eZContentStagingField
             /// @todo add min, max validation
             //case 'ezinteger':
             //  break;
+
+            case 'ezmultioption2':
+                    $multiOption2 = new eZMultiOption2( $value["name"], $value["id"], $value["multiOptionIDCounter"], $value["optionCounter"], $value["groupId"] );
+                    $multiOption2->decodeXML( $value["xml"] );
+                    $attribute->setContent( $multiOption2 );
+                break;
 
             case 'ezobjectrelation':
                 if ( $value ==  null )
