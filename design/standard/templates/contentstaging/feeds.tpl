@@ -72,12 +72,15 @@
         </tr>
     {/foreach}
 </table>
-{if $manage_sync_access}
+{if and($manage_sync_access, $feeds|count())}
     {* @todo ... *}
     <input class="button" type="submit" name="ResetFeedsButton" value="{'Reset feeds'|i18n('ezcontentstaging')}" />
     <input class="button" type="submit" name="InitializeFeedsButton" value="{'Initialize feeds'|i18n('ezcontentstaging')}" />
 {/if}
 </form>
+{if $feeds|count()|not()}
+    <p>{'No feeds defined. Please edit the contentstagingsource.ini configuration file and add target servers'|i18n('ezcontentstaging')}</p>
+{/if}
 {undef $manage_sync_access $source $events_count}
 
 </div></div></div>
