@@ -3,7 +3,7 @@
 
  @todo add support for pagination
  @todo if $manage_sync_access is true, allow user to add/edit/remove feeds
- @todo show  umber of pending evens for every feed
+ @todo show number of pending events for every feed
 *}
 
 <div class="border-box">
