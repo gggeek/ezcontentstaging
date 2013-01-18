@@ -151,7 +151,7 @@ class eZContentStagingContent extends contentStagingBase
                 // This check is just preliminary, eg. what if we get
                 // in json an empty string for a string field, or no blocks
                 // for an ezpage attribute? we check it later on
-                if ( $required && !$attribute->attribute( 'has_content' ) )
+                if ( $required && !$attribute->attribute( 'has_content' ) && !$attribute->attribute( 'is_information_collector' ) )
                 {
                     throw new Exception( "Missing required attribute '$identifier'" );
                 }
@@ -171,7 +171,7 @@ class eZContentStagingContent extends contentStagingBase
                 throw new Exception( "Missing value for field '$identifier'" );
             }
             eZContentStagingField::decodeValue( $attribute, $fields[$identifier]['value'] );
-            if ( $required && !$attribute->attribute( 'has_content' ) )
+            if ( $required && !$attribute->attribute( 'has_content' ) && !$attribute->attribute( 'is_information_collector' ) )
             {
                 throw new Exception( "Required attribute '$identifier' does not have a value" );
             }
