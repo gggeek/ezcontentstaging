@@ -5,7 +5,8 @@
  * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *
- * @todo give some feedback while analyzing feeds (eg. one dot per node)
+ * @todo allow user to limit scan depth
+ * @todo internationalize output
  */
 
 require 'autoload.php';
@@ -73,8 +74,12 @@ foreach ( $targets as $targetId )
             }
             else
             {
-                /// @todo decode to readable status the discrepancies
-                $cli->output( "Node: $nodeId Status: $problems" );
+                $out = "Node: $nodeId Status: $problems";
+                if ( $script->verboseOutputLevel() && $problems[$nodeId] != 0 )
+                {
+                    $out .= " (" . implode( ', ', eZBaseStagingTransport::diffmask2array( $problems[$nodeId] ) ) . ')';
+                }
+                $cli->output( $out );
             }
         }
     }
