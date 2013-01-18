@@ -39,15 +39,20 @@ foreach ( $targets as $targetId )
     $target = eZContentStagingTarget::fetch( $targetId );
     if ( $target )
     {
+        $cli->output( "" );
         $cli->output( "Checking target: $targetId" );
 
-        // @todo to be implemented
-        //$nodeCount = $target->nodeCount();
-        //$cli->output( "Nodes to check: $nodeCount" );
-        //$script->resetIteration( $nodeCount, 0 );
-        //$toSync = $target->checkTarget( 'iterate' );
+        $nodeCount = $target->nodeCount();
+        $cli->output( "$nodeCount nodes to check in " . count( $target->attribute( 'subtrees' ) ) . " subtrees" );
+        $script->resetIteration( $nodeCount, 0 );
 
-        $toSync = $target->checkTarget();
+        // love closures! php 5.3 only!
+        $toSync = $target->checkTarget(
+            function ( $status ) use ( $cli, $script )
+            {
+                $script->iterate( $cli, $status == 0 );
+            }
+        );
         foreach ( $toSync as $nodeId => $problems )
         {
 

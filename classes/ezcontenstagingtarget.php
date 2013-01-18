@@ -255,6 +255,16 @@ class eZContentStagingTarget
     }
 
     /**
+    * Returns the number of nodes in the feed (i.e. count all children in all feed root nodes)
+    *
+    * @bug will give a bigger number than expected if an inexisting node is in the ini file
+    */
+    public function nodeCount()
+    {
+        return eZContentObjectTreeNode::subTreeCountByNodeID( array( 'Limitation' => array() ), $this->attributes['subtrees']  ) + count( $this->attributes['subtrees'] );
+    }
+
+    /**
      * @param callable $iterator
      * @return array
      * @todo implement a 'checked object' cache to avoid checaking same obj many times
@@ -315,7 +325,7 @@ class eZContentStagingTarget
 
         if ( is_callable( $iterator ) )
         {
-            call_user_func( $iterator );
+            call_user_func_array( $iterator, array( $out[0] ) );
         }
 
         return $out;
