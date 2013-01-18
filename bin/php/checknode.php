@@ -3,7 +3,7 @@
  * Cli script that checks sync status of one node for all taregt feeds it is part of
  *
  * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
- * @license http://ez.no/Resources/Software/Licenses/eZ-Business-Use-License-Agreement-eZ-BUL-Version-2.1 eZ Business Use License Agreement eZ BUL Version 2.1
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *
  * @todo internationalize output
  */
