@@ -530,7 +530,7 @@ class eZContentStagingField
                 eZFile::create( $fileName, $tmpDir, base64_decode( $value['content'] ) );
 
                 $path = "$tmpDir/$fileName";
-                if ( $type == 'image' )
+                if ( $type == 'ezimage' )
                 {
                     $path .= "|{$value['alternativeText']}";
                 }
