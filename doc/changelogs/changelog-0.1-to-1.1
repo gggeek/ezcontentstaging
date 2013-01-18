@@ -1,4 +1,4 @@
-changelog from version 0.1 to 1.1 - released 2012.8.xx
+changelog from version 0.1 to 1.1 - released 2013.xx.yy
 
 * New features
 . added some "introspection" to the rest api. Get started at http://.../contentstaging/v1/api/versions
@@ -12,6 +12,7 @@ changelog from version 0.1 to 1.1 - released 2012.8.xx
 . integrate with ezsnmpd extension for monitoring of sync-events number/age
 . support Multi-option2 datatype
 . support "swap nodes" event
+. support acting as target for source servers using the "eZ Publish Enterprise" version of the extension
 
 * Bugfixes:
 . target server would not answer correctly to content creation calls if there was an approval/wait workflow in action
@@ -23,6 +24,7 @@ changelog from version 0.1 to 1.1 - released 2012.8.xx
 . tolerate json requests with a charset in the content-type http header
 . fix changing of node priority when used with eZP 4.7 or later
 . fixed error in event recording node move
+. fixed error in synchornizing content which has no value for an attribute of type infocollector+mandatory
 
 * Misc
 . removed some leftover files (docs and php classes)
