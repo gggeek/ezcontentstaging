@@ -422,7 +422,7 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                     $out = $out | self::DIFF_NODE_SORTFIELD;
                 }
 
-                if ( $local['sortField'] != $remote['sortOrder'] )
+                if ( $local['sortOrder'] != $remote['sortOrder'] )
                 {
                     $out = $out | self::DIFF_NODE_SORTORDER;
                 }

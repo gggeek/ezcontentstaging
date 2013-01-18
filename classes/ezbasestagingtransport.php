@@ -31,6 +31,7 @@ class eZBaseStagingTransport
         self::DIFF_NODE_PARENT => 'Parent node is different',
         self::DIFF_NODE_VISIBILITY => 'Node visibility is different',
         self::DIFF_NODE_SORTFIELD => 'Node sorting is different',
+        self::DIFF_NODE_SORTORDER => 'Node sorting order is different',
         self::DIFF_OBJECT_MISSING => 'Object is missing',
         self::DIFF_OBJECT_SECTION => 'Oject section is different',
         self::DIFF_OBJECT_STATE => 'Object states are different',
