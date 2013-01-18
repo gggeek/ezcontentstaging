@@ -13,7 +13,7 @@ changelog from version 0.1 to 1.1 - released 2013.xx.yy
 . support Multi-option2 datatype
 . support "swap nodes" event
 . support acting as target for source servers using the "eZ Publish Enterprise" version of the extension
-. the checktargets php script now gives status updates while running
+. the checktargets php script now gives status updates while running; it also takes a -v option for verbose output
 . added a new php script: checknode, to check the status of a single node on all target feeds
 
 * Bugfixes:
@@ -26,7 +26,10 @@ changelog from version 0.1 to 1.1 - released 2013.xx.yy
 . tolerate json requests with a charset in the content-type http header
 . fix changing of node priority when used with eZP 4.7 or later
 . fixed error in event recording node move
-. fixed error in synchornizing content which has no value for an attribute of type infocollector+mandatory
+. #20333: alternative text for ezimage datatype was not being synchronized
+. #20332: events pending for a given node are not displayed in admin interface
+. #20331: the check for node differences fails on testing sort order
+. #20328: error in synchornizing content which has no value for an attribute of type infocollector+mandatory
 
 * Misc
 . removed some leftover files (docs and php classes)
