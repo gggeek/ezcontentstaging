@@ -126,6 +126,11 @@ class eZContentStagingRestApiProvider implements ezpRestProviderInterface
             '/api/versions/:version',
             'eZContentStagingRestProviderAnalyzer',
             array( 'http-get' => 'describeVersion' )
+        ),
+        'ping' => array(
+            '/ping',
+             'eZContentStagingRestProviderPing',
+             array( 'http-get' => 'ping' )
         )
     );
 
