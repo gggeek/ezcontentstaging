@@ -312,7 +312,7 @@ class eZContentStagingEvent extends eZPersistentObject
         {
             $conds['target_id'] = $targetId;
         }
-        $customConds = ' AND id IN ( SELECT node_id FROM ezcontentstaging_event_node WHERE node_id = ' . (int)$nodeId . ' )';
+        $customConds = ' AND id IN ( SELECT event_id FROM ezcontentstaging_event_node WHERE node_id = ' . (int)$nodeId . ' )';
         if ( $language != null )
         {
             $customConds .= ' AND ' . self::languagesSQLFilter( $language );
