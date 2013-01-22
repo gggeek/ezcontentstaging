@@ -129,9 +129,9 @@ function checkAll()
         {/if}
         <td>
             {if eq($sync_item.status, 1)}
-                <img src={"sync-executing.gif"|ezimage} width="16px" height="16px" alt="{'Sync ongoing...'|i18n('ezcontentstaging')}" />
+                <img src={"sync-executing.gif"|ezimage} width="16px" height="16px" alt="{'Sync ongoing... started at:'|i18n('ezcontentstaging')} {$sync_item.sync_begin_date|l10n('shortdatetime')|wash()}" />
             {else}
-                <img src={"sync.gif"|ezimage} width="16px" height="16px" alt="{'Sync...'|i18n('ezcontentstaging')}" />
+                <img src={"sync.gif"|ezimage} width="16px" height="16px" alt="{'To sync'|i18n('ezcontentstaging')}" />
             {/if}
         </td>
         <td>
