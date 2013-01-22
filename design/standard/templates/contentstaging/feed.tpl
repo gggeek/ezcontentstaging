@@ -92,8 +92,12 @@ function checkAll()
         {"These are the events in need of synchronization. You can push them to the destination server."|i18n('ezcontentstaging')|nl2br}
     </p>
 
-    {* @todo add view params to the form target url ? *}
-    <form name="syncaction" action={concat( "contentstaging/feed/", $target_id )|ezurl} method="post" >
+    {* add view params to the form target url *}
+    {def $formtarget = concat( "contentstaging/feed/", $target_id )}
+    {if lt($view_parameters.offset)|lt($list_count)}
+        {set $formtarget = $formtarget|append( '/(offset)/', $view_parameters.offset )}
+    {/if}
+    <form name="syncaction" action={$formtarget|ezurl} method="post" >
     {if ne($target_id, '')}
         {def $item_list = fetch( 'contentstaging', 'sync_events', hash( 'target_id', $target_id,
                                                                         'limit', $page_limit,
@@ -190,7 +194,7 @@ function checkAll()
     </div>
 {/if}
 
-{undef $sync_access $manage_access $list_count $page_limit $sync_nodes}
+{undef $sync_access $manage_access $list_count $page_limit $sync_nodes $trash_nodes $formtarget}
 
 </div>
 
