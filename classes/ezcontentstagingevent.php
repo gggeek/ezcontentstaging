@@ -160,6 +160,8 @@ class eZContentStagingEvent extends eZPersistentObject
                  'target' => 'getTarget',
                  //'can_sync' => 'canSync',
                  'nodes' => 'getNodes',
+                'trash_nodes' => 'getTrashNodes',
+                'node_ids' => 'getNodeIds',
                  'data' => 'getData',
                  'language' => 'language',
                  'to_sync_string' => 'getSyncString'
@@ -211,21 +213,55 @@ class eZContentStagingEvent extends eZPersistentObject
         return json_decode( $this->DataText, true );
     }
 
-    public function getNodes()
+    public function getNodeIds()
     {
         $db = eZDB::instance();
-        $nodeids = $db->arrayquery(
+        $nodeIds = $db->arrayquery(
             'SELECT node_id FROM ezcontentstaging_event_node WHERE ezcontentstaging_event_node.event_id = ' . $this->ID,
             array( 'column' => 'node_id' )
-        );
-        /// @todo log error if count of nodes found is lesser than stored node ids ?
-        return self::fetchObjectList(
-            eZContentObjectTreeNode::definition(),
+            );
+        // should never happen with current sync events
+        if ( !count( $nodeIds ) )
+        {
+            eZDebug::writeWarning( "No nodes found for sync event " . $this->ID, __METHOD__ );
+        }
+        return $nodeIds;
+    }
+
+    public function getNodes()
+    {
+        return $this->getNodesByType();
+    }
+
+    public function getTrashNodes()
+    {
+        return $this->getNodesByType( 'trash' );
+    }
+
+    protected function getNodesByType( $type='' )
+    {
+        $nodeIds = $this->getNodeIds();
+        // be tolerant of degenerate cases (avoid broken queries)
+        if ( !count( $nodeIds ) )
+        {
+            return array();
+        }
+        if ( $type == 'trash' )
+        {
+            $def = eZContentObjectTrashNode::definition();
+        }
+        else
+        {
+            $def = eZContentObjectTreeNode::definition();
+        }
+        $nodes = self::fetchObjectList(
+            $def,
             null,
-            array( 'node_id' => array( $nodeids ) ),
+            array( 'node_id' => array( $nodeIds ) ),
             null,
             null
         );
+        return $nodes;
     }
 
     public function language()

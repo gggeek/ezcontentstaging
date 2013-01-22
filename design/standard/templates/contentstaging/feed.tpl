@@ -68,7 +68,8 @@ function checkAll()
 {def $page_limit = 30
      $sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
      $manage_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'manage' ) )
-     $sync_nodes = array()}
+     $sync_nodes = array()
+     $trash_nodes = array()}
 {if ne($target_id, '')}
     {def $list_count = fetch( 'contentstaging', 'sync_events_count', hash( 'target_id', $target_id ) )}
 {else}
@@ -135,14 +136,19 @@ function checkAll()
             {/if}
         </td>
         <td>
-            {* nb: for deleted objects we have no link to node anymore *}
+           {* nb: for fully deleted objects we have no link to node anymore *}
             {set $sync_nodes = $sync_item.nodes}
-            {if $sync_nodes|count()}
-                {foreach $sync_nodes as $sync_node}
-                    <a href={$sync_node.url|ezurl()} title="{'Node ID:'|i18n('ezcontentstaging')} {$sync_node.node_id}">{$sync_node.name|wash}</a>
-                    {delimiter}<br/>{/delimiter}
-                {/foreach}
-            {else}
+            {foreach $sync_nodes as $sync_node}
+                {$sync_node.depth} <a href={$sync_node.url|ezurl()} title="{'Node ID:'|i18n('ezcontentstaging')} {$sync_node.node_id}">{$sync_node.name|wash}</a>
+                {delimiter}<br/>{/delimiter}
+            {/foreach}
+            {set $trash_nodes = $sync_item.trash_nodes}
+            {foreach $trash_nodes as $sync_node}
+                {$sync_node.name|wash} <a href={"content/trash"|ezurl()}><img width="16" height="16" alt="{"Trash"|i18n('')}" src={"trash-icon-16x16.gif"|ezimage()}/></a>
+                {delimiter}<br/>{/delimiter}
+            {/foreach}
+            {if eq(sum($sync_nodes|count(), $trash_nodes|count()), 0)}
+                {* @todo add an "x" icon *}
                 {$sync_item.object.name|wash()}
             {/if}
         </td>
