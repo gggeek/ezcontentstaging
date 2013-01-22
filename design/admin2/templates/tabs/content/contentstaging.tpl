@@ -14,9 +14,8 @@
 
     {def $assignments = $node.object.assigned_nodes}
     {foreach $assignments as $assignment}
-
-        {def $needs_sync = fetch( 'contentstaging', 'node_sync_events_by_target', hash( 'node_id', $assignment.node_id,
-                                                                                        'language', ezini( 'RegionalSettings', 'ContentObjectLocale' ) ) )
+        {* nb: we show all pending events for ALL object translations*}
+        {def $needs_sync = fetch( 'contentstaging', 'node_sync_events_by_target', hash( 'node_id', $assignment.node_id ) )
              $create_sync_access = fetch( 'user', 'has_access_to', hash( 'module', 'contentstaging', 'function', 'sync' ) )
     		 $feeds = fetch( 'contentstaging', 'sync_feeds_by_node', hash( 'node_id', $assignment.node_id ) )}
 
