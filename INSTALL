@@ -15,6 +15,9 @@ Target server:
 
 NB: the extension shall be installed on both servers.
 
+Be sure to read the file doc/known_bugs.txt for a list of current limitations: this extension does
+not interact well with all editorial workflows and eZ Publish installations, nor does it support
+all synchronization usecases.
 
 Installation
 ------------
@@ -95,9 +98,4 @@ Troubleshooting
 
 . for configuration/connectivity problems, the "check feed" link in the Admin interface page listing feeds is your friend
 
-. if you receive error messages stating "Response received from server is not valid (unsupported format text/html)" when trying to syncronize events,
-  a possible cause is that you might have DebugOutput enabled on the target server.
-  To work around this problem, 2 solutions:
-  1: disable DebugOutput on the target server (for the siteaccess used for the REST calls), or
-  2: in configuration file wsproviders.ini.append.php, force the correct content type for your server definition:
-  Options[responseType]=application/json
+. for anything else, see the FAQ and known_bugs files

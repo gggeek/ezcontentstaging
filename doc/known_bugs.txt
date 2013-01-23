@@ -1,4 +1,18 @@
-1. if there is a php crash while synchronizing an event, the admin will not be able to delete the "pending" event anymore - a manual db update is required
+See also the list of open bugs in the official tracker for this extension:
+https://jira.ez.no/secure/IssueNavigator.jspa?reset=true&jqlQuery=summary+~+ezcontentstaging+OR+description+~+ezcontentstaging+OR+comment+~+ezcontentstaging
+
+1. When an object is deleted, any pending event related to it and not yet synchronized will be left forever in the queue,
+   as it will not be able to sync succesfully anymore.
+   The only known workaround is currently for the admin to delete those events by hand in the feed page.
+
+   If a cronjob is set up that frequently runs to sync all pending events, the chances for this happening
+   are limited.
+
+   There might be other situations arising which will prevent some events from beyng synchronized,
+   such as adding a translation to an object then deleting it before the "add translation" event has
+   been synchronized.
+
+   A solid solution to this problem is being examined.
 
 2. if a target feed is not a copy of a complete website but only a part of it, and on source server an existing node is moved into the subtree synced to the target,
    not all content data is transferred over (in short: we only support at 100% functionality full site copies for now)
@@ -7,11 +21,8 @@
    - deprecated datatypes are not well supported (see doc.ez.no for a list)
    - webshop datatypes are not well supported (see doc.ez.no for a list)
    - only http basic auth is supported, not oauth
-   - the "swap object" event is not replicated at all to target servers
    - target server chaining is untested and most likely not working
 
-4. when "undefining" an existing feed, its events are still shown on dashboard block - gg, 2012.2.9
+4. when using session-based auth, if the caller tries to access an inexisting route, user is logged out - gg, 2012.3.15
 
-5. when using session-based auth, if the caller tries to access an inexisting route, user is logged out - gg, 2012.3.15
-
-6. when using session-based auth, no XSRF protection is active. Se should integrate with ezformtoken - gg, 2012.3.18
+5. when using session-based auth, no XSRF protection is active. Se should integrate with ezformtoken - gg, 2012.3.18

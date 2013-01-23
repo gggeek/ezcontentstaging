@@ -57,6 +57,8 @@
   with a separate rest call after the publication trigger has run on target server
   -> is chaining of target servers possible at all?
 
+. [bug] target server: when creating a new object+node, and publication fails, the object
+  will stay on the remote server as a draft, making further syncing of the object impossible
 
 4 - INTERFACE
 
@@ -128,7 +130,7 @@ Phase 2:
 . refactor error condition management so that we get both a number and a string across the whole chain from the transport layer to the templates (both source and target servers)
 . fix: sending hide event sends an empty array encoded as json (same for setsection events). can we avoid this?
 . use the same class to encode/decode objects on both source and target (90% there)
-
+. source server: when checking if targets are fine, check also if the siteaccess is configured to display all languages which can be created on source server
 
 Phase 3:
 

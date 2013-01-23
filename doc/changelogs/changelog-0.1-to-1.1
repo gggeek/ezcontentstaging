@@ -4,17 +4,24 @@ changelog from version 0.1 to 1.1 - released 2013.xx.yy
 . added some "introspection" to the rest api. Get started at http://.../contentstaging/v1/api/versions
 . a new view is available in the admin interface to check the status of every feed.
   It checks common config errors and connectivity to the target server
-. add compatibility with eZP CP versions (and most likely with 4.7 too)
+. add compatibility with eZP CP versions (and most likely with 4.7 and 5.0LegacyStack too)
 . extension is now compatible with Oracle and Postgres
-. added db creation scripts for Oracle and Postgres
+. added database creation scripts for Oracle and Postgres
 . add a cronjob to sync events on a regular basis
 . add (experimental) support for session-based auth on target server, to allow ajax interface building
 . integrate with ezsnmpd extension for monitoring of sync-events number/age
 . support Multi-option2 datatype
 . support "swap nodes" event
-. support acting as target for source servers using the "eZ Publish Enterprise" version of the extension
-. the checktargets php script now gives status updates while running; it also takes a -v option for verbose output
+. support acting as target for source servers which use the "eZ Publish Enterprise" version of the extension
+. the checktargets php script now gives status updates while running; it also takes a
+  -v option for verbose output
+  --diff-only option to skip listing nodes which are in sync
+  --pending-only option to only check nodes which have pending events
 . added a new php script: checknode, to check the status of a single node on all target feeds
+. added a new php script: unlockevents, which can be used to set back to "pending" status events which are in "syncing" status
+. better display of events related to the current node in the admin interface, ContentSync tab (list events for all languages)
+. better display of events in feed page in admin interface: add event id, sync start date on tooltip, trash icon for objects in trash
+. try to stay on same page when syncing events, in case of paginated display
 
 * Bugfixes:
 . target server would not answer correctly to content creation calls if there was an approval/wait workflow in action

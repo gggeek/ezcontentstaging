@@ -1,0 +1,17 @@
+Q) if there is a php crash while synchronizing an event, the admin will not be able to delete the "pending" event anymore. Is there a fix for this situation?
+A) Yes. Since version 1.1, there is a cli script available to move all "syncing" events back to "pending" status: unlockevents.php. As it is a dangerous operation it is not available via GUI
+
+Q) why are my feeds filling up with events which can not be synchronized?
+A) look up point 1 in file known_bugs.txt
+
+Q) I receive error messages stating "Response received from server is not valid (unsupported format text/html)" when trying to syncronize events
+A) A possible cause is that you might have DebugOutput enabled on the target server.
+   To work around this problem, 2 solutions:
+   1: disable DebugOutput on the target server (for the siteaccess used for the REST calls), or
+   2: in configuration file wsproviders.ini.append.php, force the correct content type for your server definition:
+      Options[responseType]=application/json
+
+Q) Can I debug all the HTTP calls between source and target?
+A) Yes. Using the tracing capabilities built in into the ggwebservices extension.
+   Look in settings file wsproviders.ini for more information, parameter: GeneralSettings/Logging
+   You will be able to see traces of the http communication both in a dedicated log file and in the debug output
