@@ -194,7 +194,7 @@ class eZContentStagingEvent extends eZPersistentObject
             }
             else
             {
-                eZDebug::writeError( "Object " . $this->ObjectID . " gone amiss for sync event " . $this->ID, __METHOD__ );
+                eZDebug::writeDebug( "Object " . $this->ObjectID . " gone amiss for sync event " . $this->ID, __METHOD__ );
             }
         }
         return $return;
@@ -701,9 +701,7 @@ class eZContentStagingEvent extends eZPersistentObject
                 if ( $result !== 0 )
                 {
                     eZDebug::writeError( "Failed syncing event " . $event->ID . ", transport error code: $result", __METHOD__ );
-                    $event->Status = self::STATUS_TOSYNC;
-                    $event->SyncBeginDate = null;
-                    $event->store();
+                    $event->abortSync();
                     /// @todo !important check that result is an int beteen -100 and -inf
                     $results[$event->ID] = $result;
                 }
@@ -728,6 +726,17 @@ class eZContentStagingEvent extends eZPersistentObject
         }
 
         return $results;
+    }
+
+    /**
+     * Updates event status (in db) back to "to be synchronized"
+     */
+    public function abortSync()
+    {
+        $this->Status = self::STATUS_TOSYNC;
+        $this->SyncBeginDate = null;
+        $this->store();
+
     }
 
     /**
