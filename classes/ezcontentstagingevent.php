@@ -183,7 +183,7 @@ class eZContentStagingEvent extends eZPersistentObject
      */
     public function getObject()
     {
-        $return = eZContentObject::fetch( $this->ObjectID );
+        $return = eZContentObject::exists( $this->ObjectID ) ? eZContentObject::fetch( $this->ObjectID ) : null;
         if ( !$return )
         {
             // obj has been deleted, and we should have some obj data stored within the event
