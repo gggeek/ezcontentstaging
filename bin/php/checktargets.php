@@ -3,9 +3,9 @@
  * Cli script that checks status of one or more target feeds
  *
  * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
- * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
+ * @license http://ez.no/Resources/Software/Licenses/eZ-Business-Use-License-Agreement-eZ-BUL-Version-2.1 eZ Business Use License Agreement eZ BUL Version 2.1
  *
- * @todo allow user to limit scan depth
+ * @todo allow user to limit scan depth when scanning whole feeds
  * @todo internationalize output
  */
 
@@ -17,11 +17,54 @@ $script = eZScript::instance( array( 'description' => "Check sync status of all 
                                      'use-modules'    => false,
                                      'use-extensions' => true ) );
 $script->startup();
-$options = $script->getOptions( "[targets:][sync]",
+$options = $script->getOptions( "[targets:][sync][diff-only][pending-only]",
     "",
     array( 'targets' => 'list of target feeds (csv)',
+           'diff-only' => 'only list nodes which differ',
+           'pending-only' => 'only test nodes which have pending events (not recursive)',
            'sync' => 'when specified, synchronization events will be generated to bring target to parity with current installation' ) );
 $script->initialize();
+
+// love closures! php 5.3 only!
+$displayFunction = function ( $problems ) use ( $options, $cli, $script )
+{
+    reset( $problems );
+    $tmp = each( $problems );
+    $nodeId = $tmp['key'];
+    $problems = $tmp['value'];
+
+    if ( $options['sync'] )
+    {
+        if ( $problems == 0 )
+        {
+            if ( !$options['diff-only'] )
+            {
+                $cli->output( "Node: $nodeId: OK - nothing to do" );
+            }
+        }
+        else if ( $problems & eZBaseStagingTransport::DIFF_TRANSPORTERROR )
+        {
+            $cli->output( "Node: $nodeId: KO - error in retrieving remote status" );
+        }
+        else
+        {
+            $cli->error( "Node: $nodeId: KO - status $problems can not (yet) be handled" );
+        }
+    }
+    else
+    {
+        if ( $problems != 0 || !$options['diff-only'] )
+        {
+            $out = "Node: $nodeId Status: $problems";
+            if ( $script->verboseOutputLevel() && $problems != 0 )
+            {
+                $out .= " (" . implode( ', ', eZBaseStagingTransport::diffmask2array( $problems ) ) . ')';
+            }
+            $cli->output( $out );
+        }
+    }
+
+};
 
 $targets = $options['targets'];
 
@@ -43,44 +86,25 @@ foreach ( $targets as $targetId )
         $cli->output( "" );
         $cli->output( "Checking target: $targetId" );
 
-        $nodeCount = $target->nodeCount();
-        $cli->output( "$nodeCount nodes to check in " . count( $target->attribute( 'subtrees' ) ) . " subtrees" );
-        $script->resetIteration( $nodeCount, 0 );
-
-        // love closures! php 5.3 only!
-        $toSync = $target->checkTarget(
-            function ( $status ) use ( $cli, $script )
-            {
-                $script->iterate( $cli, $status == 0 );
-            }
-        );
-        foreach ( $toSync as $nodeId => $problems )
+        if ( $options['pending-only'] )
         {
-
-            if ( $options['sync'] )
+            /// @todo use offset/limit here in case events list is huge
+            $nodeIds = array();
+            $events = eZContentStagingEvent::fetchList( $targetId );
+            foreach( $events as $event )
             {
-                if ( $problems == 0 )
-                {
-                    $cli->output( "Node: $nodeId: OK - nothing to do" );
-                }
-                else if ( $problems & DIFF_TRANSPORTERROR )
-                {
-                    $cli->output( "Node: $nodeId: KO - error in retrieveing remote status" );
-                }
-                else
-                {
-                    $cli->error( "Node: $nodeId: KO - status $problems can not (yet) be handled" );
-                }
+                $nodeIds = array_merge( $nodeIds, $event->getNodeIds() );
+                $nodeIds = array_unique( $nodeIds );
             }
-            else
-            {
-                $out = "Node: $nodeId Status: $problems";
-                if ( $script->verboseOutputLevel() && $problems[$nodeId] != 0 )
-                {
-                    $out .= " (" . implode( ', ', eZBaseStagingTransport::diffmask2array( $problems[$nodeId] ) ) . ')';
-                }
-                $cli->output( $out );
-            }
+            $nodeCount = count( $nodeIds );
+            $cli->output( "$nodeCount nodes to check in " . count( $events ) . " events" );
+            $target->checkNodeList( $nodeIds, $displayFunction );
+        }
+        else
+        {
+            $nodeCount = $target->nodeCount();
+            $cli->output( "$nodeCount nodes to check in " . count( $target->attribute( 'subtrees' ) ) . " subtrees" );
+            $target->checkTarget( $displayFunction );
         }
     }
     else

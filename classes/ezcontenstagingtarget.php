@@ -46,17 +46,6 @@ class eZContentStagingTarget
         return in_array( $attribute, $this->attributes() );
     }
 
-    /**
-     * Returns list of target hosts defined in the system
-     *
-     * @return array
-     */
-    /*static public function fetchIDList()
-    {
-        $ini = ezini( 'contentstagingsource.ini' );
-        return $ini->variable( 'GeneralSettings', 'TargetList' );
-    }*/
-
     static public function fetchList()
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );
@@ -217,10 +206,10 @@ class eZContentStagingTarget
 
     /**
      * Checks sync status for all nodes in the feed
-     * @param callable $iterator
+     * @param callable $iterator will be called with an array ( int nodeid => int status )
      * @return array key = noode_id, value = integer
      *
-     * @bug what if a node is part of two feeds? we check it twice, but output its errors only once
+     * @todo empty object cache every N iterations
      */
     public function checkTarget( $iterator = null )
     {
@@ -228,17 +217,8 @@ class eZContentStagingTarget
 
         $transport = $this->transport();
 
-        //$remotenodes = $this->attributes['remote_subtrees'];
-        foreach ( $this->attributes['subtrees'] as $key => $nodeID )
+        foreach ( $this->attributes['subtrees'] as $nodeID )
         {
-            /*if ( !isset( $remotenodes[$key] ) )
-            {
-                eZDebug::writeError( "Remote root node not specified for feed " . $this->attributes['Name'], __METHOD__ );
-                $out[] = -2; //eZContentStagingEvent::ERROR_NOREMOUTESOURCE;
-                continue;
-            }*/
-            //$remoteNodeID = $remotenodes[$key];
-
             $node = eZContentObjectTreeNode::fetch( $nodeID );
             if ( !$node )
             {
@@ -255,6 +235,34 @@ class eZContentStagingTarget
     }
 
     /**
+     * Given a list of node ids, checks their sync status
+     *
+     * @param array $nodeIds
+     * @todo does not check that the nodes belong to the feed. Maybe it should...
+     * @todo empty object cache every N iterations
+     */
+    public function checkNodeList( $nodeIds, $iterator = null )
+    {
+        $transport = $this->transport();
+
+        $out = array();
+        foreach ( $nodeIds as $nodeID )
+        {
+            $node = eZContentObjectTreeNode::fetch( $nodeID );
+            if ( !$node )
+            {
+                eZDebug::writeError( "Node $nodeID specified for feed " . $this->attributes['name'] . " does not exist", __METHOD__ );
+                $out[$nodeID] = -1; //eZContentStagingEvent::ERROR_NOSOURCENODE;
+                continue;
+            }
+
+            // nb: using integer-indexed arrays: must not use array_merge
+            $out = $out + $this->checkNode( $node, false, $transport, $iterator  );
+        }
+        return $out;
+    }
+
+    /**
     * Returns the number of nodes in the feed (i.e. count all children in all feed root nodes)
     *
     * @bug will give a bigger number than expected if an inexisting node is in the ini file
@@ -265,26 +273,15 @@ class eZContentStagingTarget
     }
 
     /**
-     * @param callable $iterator
+     * @param callable $iterator will be called with an array ( int nodeid => int status )
      * @return array
      * @todo implement a 'checked object' cache to avoid checaking same obj many times
      * @todo clear object cache after every N objects
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
-    public function checkNode( $node, $recursive = true, $transport = false, $iterator = false )
+    public function checkNode( $node, $recursive = true, $transport = false, $iterator = null )
     {
-        //static $testedobjects;
-        //$objectID = $object->attribute( 'id' );
-        //if ( !isset( $testedobjects[$objectID] ) )
-        //{
-        //    $objectok = $transport->checkObject( $object );
-        //    $testedobjects[$objectID] = $objectok;
-        //}
-        //else
-        //{
-        //    $objectok = $testedobjects[$objectId];
-        //}
         if ( $transport == false )
         {
             $transport = $this->transport();
@@ -298,6 +295,11 @@ class eZContentStagingTarget
         $out = array(
             $node->attribute( 'node_id' ) => $transport->checkNode( $node ) | $transport->checkObject( $node->attribute( 'object' ) )
         );
+
+        if ( is_callable( $iterator ) )
+        {
+            call_user_func_array( $iterator, array( $out ) );
+        }
 
         if ( $recursive )
         {
@@ -321,11 +323,6 @@ class eZContentStagingTarget
 
                 /// @todo clear obj cache ?
             }
-        }
-
-        if ( is_callable( $iterator ) )
-        {
-            call_user_func_array( $iterator, array( $out[0] ) );
         }
 
         return $out;
