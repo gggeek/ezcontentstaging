@@ -115,6 +115,7 @@ function checkAll()
         {if $target_id|not()}
             <th>{"Feed"|i18n('ezcontentstaging')}</th>
         {/if}
+        <th>{"Event"|i18n('ezcontentstaging')}</th>
         <th>{"Status"|i18n('ezcontentstaging')}</th>
         <th>{"Content"|i18n('ezcontentstaging')}</th>
         <th>{"Date"|i18n('ezcontentstaging')}</th>
@@ -132,6 +133,7 @@ function checkAll()
         {* @todo display feed name, not id *}
         <td>{$sync_item.target_id|wash()}</td>
         {/if}
+        <td>{$sync_item.id|wash()}</td>
         <td>
             {if eq($sync_item.status, 1)}
                 <img src={"sync-executing.gif"|ezimage} width="16px" height="16px" alt="{'Sync ongoing... started at:'|i18n('ezcontentstaging')} {$sync_item.sync_begin_date|l10n('shortdatetime')|wash()}" />
