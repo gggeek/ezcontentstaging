@@ -3,7 +3,7 @@
  * Handles eZFind tests
  *
  * @author G. Giunta
- * @copyright (C) G. Giunta 2012
+ * @copyright (C) G. Giunta 2013
  * @license code licensed under the GPL License: see README
  *
  * @todo add more info:

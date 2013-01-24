@@ -2,8 +2,8 @@
 /**
  * Cli script that checks status of one or more target feeds
  *
- * @copyright Copyright (C) 2011-2012 eZ Systems AS. All rights reserved.
- * @license http://ez.no/Resources/Software/Licenses/eZ-Business-Use-License-Agreement-eZ-BUL-Version-2.1 eZ Business Use License Agreement eZ BUL Version 2.1
+ * @copyright Copyright (C) 2011-2013 eZ Systems AS. All rights reserved.
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *
  * @todo allow user to limit scan depth when scanning whole feeds
  * @todo internationalize output
