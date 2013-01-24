@@ -301,6 +301,11 @@ class eZContentStagingTarget
             call_user_func_array( $iterator, array( $out ) );
         }
 
+        // Clear cache, as this method might be called via cli while iterating
+        // over the whole content tree. If called via web gui, it's just a small
+        // perf hit anyway
+        eZContentObject::clearCache( $node->attribute( 'contentobject_id' ) );
+
         if ( $recursive )
         {
             $limit = 10;
