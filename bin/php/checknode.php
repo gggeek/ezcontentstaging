@@ -2,6 +2,8 @@
 /**
  * Cli script that checks sync status of one node for all taregt feeds it is part of
  *
+ * @package ezcontentstaging
+ *
  * @copyright Copyright (C) 2011-2013 eZ Systems AS. All rights reserved.
  * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License v2
  *

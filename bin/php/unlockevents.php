@@ -2,6 +2,8 @@
 /**
  * Cli script that unlocks events in "syncing status"
  *
+ * @package ezcontentstaging
+ *
  * @copyright Copyright (C) 2013 eZ Systems AS. All rights reserved.
  *
  * @todo add a "minimum grace period" parameter
