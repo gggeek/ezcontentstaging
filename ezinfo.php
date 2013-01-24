@@ -13,7 +13,7 @@ class ezcontentstagingModuleInfo
     function info()
     {
         return array( 'Name' => "eZ Publish Content Staging extension (CP version)",
-                      'Version' => "1.1",
+                      'Version' => "1.2-dev",
                       'Copyright' => "Copyright (C) 2011-2013 eZ Systems AS. All rights reserved.",
                       'License' => "GNU General Public License v2.0"
                      );
