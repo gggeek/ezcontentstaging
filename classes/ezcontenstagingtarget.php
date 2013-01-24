@@ -276,7 +276,6 @@ class eZContentStagingTarget
      * @param callable $iterator will be called with an array ( int nodeid => int status )
      * @return array
      * @todo implement a 'checked object' cache to avoid checaking same obj many times
-     * @todo clear object cache after every N objects
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
