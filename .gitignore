@@ -1,5 +1,7 @@
 *.PHPEditProject
 *.bak
+*.orig
+*.php_
 var
 build
 dist
