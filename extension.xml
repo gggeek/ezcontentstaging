@@ -2,8 +2,8 @@
 <software>
     <metadata>
         <name>eZ Publish Content Staging extension (CP version)</name>
-        <version>0.2-dev</version>
-        <copyright>Copyright (C) 2011-2012 G. Giunta</copyright>
+        <version>1.1</version>
+        <copyright>Copyright (C) 2011-2013 eZ Systems AS. All rights reserved.</copyright>
         <license>GNU General Public License v2.0</license>
         <info_url>https://projects.ez.no/ezcontentstaging</info_url>
     </metadata>

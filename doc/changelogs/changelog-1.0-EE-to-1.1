@@ -1,16 +1,26 @@
-Differences between versions 1.0 Enterprise and 1.1 Community
+Differences between versions 1.0 Enterprise/5.0LS Enterprise and 1.1 Community
 
 * New features
 . the Community version is compatible (with patches included) with eZ Publish 4.5 and 4.6,
   the Enterprise version is compatible only with eZ Publish 4.7 and later
 . the Community version integrates with the eZSNMPD extension
 . the Community version provides a self-documenting interface for the REST api exposed
-. the "staging_sync" cronjob has been implemented
 . the view checking for proper configuration of an export feed also displays initialization errors
 . the fetch functions 'sync_events' and 'sync_events_count' accept an optional parameter 'status'
+. a new cli scripts: checknode.php
+. an improved view of events in a feed
+. vastly improved cli script checktargets.php
+. #20360 implemented a new cli script: unlockevents.php
+. #20364 the "staging_sync" cronjob has been implemented
 
 * Bugfixes:
-. the "synctargets" php script does not try to synchronize events which are already in syncing status
+. #20363 the "synctargets" php script does not try to synchronize events which are already in syncing status
+. #20333 alternative text for ezimage datatype was not being synchronized
+. #20332 events pending for a given node are not displayed in admin interface
+. #20331 the check for node differences fails on testing sort order
+. #20328 error in synchornizing content which has no value for an attribute of type infocollector+mandatory
+. #19435 eZcontentstaging adds three non-useful buttons (or icons) to the ezwt toolbar.
+. #20358 script checktargets.php uses all server memory then dies
 
 * Misc
 . the Community version requires the ggwebservices extension to run,

@@ -28,15 +28,16 @@ changelog from version 0.1 to 1.1 - released 2013.xx.yy
 . the default remoteidgenerator was not the one that the ini file said it was
 . fatal error when updating initial language
 . fix a lot of php warnings when feed configuration in ini files is not complete
-. do not try to sync events which are in "syncing" status when running manual sync via the cli script
+. #20363 do not try to sync events which are in "syncing" status when running manual sync via the cli script
 . creating attributes of type object relation(s) failed when sending local ids (using remote ids worked)
 . tolerate json requests with a charset in the content-type http header
 . fix changing of node priority when used with eZP 4.7 or later
 . fixed error in event recording node move
-. #20333: alternative text for ezimage datatype was not being synchronized
-. #20332: events pending for a given node are not displayed in admin interface
-. #20331: the check for node differences fails on testing sort order
-. #20328: error in synchornizing content which has no value for an attribute of type infocollector+mandatory
+. #20333 alternative text for ezimage datatype was not being synchronized
+. #20332 events pending for a given node are not displayed in admin interface
+. #20331 the check for node differences fails on testing sort order
+. #20328 error in synchornizing content which has no value for an attribute of type infocollector+mandatory
+. #20358 script checktargets.php uses all server memory then dies
 
 * Misc
 . removed some leftover files (docs and php classes)
