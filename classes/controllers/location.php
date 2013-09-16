@@ -21,7 +21,7 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
      * - GET /content/locations/remote/<remoteId>
      * - GET /content/locations/<Id>
      *
-     * @return void
+     * @return ezpRestMvcResult
      */
     public function doLoad()
     {
@@ -30,6 +30,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( !$node instanceof eZContentObjectTreeNode )
         {
             return $node;
+        }
+
+        if ( !$node->attribute( 'can_read' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         $result = new ezpRestMvcResult();
@@ -53,6 +58,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( !$node instanceof eZContentObjectTreeNode )
         {
             return $node;
+        }
+
+        if ( !$node->attribute( 'can_hide' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         if ( !isset( $this->request->get['hide'] ) )
@@ -87,6 +97,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( !$node instanceof eZContentObjectTreeNode )
         {
             return $node;
+        }
+
+        if ( !$node->attribute( 'can_edit' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         // workaround bug #0xxx to be able to publish
@@ -173,6 +188,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
+        if ( !$node->attribute( 'can_move' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
+        }
+
         if ( !isset( $this->request->get['destParentRemoteId'] ) )
         {
             return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "destParentRemoteId" parameter is missing' );
@@ -215,6 +235,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
             return $node;
         }
 
+        if ( !$node->attribute( 'can_remove' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
+        }
+
         $moveToTrash = true;
         if ( isset( $this->request->get['trash'] ) )
         {
@@ -248,6 +273,11 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
         if ( !$node instanceof eZContentObjectTreeNode )
         {
             return $node;
+        }
+
+        if ( !$node->canSwap() )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         if ( !isset( $this->request->get['withRemoteId'] ) )
@@ -293,6 +323,12 @@ class eZContentStagingRestLocationController extends eZContentStagingRestBaseCon
                 return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Location with id '{$this->Id}' not found" );
             }
         }
+
+        if ( !$node->attribute( 'can_read' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied for content with location '{$this->Id}' for user " . eZUser::currentUser()->attribute( 'login' ) );
+        }
+
         return $node;
     }
 

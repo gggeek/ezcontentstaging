@@ -189,6 +189,11 @@ class eZContentStagingContent extends contentStagingBase
      */
     static public function createContent( eZContentObjectTreeNode $parent, $input, $sectionId = null )
     {
+        if ( null == $sectionId )
+        {
+            $sectionId = $parent->attribute( 'object' )->attribute( 'section_id' );
+        }
+
         $class = eZContentClass::fetchByIdentifier( $input['contentType'] );
         if ( !$class instanceof eZContentClass )
         {
@@ -218,11 +223,11 @@ class eZContentStagingContent extends contentStagingBase
             if ( isset( $input['initialLanguage'] ) )
             {
                 /// @todo what if initial language does not exist?
-                $content = $class->instantiateIn( $input['initialLanguage'] );
+                $content = $class->instantiateIn( $input['initialLanguage'], false, $sectionId );
             }
             else
             {
-                 $content = $class->instantiate();
+                 $content = $class->instantiate( false, $sectionId );
             }
 
             // if remote_id is not set, just leave it as it is (will be filled by random value?)

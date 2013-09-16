@@ -21,7 +21,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
      * - GET /content/objects/remote/<remoteId>
      * - GET /content/objects/<Id>
      *
-     * @return void
+     * @return ezpRestMvcResult
      */
     public function doLoad()
     {
@@ -30,6 +30,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         if ( !$object instanceof eZContentObject )
         {
             return $object;
+        }
+
+        if ( !$object->attribute( 'can_read' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         $result = new ezpRestMvcResult();
@@ -53,6 +58,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         if ( !$object instanceof eZContentObject )
         {
             return $object;
+        }
+
+        if ( !$object->attribute( 'can_remove' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         $moveToTrash = true;
@@ -103,7 +113,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         eZModule::setGlobalPathList( $moduleRepositories );
 
         $lang = $languages[$this->language];
-        eZContentStagingContent::removeTranslations( $object, array( $lang->attribute( 'id' ) ) );
+        if ( !eZContentStagingContent::removeTranslations( $object, array( $lang->attribute( 'id' ) ) ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
+        }
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
@@ -155,6 +168,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
+        if (!$node->canCreate() )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
+        }
+
         $object = eZContentStagingContent::createContent( $node, $this->getRequestVariables(), $sectionId );
         if ( !$object instanceof eZContentObject )
         {
@@ -184,6 +202,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         if ( !$object instanceof eZContentObject )
         {
             return $object;
+        }
+
+        if ( !$object->attribute( 'can_edit' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         // workaround bug #0xxx to be able to publish
@@ -271,6 +294,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return $object;
         }
 
+        if ( !$object->attribute( 'can_edit' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
+        }
+
         // workaround to be able to publish (bug #018337)
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
@@ -297,6 +325,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         if ( !$object instanceof eZContentObject )
         {
             return $object;
+        }
+
+        if ( !$object->attribute( 'can_edit' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
         }
 
         $version = $object->version( $this->versionNr );
@@ -415,6 +448,11 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Section with Id '$sectionId' not found" );
         }
 
+        if ( eZUser::currentUser()->canAssignSectionToObject( $sectionId, $object ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied" );
+        }
+
         // workaround bug #0xxx to be able to publish
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
@@ -471,6 +509,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
             }
         }
 
+        //@todo warn not allowed states
         eZContentStagingContent::updateStates( $object, $states );
 
         $result = new ezpRestMvcResult();
@@ -523,6 +562,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
                 $result->status = new ezpRestHttpResponse( 403 );
                 return $result;*/
             }
+            elseif( !$node->attribute( 'can_add_location' ) )
+            {
+                return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Authorization required" );
+            }
         }
 
         /// @todo validate location input received: are priority, sortField, sortOrder mandatory?
@@ -555,6 +598,7 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
     /// @todo assert error if neither Id nor remoteId are present
     protected function object()
     {
+        $object = null;
         if ( isset( $this->remoteId ) )
         {
             $object = eZContentObject::fetchByRemoteID( $this->remoteId );
@@ -572,6 +616,17 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
                 return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Content with id '{$this->Id}' not found" );
             }
         }
+
+        if ( !$object instanceof eZContentObject )
+        {
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Content not found" );
+        }
+
+        if ( !$object->attribute( 'can_read' ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::FORBIDDEN, "Access denied for content with id '{$this->Id}' for user " . eZUser::currentUser()->attribute( 'login' ) );
+        }
+
         return $object;
     }
 
