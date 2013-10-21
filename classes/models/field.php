@@ -1108,8 +1108,9 @@ class eZContentStagingField
 
     /**
      * @param array $items array of array
+     * @param eZContentStagingRemoteIdGenerator|null $ridGenerator Remote id generator used, if null, the local remote_id is used
      */
-    static protected function transformBlockItemsToRemote( $items, eZContentStagingRemoteIdGenerator $ridGenerator = null )
+    static protected function transformBlockItemsToRemote( array $items, eZContentStagingRemoteIdGenerator $ridGenerator = null )
     {
         $out = array();
         foreach ( $items as $i => $item )
@@ -1129,6 +1130,7 @@ class eZContentStagingField
                 if ( $ridGenerator )
                 {
                     $array['remote_node_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
+                }
                 else
                 {
                     $array['remote_node_id'] = $item->attribute( 'node_id' );

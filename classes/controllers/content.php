@@ -73,6 +73,84 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
     }
 
     /**
+     * Handle PUT request to restore a trashed content object from its [remote] id
+     *
+     * Request:
+     * - PUT /api/contentstaging/content/trash/remote/<remoteId>?parentRemoteId=<>
+     * - PUT /api/contentstaging/content/trash/<Id>?parentId=<>
+     *
+     * @return ezpRestMvcResult
+     */
+    public function doRestoreFromTrash()
+    {
+        $object = $this->object();
+        if ( !$object instanceof eZContentObject )
+        {
+            return $object;
+        }
+
+        // check if item is in trash, return 404 otherwise
+        /// @todo is this check enough? We trust the db to be coherent...
+        if ( $object->attribute( 'status' ) != eZContentObject::STATUS_ARCHIVED )
+        {
+            return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "The requested content is not in the trash" );
+        }
+
+        if ( !isset( $this->request->get['parentRemoteId'] ) && !isset( $this->request->get['parentId'] ) )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, 'The "parentRemoteId"or "parentId" parameters are missing' );
+        }
+
+        if ( isset( $this->request->get['parentRemoteId'] ) )
+        {
+            $parentRemoteId = $this->request->get['parentRemoteId'];
+            $parentNode = eZContentObjectTreeNode::fetchByRemoteID( $parentRemoteId );
+            if ( !$parentNode instanceof eZContentObjectTreeNode )
+            {
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with remote id '{$parentRemoteId}'" );
+            }
+        }
+        else
+        {
+            $parentId = $this->request->get['parentId'];
+            $parentNode = eZContentObjectTreeNode::fetch( $parentId );
+            if ( !$parentNode instanceof eZContentObjectTreeNode )
+            {
+                return self::errorResult( ezpHttpResponseCodes::NOT_FOUND, "Cannot find the location with id '{$parentId}'" );
+            }
+        }
+
+        // workaround bug #0xxx to be able to publish
+        $moduleRepositories = eZModule::activeModuleRepositories();
+        eZModule::setGlobalPathList( $moduleRepositories );
+
+        $newNode = eZContentStagingContent::restoreFromTrash( $object, $parentNode );
+
+        /// @todo return a 401 in case of permission problems!
+        if ( !$newNode instanceof eZContentObjectTreeNode )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $newNode );
+        }
+
+        // patch remote id of new node if caller said so
+        $inputVariables = $this->getRequestVariables();
+        if ( isset( $inputVariables['remoteId'] ) )
+        {
+            if ( ( $result = eZContentStagingLocation::updateRemoteId(
+                $newNode,
+                $inputVariables['remoteId'] )
+                ) !== 0 )
+            {
+                return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+            }
+        }
+
+        $result = new ezpRestMvcResult();
+        $result->variables['Location'] = (array) new eZContentStagingLocation( $newNode );
+        return $result;
+    }
+
+    /**
      * Handle DELETE request for a content object from its [remote] id
      *
      * Request:

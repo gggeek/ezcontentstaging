@@ -77,7 +77,7 @@ class eZContentStagingLocation extends contentStagingBase
 
         if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_sort' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'sort',
                 array(
@@ -135,7 +135,7 @@ class eZContentStagingLocation extends contentStagingBase
 
         if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_updatepriority' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'updatepriority',
                 array(

@@ -242,7 +242,7 @@ class eZContentStagingContent extends contentStagingBase
             }
             $content->store();
 
-            $nodeAssignment = eZNodeAssignment::create(
+            eZNodeAssignment::create(
                 array(
                     'contentobject_id' => $content->attribute( 'id' ),
                     'contentobject_version' => $content->attribute( 'current_version' ),
@@ -251,8 +251,7 @@ class eZContentStagingContent extends contentStagingBase
                     'sort_field' => $class->attribute( 'sort_field' ),
                     'sort_order' => $class->attribute( 'sort_order' )
                 )
-            );
-            $nodeAssignment->store();
+            )->store();
 
             $version = $content->version( 1 );
             // The date of version creation we set to object publication date,
@@ -269,8 +268,10 @@ class eZContentStagingContent extends contentStagingBase
             $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
             $version->store();
 
-            $attributes = $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
-            self::updateAttributesList( $attributes, $input['fields'] );
+            self::updateAttributesList(
+                $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
+                $input['fields']
+            );
 
             $db->commit();
 
@@ -356,9 +357,7 @@ class eZContentStagingContent extends contentStagingBase
         {
             $newNode = false;
 
-            $ini = eZINI::instance( 'contentstagingtarget.ini' );
-            $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-            if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_addlocation' ) )
+            if ( self::isOperationAvailableAndEnabled( 'content_addlocation' ) )
             {
                 /// @todo what if this triggers a reported action (eg. approval?)
                 $operationResult = eZOperationHandler::execute(
@@ -460,9 +459,7 @@ class eZContentStagingContent extends contentStagingBase
      */
     static public function updateSection( eZContentObject $object, $sectionId )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatesection' ) )
+        if ( self::isOperationAvailableAndEnabled( 'content_updatesection' ) )
         {
             eZOperationHandler::execute(
                 'content',
@@ -491,15 +488,14 @@ class eZContentStagingContent extends contentStagingBase
      */
     static public function updateStates( eZContentObject $object, $states )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+        if ( self::isOperationAvailableAndEnabled( 'content_updateobjectstate' ) )
         {
             eZOperationHandler::execute(
                 'content',
                 'updateobjectstate',
-                array( 'object_id'     => $object->attribute( 'id' ),
-                       'state_id_list' => $states
+                array(
+                    'object_id' => $object->attribute( 'id' ),
+                    'state_id_list' => $states
                 )
             );
         }
@@ -524,9 +520,7 @@ class eZContentStagingContent extends contentStagingBase
         {
             $nodeIDs[] = $node->attribute( 'node_id' );
         }
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_delete' ) )
+        if ( self::isOperationAvailableAndEnabled( 'content_delete' ) )
         {
             eZOperationHandler::execute(
                 'content',
@@ -550,9 +544,7 @@ class eZContentStagingContent extends contentStagingBase
      */
     static public function updateInitialLanguage( eZContentObject $object, $initialLanguage )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updateinitiallanguage' ) )
+        if ( self::isOperationAvailableAndEnabled( 'content_updateinitiallanguage' ) )
         {
             eZOperationHandler::execute(
                 'content',
@@ -578,9 +570,7 @@ class eZContentStagingContent extends contentStagingBase
      */
     static public function updateAlwaysAvailable( eZContentObject $object, $alwaysAvailable )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatealwaysavailable' ) )
+        if ( self::isOperationAvailableAndEnabled( 'content_updatealwaysavailable' ) )
         {
             eZOperationHandler::execute(
                 'content',
@@ -596,7 +586,7 @@ class eZContentStagingContent extends contentStagingBase
         }
         else
         {
-            eZContentOperationCollection::updateAlwaysAvailable( $objectID, $alwaysAvailable );
+            eZContentOperationCollection::updateAlwaysAvailable( $object->attribute( 'id' ), $alwaysAvailable );
         }
     }
 
@@ -634,9 +624,7 @@ class eZContentStagingContent extends contentStagingBase
      */
     static public function removeTranslations( eZContentObject $object, $translations )
     {
-        $ini = eZINI::instance( 'contentstagingtarget.ini' );
-        $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
-        if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_removetranslation' ) )
+        if ( self::isOperationAvailableAndEnabled( 'content_removetranslation' ) )
         {
             eZOperationHandler::execute(
                 'content',
@@ -655,4 +643,78 @@ class eZContentStagingContent extends contentStagingBase
             eZContentOperationCollection::removeTranslation( $object->attribute( 'id' ), $translations );
         }
     }
+
+    /**
+     * Code taken from kernel/content/restore.php
+     * @todo perms checking
+     */
+    static public function restoreFromTrash( eZContentObject $object, eZContentObjectTreeNode $parentNode )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+
+        $version = $object->attribute( 'current' );
+
+        // Remove all existing assignments, only our new ones should be present.
+        foreach ( $version->attribute( 'node_assignments' ) as $assignment )
+        {
+            $assignment->purge();
+        }
+
+        // Add the new location
+        $version->assignToNode( $parentNode->attribute( 'node_id' ), true );
+
+        $object->setAttribute( 'status', eZContentObject::STATUS_DRAFT );
+        $object->store();
+        $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
+        $version->store();
+
+        $object->restoreObjectAttributes();
+
+        $objectID = $object->attribute( 'id' );
+        $operationResult = eZOperationHandler::execute(
+            'content',
+            'publish',
+            array(
+                'object_id' => $objectID,
+                'version' => $version->attribute( 'version' ) ) );
+        if ( ( array_key_exists( 'status', $operationResult ) && $operationResult['status'] != eZModuleOperationInfo::STATUS_CONTINUE ) )
+        {
+            switch ( $operationResult['status'] )
+            {
+                case eZModuleOperationInfo::STATUS_HALTED:
+                case eZModuleOperationInfo::STATUS_CANCELLED:
+                    return false;
+            }
+        }
+
+        // re-fetch object
+        $object = eZContentObject::fetch( $objectID );
+
+        eZContentObjectTrashNode::purgeForObject( $objectID  );
+
+        if ( $object->attribute( 'contentclass_id' ) == eZINI::instance()->variable( "UserSettings", "UserClassID" ) )
+        {
+            eZUser::purgeUserCacheByUserId( $objectID );
+        }
+
+        eZContentObject::fixReverseRelations( $objectID, 'restore' );
+
+        $db->commit();
+
+        return $object->attribute( 'main_node' );
+    }
+
+    static private function isOperationAvailableAndEnabled( $operation )
+    {
+        static $enabled = null;
+
+        if ( $enabled === null)
+        {
+            $enabled = eZINI::instance( "contentstagingtarget.ini" )->variable( "GeneralSettings", "ExecuteTriggers" ) !== "disabled";
+        }
+
+        return $enabled && eZOperationHandler::operationIsAvailable( $operation );
+    }
+
 }
