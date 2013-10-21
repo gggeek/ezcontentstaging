@@ -671,11 +671,23 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
             {
                 continue;
             }
-            else if ( $fieldFilter === true || $fieldFilter->accept( $attribute ) )
+            if ( $fieldFilter === true || $fieldFilter->accept( $attribute ) )
             {
                 $name = $attribute->attribute( 'contentclass_attribute_identifier' );
                 $out['fields'][$name] = (array) new eZContentStagingField( $attribute, $locale, $ridGenerator );
             }
+        }
+
+        // object level relations
+        $contentRelatedObjects = $object->relatedObjects( false, false, false, false, array( 'AllRelations' => false ) );
+        $out['relatedObjects'] = array();
+        foreach ( $contentRelatedObjects as $relatedObject )
+        {
+            $out['relatedObjects'][] = $this->buildRemoteId(
+                $relatedObject->attribute( 'id' ),
+                $relatedObject->attribute( 'remote_id' ),
+                'object'
+            );
         }
 
         if ( $isupdate )
@@ -730,6 +742,10 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
         return $generator ? $generator->buildRemoteId( $sourceId, $sourceRemoteId, $type ) : $sourceRemoteId ;
     }
 
+    /**
+     * Returns the remote ID generator
+     * @return eZContentStagingRemoteIdGenerator
+     */
     protected function getRemoteIdGenerator()
     {
         $ini = eZINI::instance( 'contentstagingsource.ini' );

@@ -76,6 +76,12 @@ class eZContentStagingContent extends contentStagingBase
                 $this->fields[$identifier] = (array) new eZContentStagingField( $attr, $attr->attribute( 'language_code' ), null );
             }
         }
+
+        $contentRelatedObjects = $object->relatedObjects( false, false, false, false, array( 'AllRelations' => false ) );
+        foreach ( $contentRelatedObjects as $relatedObject )
+        {
+            $this->relatedObjects[] = $relatedObject->attribute['id'];
+        }
     }
 
     /**
@@ -109,6 +115,14 @@ class eZContentStagingContent extends contentStagingBase
                 $version->attribute( 'contentobject_attributes' ),
                 $input['fields']
             );
+
+            if ( isset( $input['relatedObjects'] ) )
+            {
+                self::updateRelations(
+                    $input['relatedObjects'],
+                    $version
+                );
+            }
 
             $db->commit();
 
@@ -269,8 +283,13 @@ class eZContentStagingContent extends contentStagingBase
             $version->store();
 
             self::updateAttributesList(
-                $content->contentObjectAttributes( true, false, $input['initialLanguage'] );
+                $content->contentObjectAttributes( true, false, isset( $input['initialLanguage'] ) ? $input['initialLanguage'] : false );
                 $input['fields']
+            );
+
+            self::updateRelations(
+                $input['relatedObjects'],
+                $version
             );
 
             $db->commit();
@@ -369,7 +388,8 @@ class eZContentStagingContent extends contentStagingBase
                         'select_node_id_array' => $selectedNodeIDArray
                     ),
                     null,
-                    true );
+                    true
+                );
             }
             else
             {
@@ -471,7 +491,6 @@ class eZContentStagingContent extends contentStagingBase
                 null,
                 true
             );
-
         }
         else
         {
@@ -718,6 +737,63 @@ class eZContentStagingContent extends contentStagingBase
         }
 
         return $enabled && eZOperationHandler::operationIsAvailable( $operation );
+    }
+
+    /**
+     * Applies the relations in $relations to $version
+     * @param array $relations
+     * @param eZContentObjectVersion $version
+     */
+    static private function updateRelations( array $relations, eZContentObjectVersion $version )
+    {
+        /** @var $contentObject eZContentObject */
+        $contentObject = $version->contentObject();
+
+        $existingRelatedObjects = $contentObject->relatedObjects(
+            $version->attribute( 'version' ),
+            false,
+            false,
+            false,
+            array( 'AllRelations' => false )
+        );
+        $existingRelatedObjectsIdArray = array();
+        foreach( $existingRelatedObjects as $object )
+        {
+            $existingRelatedObjectsIdArray[$object->attribute( 'id' )] = true;
+        }
+
+        foreach ( $relations as $relationRemoteId )
+        {
+            /** @var $relatedObject eZContentObject */
+            $relatedObject = eZContentObject::fetchByRemoteID( $relationRemoteId );
+            if ( !$relatedObject instanceof eZContentObject )
+            {
+                throw new Exception( "No content object with remote ID $relationRemoteId" );
+            }
+
+            if ( !isset( $existingRelatedObjectsIdArray[$relatedObject->attribute( 'id' )] ) )
+            {
+                $contentObject->addContentObjectRelation(
+                    $relatedObject->attribute( 'id' ),
+                    $version->attribute( 'version' ),
+                    0,
+                    eZContentObject::RELATION_COMMON
+                );
+            }
+            else
+            {
+                unset( $existingRelatedObjectsIdArray[$relatedObject->attribute( 'id' )] );
+            }
+        }
+
+        // remove relations that don't exist in the new version
+        if ( !empty( $existingRelatedObjectsIdArray ) )
+        {
+            foreach( array_keys( $existingRelatedObjectsIdArray ) as $contentObjectId )
+            {
+                $contentObject->removeContentObjectRelation( $contentObjectId, $version->attribute( 'version' ) );
+            }
+        }
     }
 
 }
