@@ -40,7 +40,7 @@ if ( $http->hasPostVariable( 'NodeID' ) )
     // collect related objects
     $relatedObjectList = $currentObject->relatedContentObjectList();
 
-    //Check if we need to sync related object
+    // Check if we need to sync related object
     $relatedObjectNeedingSync = $eventList = array();
     foreach ( $relatedObjectList as $relatedObject )
     {

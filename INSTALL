@@ -80,7 +80,7 @@ Source server:
 
     [<server_feedname>]
     providerType=REST
-    providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/rest/api/contentstaging/v1>
+    providerUri=<url to rest api on target server, including the final part, eg: http://my.server.com/api/contentstaging/v1>
     Options[]
     Options[authType]=1 (for basic auth)
     Options[login]=<username>

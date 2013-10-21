@@ -366,7 +366,8 @@ class eZContentStagingContent extends contentStagingBase
                     array(
                         'node_id' => $object->attribute( 'main_node_id' ),
                         'object_id' => $object->attribute( 'id' ),
-                        'select_node_id_array' => $selectedNodeIDArray ),
+                        'select_node_id_array' => $selectedNodeIDArray
+                    ),
                     null,
                     true );
             }
@@ -468,7 +469,8 @@ class eZContentStagingContent extends contentStagingBase
                         'node_id' => $object->attribute( 'main_node_id' ),
                        'selected_section_id' => $sectionId ),
                 null,
-                true );
+                true
+            );
 
         }
         else
@@ -520,6 +522,7 @@ class eZContentStagingContent extends contentStagingBase
         {
             $nodeIDs[] = $node->attribute( 'node_id' );
         }
+
         if ( self::isOperationAvailableAndEnabled( 'content_delete' ) )
         {
             eZOperationHandler::execute(
