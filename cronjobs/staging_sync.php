@@ -38,4 +38,3 @@ foreach( eZContentStagingTarget::fetchList() as $id => $target )
         $cli->output( "Events synchronized: $ok, failed: $ko" );
     }
 }
-

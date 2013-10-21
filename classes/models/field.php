@@ -185,6 +185,7 @@ class eZContentStagingField
                     'xml' => $content->xmlString(),
                 );
                 break;
+
             // serialized as a single string of either local or remote id
             case 'ezobjectrelation':
                 // slightly more intelligent than base "toString" method: we always check for presence of related object
@@ -1108,7 +1109,7 @@ class eZContentStagingField
     /**
      * @param array $items array of array
      */
-    static protected function transformBlockItemsToRemote( $items, $ridGenerator )
+    static protected function transformBlockItemsToRemote( $items, eZContentStagingRemoteIdGenerator $ridGenerator = null )
     {
         $out = array();
         foreach ( $items as $i => $item )
@@ -1125,21 +1126,34 @@ class eZContentStagingField
             $node = eZContentObjectTreeNode::fetch( $item->attribute( 'node_id' ) );
             if ( $node )
             {
-                $array['remote_node_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
+                if ( $ridGenerator )
+                {
+                    $array['remote_node_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'node_id' ), $node->attribute( 'remote_id' ) );
+                else
+                {
+                    $array['remote_node_id'] = $item->attribute( 'node_id' );
+                }
             }
             else
             {
-                eZDebug::writeWarning( "Node {$item['node_id']} not found for staging export of an ezpage attribute, block " . $block->attribute( 'id' ), __METHOD__ );
+                eZDebug::writeWarning( "Node " . $item->attribute( 'node_id' ) . " not found for staging export of an ezpage attribute, block " . $item->attribute( 'block_id' ), __METHOD__ );
             }
 
             $object = eZContentObject::fetch( $item->attribute( 'object_id' ) );
             if ( $object )
             {
-                $array['remote_object_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'object_id' ), $object->attribute( 'remote_id' ), 'object' );
+                if ( $ridGenerator )
+                {
+                    $array['remote_object_id'] = $ridGenerator->buildRemoteId( $item->attribute( 'object_id' ), $object->attribute( 'remote_id' ), 'object' );
+                }
+                else
+                {
+                    $array['remote_object_id'] = $item->attribute( 'object_id' );
+                }
             }
             else
             {
-                eZDebug::writeWarning( "Object {$item['object_id']} not found for staging export of an ezpage attribute, block " . $block->attribute( 'id' ), __METHOD__ );
+                eZDebug::writeWarning( "Object " . $item->attribute( 'object_id' ) . " not found for staging export of an ezpage attribute, block " . $item->attribute( 'block_id' ), __METHOD__ );
             }
 
             if ( $node && $object )

@@ -218,7 +218,7 @@ class eZContentStagingLocation extends contentStagingBase
 
         if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_hide' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'hide',
                 array( 'node_id' => $node->attribute( 'node_id' ) ),
@@ -253,7 +253,7 @@ class eZContentStagingLocation extends contentStagingBase
     {
         if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_updatemainassignment' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'updatemainassignment',
                 array(
@@ -287,7 +287,7 @@ class eZContentStagingLocation extends contentStagingBase
     {
         if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_move' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'move',
                 array(
@@ -321,7 +321,7 @@ class eZContentStagingLocation extends contentStagingBase
 
         if ( self::isTriggersExecutionEnabled() && eZOperationHandler::operationIsAvailable( 'content_removelocation' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'removelocation',
                 array( 'node_list' => $removeList ),

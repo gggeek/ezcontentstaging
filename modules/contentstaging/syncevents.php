@@ -37,7 +37,7 @@ if ( $http->hasPostVariable( 'NodeID' ) )
         }
     }
 
-    //collecte related objects
+    // collect related objects
     $relatedObjectList = $currentObject->relatedContentObjectList();
 
     //Check if we need to sync related object
@@ -86,7 +86,6 @@ else if ( !empty( $currentNodeEvents ) && $http->hasPostVariable( 'ConfirmSyncBu
     $toSync = $currentNodeEvents;
     foreach ( $relatedNodeEventsList as $relatedNodeEvents )
     {
-
          $toSync += $relatedNodeEvents;
     }
     ksort( $toSync );

@@ -89,7 +89,7 @@ class eZContentStagingContent extends contentStagingBase
         $db = eZDB::instance();
         // within transactions, db errors generate a fatal halt, unless we tell
         // the db to use exceptions
-        $dbhandling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             $db->begin();
@@ -198,7 +198,7 @@ class eZContentStagingContent extends contentStagingBase
         $db = eZDB::instance();
         // within transactions, db errors generate a fatal halt, unless we tell
         // the db to use exceptions
-        $dbhandling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             /// @todo maybe abort instead of continuing if bad date format?
@@ -219,6 +219,10 @@ class eZContentStagingContent extends contentStagingBase
             {
                 /// @todo what if initial language does not exist?
                 $content = $class->instantiateIn( $input['initialLanguage'] );
+                if ( $content->attribute( 'current_language' ) === false )
+                {
+                    throw new Exception( "The content cannot be created with the provided initial language: '$input[initialLanguage]'" );
+                }
             }
             else
             {
@@ -347,7 +351,7 @@ class eZContentStagingContent extends contentStagingBase
         $selectedNodeIDArray = array( $parent->attribute( 'node_id' ) );
 
         $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             $newNode = false;
@@ -409,11 +413,13 @@ class eZContentStagingContent extends contentStagingBase
             // fetch new node by its parent and object id
             $conds = array(
                 'contentobject_id' => $object->attribute( 'id' ),
-                'parent_node_id' => $parent->attribute( 'node_id' ) );
+                'parent_node_id' => $parent->attribute( 'node_id' )
+            );
             $newNode = eZPersistentObject::fetchObject(
                 eZContentObjectTreeNode::definition(),
                 null,
-                $conds );
+                $conds
+            );
             if ( !$newNode )
             {
                 throw new exception( 'New node has not been created. Possible permissions problem ' . var_export( $newNode, true ) );
@@ -458,7 +464,7 @@ class eZContentStagingContent extends contentStagingBase
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
         if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatesection' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'updatesection',
                     array(
@@ -489,9 +495,13 @@ class eZContentStagingContent extends contentStagingBase
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
         if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
         {
-            $operationResult = eZOperationHandler::execute( 'content', 'updateobjectstate',
-            array( 'object_id'     => $object->attribute( 'id' ),
-                   'state_id_list' => $states ) );
+            eZOperationHandler::execute(
+                'content',
+                'updateobjectstate',
+                array( 'object_id'     => $object->attribute( 'id' ),
+                       'state_id_list' => $states
+                )
+            );
         }
         else
         {
@@ -518,13 +528,14 @@ class eZContentStagingContent extends contentStagingBase
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
         if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_delete' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'delete',
                 array(
                     'node_id_list' => $nodeIDs,
                     'move_to_trash' => $moveToTrash ),
-                null, true );
+                null, true
+            );
         }
         else
         {
@@ -543,7 +554,7 @@ class eZContentStagingContent extends contentStagingBase
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
         if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updateinitiallanguage' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'updateinitiallanguage',
                 array(
@@ -571,7 +582,7 @@ class eZContentStagingContent extends contentStagingBase
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
         if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_updatealwaysavailable' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'updatealwaysavailable',
                 array(
@@ -579,7 +590,9 @@ class eZContentStagingContent extends contentStagingBase
                     'new_always_available' => $alwaysAvailable,
                     // note : the $nodeID parameter is ignored here but is
                     // provided for events that need it
-                    'node_id' => $object->attribute( 'main_node_id' ) ) );
+                    'node_id' => $object->attribute( 'main_node_id' )
+                )
+            );
         }
         else
         {
@@ -597,7 +610,7 @@ class eZContentStagingContent extends contentStagingBase
     static public function updateRemoteId( eZContentObject $object, $remoteId )
     {
         $db = eZDB::instance();
-        $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
+        $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
         try
         {
             $object->setAttribute( 'remote_id', $remoteId );
@@ -625,7 +638,7 @@ class eZContentStagingContent extends contentStagingBase
         $dotriggers = ( $ini->variable( 'GeneralSettings', 'ExecuteTriggers' ) != 'disabled' );
         if ( $dotriggers && eZOperationHandler::operationIsAvailable( 'content_removetranslation' ) )
         {
-            $operationResult = eZOperationHandler::execute(
+            eZOperationHandler::execute(
                 'content',
                 'removetranslation',
                 array(
@@ -633,7 +646,9 @@ class eZContentStagingContent extends contentStagingBase
                     'language_id_list' => $translations,
                     // note : the $nodeID parameter is ignored here but is
                     // provided for events that need it
-                    'node_id' => $object->attribute( 'main_node_id' ) ) );
+                    'node_id' => $object->attribute( 'main_node_id' )
+                )
+            );
         }
         else
         {

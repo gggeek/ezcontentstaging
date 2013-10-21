@@ -6,7 +6,6 @@
  *
  * @copyright Copyright (C) 2013 eZ Systems AS. All rights reserved.
  *
- * @todo add a "minimum grace period" parameter
  * @todo internationalize output
  */
 
@@ -18,15 +17,16 @@ $script = eZScript::instance( array( 'description' => "Unlocks events which are 
                                      'use-modules'    => false,
                                      'use-extensions' => true ) );
 $script->startup();
-$options = $script->getOptions( "[targets:][list]",
+$options = $script->getOptions( "[targets:][list][delay:]",
     "",
     array( 'targets' => 'list of target feeds (csv)',
+           'delay' => 'Safety measure: only unlock events which have been in sync status for longer than <delay> hours. Defaults to 24',
            'list' => 'only display the events found without touching them'
     )
 );
 $script->initialize();
-$targets = $options['targets'];
 
+$targets = $options['targets'];
 if ( $targets == '' )
 {
     $ini = eZINI::instance( 'contentstagingsource.ini' );
@@ -36,6 +36,22 @@ else
 {
     $targets = explode( ',', $targets );
 }
+
+// we allow user to specify 0 delay
+if ( $options['delay'] === null )
+{
+    $delay = 24;
+}
+else
+{
+    $delay = (int)$options['delay'];
+}
+if ( !$options['list'] )
+{
+    $cli->output( "Unlocking events which have been in sync status for more than $delay hours" );
+}
+$delay = $delay * 60 * 60;
+$now = time();
 
 foreach ( $targets as $targetId )
 {
@@ -60,8 +76,15 @@ foreach ( $targets as $targetId )
             }
             else
             {
-                $cli->output( "Unlocking event " . $event->attribute( 'id' ) . ", has been in sync status since " . $locale->formatShortDateTime( $event->attribute( 'sync_begin_date' ) ) );
-                $event->abortSync();
+                if ( $now - $event->attribute( 'sync_begin_date' ) > $delay )
+                {
+                    $cli->output( "Unlocking event " . $event->attribute( 'id' ) . ", has been in sync status since " . $locale->formatShortDateTime( $event->attribute( 'sync_begin_date' ) ) );
+                    $event->abortSync();
+            }
+                else
+                {
+                    $cli->output( "NOT unlocking event " . $event->attribute( 'id' ) . ", has been in sync status only since " . $locale->formatShortDateTime( $event->attribute( 'sync_begin_date' ) ) );
+                }
             }
         }
     }
