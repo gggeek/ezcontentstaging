@@ -47,26 +47,41 @@ class eZStagePublishType extends eZWorkflowEventType
         /// @todo shall we check if status is "published" here?
         ///       test if eg. after collab. refusal we pass through here...
 
-        $initialLanguageID = $version->attribute( 'initial_language_id' );
-
         // if this is a 1st version, we need to identify parent node and store its ids too
 
         $objectNodes = eZContentStagingEvent::assignedNodeIds( $objectID );
         $affectedObjectData = array(
             'version' => $versionID,
-            'locale' => eZContentLanguage::fetch( $initialLanguageID )->attribute( 'locale' ),
             'objectRemoteID' => $object->attribute( 'remote_id' ),
             'parentNodeID' => $parentNode->attribute( 'node_id' ),
             'parentNodeRemoteID' => $parentNode->attribute( 'remote_id' ) );
 
-        // in case of a new version, save new node id + remote id too
-        if ( $versionID == 1 )
+        // try to save new node id + remote id too
+        $node = $object->attribute( 'main_node' );
+        if ( $node )
         {
-            $node = $object->attribute( 'main_node' );
             $affectedObjectData['nodeID'] = $node->attribute( 'node_id' );
             $affectedObjectData['nodeRemoteID'] = $node->attribute( 'remote_id' );
         }
 
+        // Work around the fact that restoration from trash does not have a trigger,
+        // but it generates a publication event.
+        // We check current module/view to sniff that.
+        // The @ is ugly but prevents a useless warning from missing static declarations
+        if ( @eZModule::currentModule() == 'content' && @eZModule::currentView() == 'restore' )
+        {
+            $eventType = eZContentStagingEvent::ACTION_RESTOREFROMTRASH;
+            // affects all existing languages
+            $initialLanguageID = null;
+        }
+        else
+        {
+            $eventType = eZContentStagingEvent::ACTION_PUBLISH;
+            $initialLanguageID = $version->attribute( 'initial_language_id' );
+            $affectedObjectData['locale'] = eZContentLanguage::fetch( $initialLanguageID )->attribute( 'locale' );
+        }
+
+        /** @var eZContentStagingTarget $target */
         foreach ( eZContentStagingTarget::fetchList() as $targetId => $target )
         {
             $affectedFeedNodes = array_keys( $target->includedNodesByPath( $objectNodes ) );
@@ -75,7 +90,7 @@ class eZStagePublishType extends eZWorkflowEventType
                 eZContentStagingEvent::addEvent(
                     $targetId,
                     $objectID,
-                    eZContentStagingEvent::ACTION_PUBLISH,
+                    $eventType,
                     $affectedObjectData,
                     array_keys( $objectNodes ),
                     $initialLanguageID

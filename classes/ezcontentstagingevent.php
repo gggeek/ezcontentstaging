@@ -36,6 +36,7 @@ class eZContentStagingEvent extends eZPersistentObject
     // the 'initializenode' event is used to inject remote_node_id and
     // remote_object_id into the remote node (known by its node_id)
     const ACTION_UPDATEREMOTEIDS = 65536;
+    const ACTION_RESTOREFROMTRASH = 131072;
 
     static $syncStrings = array(
         self::ACTION_ADDLOCATION => 'location added',
@@ -53,7 +54,8 @@ class eZContentStagingEvent extends eZPersistentObject
         self::ACTION_UPDATEOBJECSTATE => 'content state changed',
         self::ACTION_UPDATEPRIORITY => 'child priority changed',
         self::ACTION_UPDATESECTION => 'section changed',
-        65536 => 'node initialization'
+        self::ACTION_INITIALIZEFEED => 'node initialization',
+        self::ACTION_RESTOREFROMTRASH => 'object restored from trash',
     );
 
     const STATUS_TOSYNC = 0;
@@ -440,7 +442,7 @@ class eZContentStagingEvent extends eZPersistentObject
         $conditions = array();
         if ( $targetId != '' )
         {
-            $conditions['target_id'] = $targetId;
+            $conditions = array( 'target_id' => $targetId );
         }
         if ( $status !== null )
         {
@@ -520,34 +522,43 @@ class eZContentStagingEvent extends eZPersistentObject
      * Returns count of events to sync to a given server
      * @return integer
      */
-    static public function fetchListCount( $target_id = null, $language = null, $status = null )
+    static public function fetchListCount( $targetId = null, $language = null, $status = null )
     {
         $conditions = array();
-        if ( $target_id != '' )
+        if ( $targetId != '' )
         {
-            $conditions['target_id'] = $target_id ;
+            $conditions = array( 'target_id' => $targetId );
         }
         if ( $status !== null )
         {
             $conditions['status'] = (int)$status;
         }
-        $custom_conds = null;
+        $customConds = null;
         if ( $language != null )
         {
             if ( $conditions )
             {
-                $custom_conds = ' AND ';
+                $customConds = ' AND ';
             }
             else
             {
-                $custom_conds = ' WHERE ';
+                $customConds = ' WHERE ';
             }
-            $custom_conds .= self::languagesSQLFilter( $locale );
-
+            $customConds .= self::languagesSQLFilter( $locale );
         }
 
-        $customFields = array( array( 'operation' => 'COUNT( * )', 'name' => 'row_count' ) );
-        $rows = self::fetchObjectList( self::definition(), array(), $conditions, array(), null, false, null, $customFields, null, $custom_conds );
+        $rows = self::fetchObjectList(
+            self::definition(),
+            array(),
+            $conditions,
+            array(),
+            null,
+            false,
+            null,
+            array( array( 'operation' => 'COUNT( * )', 'name' => 'row_count' ) ),
+            null,
+            $customConds
+        );
         return $rows[0]['row_count'];
     }
 
@@ -556,8 +567,7 @@ class eZContentStagingEvent extends eZPersistentObject
     {
         // in case of unknown languages $mask will be 0
         $mask = eZContentLanguage::maskByLocale( $language );
-        $db = eZDB::instance();
-        if ( $db->databaseName() == 'oracle' )
+        if ( eZDB::instance()->databaseName() == 'oracle' )
         {
             $maskcondition = "bitand( language_mask, $mask ) > 0";
         }
@@ -572,20 +582,23 @@ class eZContentStagingEvent extends eZPersistentObject
 
     /**
      * Adds an event to the queue.
+     *
      * @return integer id of the event created or null if event was filtered out
      * @todo add intelligent deduplication, eg: if there is an hide event then a show one,
      *       do not add show but remove hide, etc...
      */
     static public function addEvent( $targetId, $objectId, $action, $data, $nodeIds = array(), $langMask = null )
     {
-        $event = new eZContentStagingEvent( array(
-            'target_id' => $targetId,
-            'object_id' => $objectId,
-            'modified' => time(),
-            'to_sync' => $action,
-            'data_text' => json_encode( $data ),
-            'language_mask' => $langMask
-            ) );
+        $event = new eZContentStagingEvent(
+            array(
+                'target_id' => $targetId,
+                'object_id' => $objectId,
+                'modified' => time(),
+                'to_sync' => $action,
+                'data_text' => json_encode( $data ),
+                'language_mask' => $langMask
+            )
+        );
 
         // allow filtering to happen
         $ini = eZINI::instance( 'contentstagingsource.ini' );
@@ -595,7 +608,10 @@ class eZContentStagingEvent extends eZPersistentObject
             {
                 if ( !class_exists( $filterClass ) || !is_subclass_of( $filterClass, 'eZContentStagingEventCreationFilter' ) )
                 {
-                    eZDebug::writeError( "Class $filterClass not found or not exposing correct interface, can not use as event creation filter", __METHOD__ );
+                    eZDebug::writeError(
+                        "Class $filterClass not found or not exposing correct interface, can not use as event creation filter",
+                        __METHOD__
+                    );
                     continue;
                 }
                 $filter = new $filterClass();
@@ -606,14 +622,14 @@ class eZContentStagingEvent extends eZPersistentObject
             }
         }
 
-        if ( count( $nodeIds ) )
+        if ( !empty( $nodeIds ) )
         {
             $db = eZDB::instance();
             $db->begin();
         }
         $event->store();
         $id = $event->ID;
-        if ( count( $nodeIds ) )
+        if ( !empty( $nodeIds ) )
         {
             foreach ( $nodeIds as $nodeId )
             {
@@ -644,7 +660,10 @@ class eZContentStagingEvent extends eZPersistentObject
             $target = eZContentStagingTarget::fetch( $event->TargetID );
             if ( !$target )
             {
-                eZDebug::writeError( "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", target not found", __METHOD__ );
+                eZDebug::writeError(
+                    "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", target not found",
+                    __METHOD__
+                );
                 //$results[$event->ID] = self::ERROR_NOTARGETDEFINED;
                 $results[$event->ID] = "Can not sync event: its target feed is missing";
                 unset( $events[$id] );
@@ -655,7 +674,10 @@ class eZContentStagingEvent extends eZPersistentObject
             {
                 if ( !class_exists( $class ) )
                 {
-                    eZDebug::writeError( "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", class $class not found", __METHOD__ );
+                    eZDebug::writeError(
+                       "Can not sync event " . $event->ID . " to target " . $event->TargetID . ", class $class not found",
+                        __METHOD__
+                    );
                     //$results[$event->ID] = self::ERROR_NOTRANSPORTCLASS;
                     $results[$event->ID] = "Can not sync event: its target feed transport class is missing";
                     unset( $events[$id] );
@@ -678,7 +700,10 @@ class eZContentStagingEvent extends eZPersistentObject
             }
             else
             {
-                eZDebug::writeDebug( "Syncing event " . $event->ID . ": object " . $event->ObjectID . ", feed " . $event->TargetID, __METHOD__ );
+                eZDebug::writeDebug(
+                    "Syncing event " . $event->ID . ": object " . $event->ObjectID . ", feed " . $event->TargetID,
+                    __METHOD__
+                );
 
                 // set status to 'pending'
                 $event->Status = self::STATUS_SYNCING;
@@ -736,7 +761,6 @@ class eZContentStagingEvent extends eZPersistentObject
         $this->Status = self::STATUS_TOSYNC;
         $this->SyncBeginDate = null;
         $this->store();
-
     }
 
     /**
@@ -745,13 +769,17 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo return real number of deleted events - this is not really atomic...
      */
-    static public function removeEvents( $eventIDList, $also_syncing = false )
+    static public function removeEvents( $eventIDList, $alsoSyncing = false )
     {
         $db = eZDB::instance();
-        if ( !$also_syncing )
+        if ( !$alsoSyncing )
         {
             // we first filter out any events in syncing status
-            $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' . $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ), array( 'column' => 'id' ) );
+            $eventIDList = $db->arrayquery(
+                'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' .
+                $db->generateSQLINStatement( $eventIDList, 'id', false, true, 'integer' ),
+                array( 'column' => 'id' )
+            );
         }
         $out = count( $eventIDList );
         if ( $out )
@@ -770,21 +798,27 @@ class eZContentStagingEvent extends eZPersistentObject
      *
      * @todo return real number of deleted events - this is not really atomic...
      */
-    static public function removeEventsByTargets( $targetIDList, $also_syncing = false )
+    static public function removeEventsByTargets( $targetIDList, $alsoSyncing = false )
     {
         $db = eZDB::instance();
         foreach ( $targetIDList as $key => $val )
         {
             $targetIDList[$key] = "'" . $db->escapeString( $val ) . "'";
         }
-        if ( !$also_syncing )
+        if ( !$alsoSyncing )
         {
             // we first filter out any events in syncing status
-            $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' . $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ), array( 'column' => 'id' ) );
+            $eventIDList = $db->arrayquery(
+                'SELECT id FROM ezcontentstaging_event WHERE status <> ' . self::STATUS_SYNCING . ' AND ' .
+                $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ),
+                array( 'column' => 'id' )
+            );
         }
         else
         {
-            $eventIDList = $db->arrayquery( 'SELECT id FROM ezcontentstaging_event WHERE ' . $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ), array( 'column' => 'id' ) );
+            $eventIDList = $db->arrayquery(
+                'SELECT id FROM ezcontentstaging_event WHERE ' . $db->generateSQLINStatement( $targetIDList, 'target_id', false, true ),
+                array( 'column' => 'id' ) );
         }
         $out = count( $eventIDList );
         if ( $out )

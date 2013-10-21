@@ -353,6 +353,72 @@ class eZRestApiGGWSClientStagingTransport extends eZBaseStagingTransport impleme
                 }
                 return 0;
 
+            /// @bug transaction problems - if adding a 2ndary location fails,
+            /// the main "restore from trash" action will be not rolled back, but this
+            /// event will be considered "unsynced". How to solve this?
+            case eZContentStagingEvent::ACTION_RESTOREFROMTRASH:
+
+                // 1st: restore from trash using 1 location
+                $RemoteObjRemoteID = $this->buildRemoteId( $event->attribute( 'object_id' ), $data['objectRemoteID'], 'object' );
+                $RemoteNodeRemoteID = $this->buildRemoteId( $data['nodeID'], $data['nodeRemoteID'] );
+
+                $out = $this->restCall(
+                    "PUT",
+                    /// @todo !important test that $RemoteObjRemoteID is not null
+                    "/content/trash/items/remote/$RemoteObjRemoteID?parentRemoteId=" .
+                    $this->buildRemoteId( $data['parentNodeID'] , $data['parentNodeRemoteID'] ),
+                    /// @todo !important copy over as well priority and sorting order?
+                    array(
+                        'remoteId' => $RemoteNodeRemoteID
+                    )
+                );
+                if ( !is_array( $out ) || !is_array( $out['Location'] ) || !isset( $out['Location']['remoteId'] ) )
+                {
+                    throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                }
+                if ( $out['Location']['remoteId'] != $RemoteNodeRemoteID )
+                {
+                    throw new Exception( "Remote id of created node does not match what was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                }
+
+                // 2nd: add extra locations if any are needed
+                foreach( $event->attribute( 'node_ids' ) as $newNodeId )
+                {
+                    if ( $newNodeId != $data['nodeID'] )
+                    {
+                        $newNode = eZContentObjectTreeNode::fetch( $newNodeId );
+                        if ( !$newNode )
+                        {
+                            /// @todo should we return error?
+                            eZDebug::writeError( "Secondary location $newNodeId to be added to object for restoring from trash has disappeared", __METHOD__ );
+                            continue;
+                        }
+                        $newParentNode = $newNode->attribute( 'parent' );
+                        $RemoteNodeRemoteID = $this->buildRemoteId( $newNodeId, $newNode->attribute( 'remote_id' ) );
+
+                        $out = $this->restCall(
+                            "PUT",
+                            /// @todo !important test that $RemoteObjRemoteID is not null
+                            "/content/objects/remote/$RemoteObjRemoteID/locations?parentRemoteId=" .
+                            $this->buildRemoteId( $newParentNode->attribute( 'node_id' ), $newParentNode->attribute( 'remote_id' ) ),
+                            /// @todo !important copy over as well priority and sorting order?
+                            array(
+                                'remoteId' => $RemoteNodeRemoteID
+                            )
+                        );
+                        if ( !is_array( $out ) || !is_array( $out['Location'] ) || !isset( $out['Location']['remoteId'] ) )
+                        {
+                            throw new Exception( "Received invalid data in response", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                        }
+                        if ( $out['Location']['remoteId'] != $RemoteNodeRemoteID )
+                        {
+                            throw new Exception( "Remote id of created node does not match what was sent", eZContentStagingEvent::ERROR_GENERICTRANSPORTERROR );
+                        }
+                    }
+                }
+
+                return 0;
+
             default:
                 throw new Exception( "Event type " . $event->attribute( 'to_sync' ) . " unknown", eZContentStagingEvent::ERROR_EVENTTYPEUNKNOWNTOTRANSPORT ); // should we store this error code in this class instead?
         }
