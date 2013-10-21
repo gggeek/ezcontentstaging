@@ -241,7 +241,7 @@ class eZContentStagingTarget
      * @todo does not check that the nodes belong to the feed. Maybe it should...
      * @todo empty object cache every N iterations
      */
-    public function checkNodeList( $nodeIds, $iterator = null )
+    public function checkNodeList( array $nodeIds, $iterator = null )
     {
         $transport = $this->transport();
 
@@ -275,7 +275,7 @@ class eZContentStagingTarget
     /**
      * @param callable $iterator will be called with an array ( int nodeid => int status )
      * @return array
-     * @todo implement a 'checked object' cache to avoid checaking same obj many times
+     * @todo implement a 'checked object' cache to avoid checking same obj many times
      * @todo prevent loops
      * @todo smarter checking: if node x is not there all its children can not be there either
      */
