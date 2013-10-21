@@ -283,7 +283,7 @@ class eZContentStagingContent extends contentStagingBase
             $version->store();
 
             self::updateAttributesList(
-                $content->contentObjectAttributes( true, false, isset( $input['initialLanguage'] ) ? $input['initialLanguage'] : false );
+                $content->contentObjectAttributes( true, false, isset( $input['initialLanguage'] ) ? $input['initialLanguage'] : false ),
                 $input['fields']
             );
 
@@ -557,6 +557,12 @@ class eZContentStagingContent extends contentStagingBase
         {
             eZContentOperationCollection::deleteObject( $nodeIDs, $moveToTrash );
         }
+        // Since both ways of deleting content can actually fail without telling
+        // us, at the cost of slowing down things, we check if nodes still exist.
+        // This is most likely due to perms problems, but so far other possibilities have not been ruled out
+        $db = eZDB::instance();
+        $count = $db->arrayquery( "SELECT count(node_id) AS count FROM ezcontentobject_tree WHERE " . $db->generateSQLINStatement( $nodeIDs, 'node_id' ), array( 'column' => 'count' ) );
+        return $count[0] ? ( "{$count[0]} nodes not deleted out of " . count( $nodeIDs ) ) : 0;
     }
 
     /**

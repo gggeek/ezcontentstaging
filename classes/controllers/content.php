@@ -65,7 +65,10 @@ class eZContentStagingRestContentController extends eZContentStagingRestBaseCont
         $moduleRepositories = eZModule::activeModuleRepositories();
         eZModule::setGlobalPathList( $moduleRepositories );
 
-        eZContentStagingContent::remove( $object, $moveToTrash );
+        if ( ( $result = eZContentStagingContent::remove( $object, $moveToTrash ) ) !== 0 )
+        {
+            return self::errorResult( ezpHttpResponseCodes::BAD_REQUEST, $result );
+        }
 
         $result = new ezpRestMvcResult();
         $result->status = new ezpRestHttpResponse( 204 );
