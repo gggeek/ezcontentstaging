@@ -436,17 +436,12 @@ class eZContentStagingField
                         self::transformLinksToRemoteLinks( $embeds, $ridGenerator );
                         self::transformLinksToRemoteLinks( $objects, $ridGenerator );
                         self::transformLinksToRemoteLinks( $embedsInline, $ridGenerator );
-
-                        /*$DOMNode = $datatype->createContentObjectAttributeDOMNode( $attribute );
-                        $importedRootNode = $DOMNode->ownerDocument->importNode( $doc->documentElement, true );
-                        $DOMNode->appendChild( $importedRootNode );*/
                     }
                     else
                     {
                         eZDebug::writeError( "Cannot encode attribute for push to staging server: invalid xml", __METHOD__ );
                         $parser = new eZXMLInputParser();
                         $doc = $parser->createRootNode();
-                        //$xmlText = eZXMLTextType::domString( $doc );
                     }
                     $this->value = $doc->saveXML();
                 }

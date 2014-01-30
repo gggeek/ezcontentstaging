@@ -35,11 +35,6 @@ class eZContentStagingFunctionCollection
         return array( 'result' => eZContentStagingEvent::fetchListGroupedByObject( $targetId, true, $offset, $limit, $language ) );
     }
 
-    /*static public function fetchObjectSyncTargets( $objectId )
-    {
-        return array( 'result' => eZContentStagingEvent::fetchByObject( $objectId ) );
-    }*/
-
     static public function fetchFeedsByNodeId( $nodeId = false )
     {
         return array( 'result' => eZContentStagingTarget::fetchByNode( $nodeId ) );

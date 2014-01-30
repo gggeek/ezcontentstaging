@@ -54,5 +54,5 @@ FAQ
   to this end you should set in rest.ini AuthenticationStyle=ezpRestSessionAuthStyle.
   NB: doing so means that the "anonymous user" can access all methods available via the REST api - take care if there are some such methods that do not enforce proper policy checking
 . q: what is the difference between the version of this extensions on projects.ez.no (github.com/gggeek/ezcontentstaging) and the official version from eZ Systems (github.com/ezsystems/ezcontentstaging)?
-  a: the "community version" extension was the first to be developed. It it still being maintained, and it stives to be a "beta" version where features are implemented before being imported in the official version.
+  a: the "community version" extension was the first to be developed. It it still being maintained, and it strives to be a "beta" version where features are implemented before being imported in the official version.
      The REST protocol in use is the same, so you should be able to interoperate between the two extensions.

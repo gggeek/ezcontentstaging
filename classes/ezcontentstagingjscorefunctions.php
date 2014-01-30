@@ -38,7 +38,6 @@ class eZContentStagingJSCoreFunctions
         $syncResults = array();
         foreach ( eZContentStagingEvent::syncEvents( $events ) as $id => $resultCode )
         {
-            //$event = $toSync[$id];
             if ( $resultCode !== 0 )
             {
                 $syncErrors[] = "Event $id: failure ($resultCode)";

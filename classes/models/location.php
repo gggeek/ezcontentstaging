@@ -94,29 +94,6 @@ class eZContentStagingLocation extends contentStagingBase
 
         $result = eZContentOperationCollection::changeSortOrder( $node->attribute( 'node_id' ), $sortField, $sortOrder );
         return ( $result['status'] == true ) ? 0 : -1;
-
-            /* manual update
-               $db = eZDB::instance();
-               $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-               try
-               {
-                   $node->setAttribute( 'sort_field', $sortField );
-                   $node->setAttribute( 'sort_order', $sortOrder );
-                   $node->store();
-                   eZContentCacheManager::clearContentCache(
-                       $node->attribute( 'contentobject_id' )
-                   );
-                   return 0;
-               }
-               catch ( exception $e )
-               {
-                   if ( $db->transactionCounter() )
-                   {
-                       $db->rollback();
-                   }
-                   return $e->getMessage();
-               }*/
-
     }
 
     /**
@@ -150,27 +127,6 @@ class eZContentStagingLocation extends contentStagingBase
         else
         {
             eZContentOperationCollection::updatePriority( $node->attribute( 'parent_node_id'), $priorityArray, $priorityIDArray );
-
-            /* manual update
-               $db = eZDB::instance();
-               $handling = $db->setErrorHandling( eZDB::ERROR_HANDLING_EXCEPTIONS );
-               try
-               {
-                   $node->setAttribute( 'priority', $priority );
-                   $node->store();
-                   eZContentCacheManager::clearContentCache(
-                       $node->attribute( 'contentobject_id' )
-                   );
-                   return 0;
-               }
-               catch ( exception $e )
-               {
-                   if ( $db->transactionCounter() )
-                   {
-                       $db->rollback();
-                   }
-                   return $e->getMessage();
-               }*/
         }
     }
 
@@ -229,15 +185,6 @@ class eZContentStagingLocation extends contentStagingBase
         else
         {
             eZContentOperationCollection::changeHideStatus( $node->attribute( 'node_id' ) );
-                /* manual update
-                if ( $hide )
-                {
-                    eZContentObjectTreeNode::hideSubTree( $node );
-                }
-                else
-                {
-                    eZContentObjectTreeNode::unhideSubTree( $node );
-                }*/
         }
     }
 
@@ -332,12 +279,6 @@ class eZContentStagingLocation extends contentStagingBase
         else
         {
             eZContentOperationCollection::removeNodes( $removeList );
-
-            /* manual update
-            eZContentObjectTreeNode::removeSubtrees(
-                array( $node->attribute( 'node_id' ) ),
-                $moveToTrash
-            );*/
         }
     }
 

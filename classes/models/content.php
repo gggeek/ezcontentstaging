@@ -126,14 +126,6 @@ class eZContentStagingContent extends contentStagingBase
 
             $db->commit();
 
-            /*$operationResult = eZOperationHandler::execute(
-                'content', 'publish',
-                array(
-                    'object_id' => $object->attribute( 'id' ),
-                    'version' => $version->attribute( 'version' )
-                )
-            );*/
-
             return $version; //eZContentObject::fetch( $object->attribute( 'id' ) );
         }
         catch ( exception $e )
@@ -274,11 +266,6 @@ class eZContentStagingContent extends contentStagingBase
             {
                 $version->setAttribute( 'created', $creationDate );
             }
-            // Version modification time is taken as current time at version creation.
-            /*else
-            {
-                $version->setAttribute( 'modified', time() );
-            }*/
             $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
             $version->store();
 
@@ -293,14 +280,6 @@ class eZContentStagingContent extends contentStagingBase
             );
 
             $db->commit();
-
-            /*$operationResult = eZOperationHandler::execute(
-                'content', 'publish',
-                array(
-                    'object_id' => $content->attribute( 'id' ),
-                    'version' => 1
-                )
-            );*/
 
             return $content;
         }
@@ -495,12 +474,6 @@ class eZContentStagingContent extends contentStagingBase
         else
         {
             eZContentOperationCollection::updateSection( $object->attribute( 'main_node_id' ), $sectionId );
-            /* manual update
-            eZContentObjectTreeNode::assignSectionToSubTree(
-                $object->attribute( 'main_node_id' ),
-                $sectionId
-            );
-            */
         }
     }
 
