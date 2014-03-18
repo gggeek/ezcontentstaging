@@ -283,7 +283,7 @@ class eZContentStagingContent extends contentStagingBase
             $version->store();
 
             self::updateAttributesList(
-                $content->contentObjectAttributes( true, false, isset( $input['initialLanguage'] ) ? $input['initialLanguage'] : false );
+                $content->contentObjectAttributes( true, false, isset( $input['initialLanguage'] ) ? $input['initialLanguage'] : false ),
                 $input['fields']
             );
 
