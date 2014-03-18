@@ -37,6 +37,7 @@ class eZContentStagingEvent extends eZPersistentObject
     // remote_object_id into the remote node (known by its node_id)
     const ACTION_UPDATEREMOTEIDS = 65536;
     const ACTION_RESTOREFROMTRASH = 131072;
+    const ACTION_INITIALIZEFEED = 262144;
 
     static $syncStrings = array(
         self::ACTION_ADDLOCATION => 'location added',
