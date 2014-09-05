@@ -15,7 +15,7 @@ Target server:
 
 NB: the extension shall be installed on both servers.
 
-Be sure to read the file doc/known_bugs.txt for a list of current limitations: this extension does
+Be sure to read the files doc/known_bugs.txt and doc/specs.txt for a list of current limitations: this extension does
 not interact well with all editorial workflows and eZ Publish installations, nor does it support
 all synchronization usecases.
 
@@ -23,6 +23,7 @@ Installation
 ------------
 
 Target server:
+
 1. unzip the extension, enable it (make sure to regenerate autoloads)
 
 2. enable rewrite rules to make the rest api accessible
@@ -36,9 +37,10 @@ Target server:
 4. make sure there is a user account that has enough rights to create/read/update/delete any content, e.g. admin
 
 Source server:
+
 1. unzip the extension, enable it (make sure to regenerate autoloads)
 
-2. create the new db table: either go to "setup/Upgrade check/DB Upgrade check" in the admin interface, or use sql script in the sql/ folder
+2. create the new db table(s): either go to "setup/Upgrade check/DB Upgrade check" in the admin interface, or use sql script in the sql/ folder
 
 3. copy the files from the patches directory over the original eZ Publish kernel files (back up originals first)
    Note: for eZP Community Project versions, use the "4.6" patches up to versions 2012.1, no patches from 2012.2 onward

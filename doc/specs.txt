@@ -12,5 +12,106 @@ Detail specifications
 
 See:
 
+. README file
 . specs.odt file
-. REST API doc: https://github.com/ezsystems/ezpublish-ee/wiki/REST-API-V2
+. https://doc.ez.no/Extensions/eZ-Publish-extensions/eZ-Content-Staging
+. REST API doc: https://github.com/ezsystems/ezpublish-ee/wiki/REST-API-V2. 
+
+
+Known Problems / Limitations
+----------------------------
+
+This extension was developed with a "no-kernel-hacks" rule.
+This means it has to adhere to the eZPublish 4 API.
+But the API was never designed with content staging in mind, and some of its
+inner workings make life extremely difficult for us.
+
+In no particular order, here are problems deep within the eZ content model which
+prevent this extension from working 100% properly in all scenarios.
+
+Note: this is not a todo-list of known bugs or missing features.
+
+1)  Content can be modified by any code without triggering workflow events, and
+    we rely on workflow events to replicate changes.
+    This is in the general sense something which we will never be able to fix;
+    luckily for us it is uncommon in the official extensions.
+
+    As an example: see bug EZP-23315 - the ezmultiupload extension sets a custom
+    sorting order on objects it creates without generating a workflow.
+
+2)  Some content changes happen without any triggers/workflows at all.
+
+    The only case known is management of url aliases.
+
+3)  The eZ API does not distinguish between a content creation and a version
+    publication. The version number is not reliable as the admin interface allows
+    to create new objects as copy of existing ones, and the newly created objects
+    start at the same version nr. as the existing one.
+
+    This makes it hard for the REST calls implementing push of "publish" events,
+    as they can not tell the difference bewteen 404 failures (when I try to send
+    version 7 to the target server, I might get a 404 because the object does not
+    exist there. But is that an error, or is it because it is the first version?)
+
+4)  Since workflow events can prevent the execution of the action started by the user,
+    the staging workflow events, should go last in the workflow, and be executed always
+    on "post action" triggers.
+    Unluckily some of the existing events do not pass enough data to the "post action"
+    workflows, which means that we have to fetch that data ourselves, which
+    means that we most likely have to put our workflow events on the "pre action"
+    trigger, as the "post action" one will not see the data anymore.
+    A good example is the "delete object" action - we need to execute our workflow
+    event before deletion takes place, because we need to get the list of all nodes
+    correspoding to the object, and after deletion they are gone.
+    But if for any cause the deletion is cancelled after out workflow event, we might
+    end up in a situation where a "ghost staging event" is recorded.
+
+5)  Some content editing actions generate a single workflow event, but affect many
+    objects/nodes.
+    Example: "remove object" affects the object and all its children.
+    Most likely hide and set-section events do the same.
+    This makes it extremely hard / impossible to track any dependencies between
+    staging-events in the queue.
+
+6)  The 'publish object' staging event does not serialize all its information at the
+    time it is created, but re-fetches the object at the time it is synchronizeded.
+    This causes problems when the object (or one of its ancestors) has been deleted
+    in the meantime, as the fetch will fail and the syncing of the publication will
+    fail.
+
+    NB: this could be fixed without changes in the underlying API. It might cause
+    some database bloat but be a beneficial evolution.
+
+7)  The staging-events in the queue maintain dependencies between each other.
+    This means that it is not possible to pick a random set of events and sync them
+    with the guarantee that everything will work.
+    Eg: sync deletion of an object before its creation, or creation of an object
+    before creation of its related-objects.
+
+8)  Any custom datatype which stores in its data node/object-ids has to be supported
+    specifically with custom code.
+    The same is true for datatypes which use custom db tables and do not support
+    ToString/FromString
+
+9)  Permission management: eZ does apply policies when users access modules/views,
+    but by default it does not check them directly when executing content operations.
+    This means that we have to reimplement policy checks on our own.
+
+10) Before eZPublish 5.3, it is impossible to create a draft for a new object with
+    a given node-remote-id, if there is any workflow which delays publication.
+   
+    This prevents us from supporting delayed-publication-events on the target server,
+    as when we sync an object-creation we need to assign its node-remote-id.
+   
+    NB: this can be worked around with one more custom workflow-event and db table
+    on the target server... is the extra complexity worth it?
+
+10) (fixed since version 1.0)
+    Syncing an object publication involves two http calls, which made the operation
+    brittle and subject to network reliability problems. F.e. how to handle the case
+    where the object was created but its remote-id not set?
+
+11) eZPublish does not any events triggered upon modification of "dictionary data",
+    such as content-class definition, list of sections or object-states.
+    This means that the only way to sync dictionaries (NB: currently not implemented)
+    is to use a full-sync method.
