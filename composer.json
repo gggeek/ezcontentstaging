@@ -1,0 +1,19 @@
+{
+    "name": "gggeek/ezcontentstaging",
+    "description": "eZ Contentstaging allows content synchronization from one eZ Publish installations to another via REST.",
+    "type": "ezpublish-legacy-extension",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "eZ Publish dev-team & eZ Community",
+            "homepage": "https://ez.no"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "ezsystems/ezpublish-legacy-installer": "*"
+    },
+    "extra": {
+        "ezpublish-legacy-extension-name": "ezcontentstaging"
+    }
+}
