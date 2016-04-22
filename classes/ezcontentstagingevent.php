@@ -54,7 +54,6 @@ class eZContentStagingEvent extends eZPersistentObject
         self::ACTION_UPDATEOBJECSTATE => 'content state changed',
         self::ACTION_UPDATEPRIORITY => 'child priority changed',
         self::ACTION_UPDATESECTION => 'section changed',
-        self::ACTION_INITIALIZEFEED => 'node initialization',
         self::ACTION_RESTOREFROMTRASH => 'object restored from trash',
     );
 
